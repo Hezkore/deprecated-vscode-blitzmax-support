@@ -1,0 +1,69 @@
+{
+	"name" : "blitzmax",
+	"version" : "1.0.0",
+	"displayName" : "BlitzMax Language Basics",
+	"description" : "Provides snippets, syntax highlighting, bracket matching and folding in BlitzMax files.",
+	"repository" : {
+		"type" : "git",
+		"url" : "https://github.com/Hezkore/vscode-blitzmax-support"
+	},
+	"license" : "MIT",
+	"icon" : "media/icon.png",
+	"publisher" : "Hezkore",
+	"categories" : [ "Programming Languages" ],
+	"engines" : {
+		"vscode" : "^0.10.1"
+	},
+	"keywords" : [ "BlitzMax", "BlitzMax NG", "bmax", "bmx" ],
+	"contributes" : {
+		"languages" : [
+			{
+				"id" : "blitzmax",
+				"extensions" : [ ".bmx" ],
+				"aliases" : [ "BlitzMax NG", "BlitzMax", "bmax" ],
+				"configuration" : "./language-configuration.json"
+			}
+		],
+		"configurationDefaults" : {
+			"[blitzmax]" : {
+				"editor.snippetSuggestions" : "top",
+				"editor.insertSpaces" : false,
+				"editor.detectIndentation" : false,
+				"editor.trimAutoWhitespace" : false
+			}
+		},
+		"grammars" : [
+			{
+				"language" : "blitzmax",
+				"scopeName" : "source.bmx",
+				"path" : "./syntaxes/blitzmax.json"
+			}
+		],
+		"snippets" : [
+			{
+				"language" : "blitzmax",
+				"path" : "./snippets/blitzmax.json"
+			}
+		],
+		"problemMatchers" : [
+			{
+				"name" : "blitzmax",
+				"owner" : "blitzmax",
+				"fileLocation" : "absolute",
+				"pattern" : [
+					{
+						"regexp" : "Compile (Error|Warning)?: (.*)",
+						"message" : 2,
+						"severity" : 1
+					},
+					{
+						"regexp" : "^\\[(.*.bmx);(\\d+);(\\d+)]",
+						"file" : 1,
+						"line" : 2,
+						"column" : 3
+					}
+				]
+			}
+		]
+	}
+}

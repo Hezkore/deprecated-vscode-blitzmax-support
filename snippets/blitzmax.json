@@ -1,0 +1,145 @@
+{
+	"Rem Block" : {
+		"prefix" : "rem",
+		"body" : [ "rem $1", "$2", "endrem" ],
+		"description" : "Remember"
+	},
+	
+	"Print" : {
+		"prefix" : "Print",
+		"body" : [ "Print( ${0:Text} )" ],
+		"description" : "Print Text"
+	},
+	
+	"Function" : {
+		"prefix" : "Function",
+		"body" : [ "Function ${1:Identifier}:${2:ReturnType}( ${3:Parameters} )", "\t", "\t$0", "EndFunction" ],
+		"description" : "Function"
+	},
+	
+	"Method" : {
+		"prefix" : "Method",
+		"body" : [ "Method ${1:Identifier}:${2:ReturnType}( ${3:Parameters} )", "\t", "\t$0", "EndMethod" ],
+		"description" : "Method"
+	},
+	
+	"Method Operator" : {
+		"prefix" : "Method Operator",
+		"body" : [ "Method Operator ${1|+,-,*,/,&,~,:+,:-,:*,:/,:&,:~,[],[]=,Mod,Shl,Shr,:Mod,:Shl,:Shr,<,>,<=,>=,=,<>|}( ${3:value} )", "\t", "\t$0", "EndMethod" ],
+		"description" : "Index Operator Overloading"
+	},
+	
+	"For" : {
+		"prefix" : "For",
+		"body" : [ "For ${1:IndexVariable} = ${2:FirstValue} ${3|Until,To,EachIn|} ${4:LastValue}", "\t", "\t$0", "Next" ],
+		"description" : "For Loop"
+	},
+	
+	"For Step" : {
+		"prefix" : "For Step",
+		"body" : [ "For ${1:IndexVariable} = ${2:FirstValue} ${3|Until,To,EachIn|} ${4:LastValue} Step ${5:LastValue}", "\t", "\t$0", "Next" ],
+		"description" : "For Step Loop"
+	},
+	
+	"While" : {
+		"prefix" : "While",
+		"body" : [ "While ${1:Expression}", "\t", "\t$0", "Wend" ],
+		"description" : "While Loop"
+	},
+	
+	"Repeat" : {
+		"prefix" : "Repeat",
+		"body" : [ "Repeat", "\t", "\t$0", "Until ${1:Expression}" ],
+		"description" : "Repeat Until Loop"
+	},
+	
+	"Repeat Forever" : {
+		"prefix" : "Repeat Forever",
+		"body" : [ "Repeat", "\t", "\t$0", "Forever" ],
+		"description" : "Repeat Forever Loop"
+	},
+	
+	"Enum" : {
+		"prefix" : "Enum",
+		"body" : [ "Enum ${1:Identifier}", "\t", "\t$0", "EndEnum" ],
+		"description" : "Enumerator"
+	},
+	
+	"Type" : {
+		"prefix" : "Type",
+		"body" : [ "Type ${1:Identifier}", "\t", "\t$0", "EndType" ],
+		"description" : "Type"
+	},
+	
+	"Interface" : {
+		"prefix" : "Interface",
+		"body" : [ "Interface ${1:Identifier}", "\t", "\t$0", "EndInterface" ],
+		"description" : "Interface"
+	},
+	
+	"Struct" : {
+		"prefix" : "Struct",
+		"body" : [ "Struct ${1:Identifier}", "\t", "\t$0", "EndStruct" ],
+		"description" : "Structure"
+	},
+	
+	"Select" : {
+		"prefix" : "Select",
+		"body" : [ "Select ${1:Identifier}", "\tCase ${2:Identifier}", "\t", "\t\t$3", "\tDefault", "\t", "\t\t$0", "EndSelect" ],
+		"description" : "Select Case"
+	},
+	
+	"If" : {
+		"prefix" : "If Then",
+		"body" : [ "If ${1:Expression} Then", "\t", "\t$0", "EndIf" ],
+		"description" : "If Then Block"
+	},
+	
+	"IfElse" : {
+		"prefix" : "If Then Else",
+		"body" : [ "If ${1:Expression} Then", "\t", "\t$2", "Else", "\t", "\t$0", "EndIf" ],
+		"description" : "If Then Else Block"
+	},
+	
+	"IfElseIf" : {
+		"prefix" : "If Then ElseIf",
+		"body" : [ "If ${1:Expression} Then", "\t", "\t$2", "ElseIf ${3:Expression}", "\t", "\t$0", "EndIf" ],
+		"description" : "If Then ElseIf Block"
+	},
+	
+	"Conditional Compiling" : {
+		"prefix" : "?",
+		"body" : [ "?${1|Debug,Threaded,Release,Win32,Win32x86,Win64,Win32x64,MacOS,MacOSX86,MacOSX64,MacOSPPC,osx,osxx86,osxppc,osxx64,ios,iosx86,iosx64,iosarmv7,iosarm64,Linux,LinuxX86,LinuxX64,LinuxARM,android,androidx86,androidx64,androidarm,androidarmeabi,androidarmeabiv7a,androidarm64v8a,raspberrypi,raspberrypiARM,emscripten,emscriptenjs,X86,X64,PPC,arm,armeabi,armeabiv7a,arm64v8a,js,armv7,arm64,ptr32,ptr64,BigEndian,LittleEndian,opengles,bmxng|}", "\t$0", "?" ],
+		"description" : "Conditional Compiling Block"
+	},
+	
+	"Local" : {
+		"prefix" : "Local",
+		"body" : [ "Local ${1:Identifier}:${2:Type}" ],
+		"description" : "Local Variable"
+	},
+	
+	"Global" : {
+		"prefix" : "Global",
+		"body" : [ "Global ${1:Identifier}:${2:Type}" ],
+		"description" : "Global Variable"
+	},
+	
+	"Const" : {
+		"prefix" : "Const",
+		"body" : [ "Const ${1:Identifier}:${2:Type} = $0" ],
+		"description" : "Constant Variable"
+	},
+	
+	"Field" : {
+		"prefix" : "Field",
+		"body" : [ "Field ${1:Identifier}:${2:Type}" ],
+		"description" : "Field Variable"
+	},
+	
+	"Try" : {
+		"prefix" : "Try",
+		"body" : [ "Try", "\t${1:ExTest()}", "Catch ex:Object", "\t${0:Print ex.ToString()}", "EndTry" ],
+		"description" : "Try Catch Block"
+	}
+}
