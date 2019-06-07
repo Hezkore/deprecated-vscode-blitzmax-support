@@ -14,7 +14,7 @@ Read [CHANGLELOG](https://github.com/Hezkore/vscode-blitzmax-support/blob/master
 
 ## Contributing
 
-Contributions are greatly appreciated. Fork this repository and open pull requests.
+Contributions are greatly appreciated. Fork this repository and open your pull requests.
 
 ## License
 

@@ -1,69 +1,137 @@
 {
-	"name" : "blitzmax",
-	"version" : "1.0.0",
-	"displayName" : "BlitzMax Language Basics",
-	"description" : "Provides snippets, syntax highlighting, bracket matching and folding in BlitzMax files.",
-	"repository" : {
-		"type" : "git",
-		"url" : "https://github.com/Hezkore/vscode-blitzmax-support"
+	"name": "blitzmax",
+	"version": "1.0.0",
+	"displayName": "BlitzMax Language Basics",
+	"description": "Provides snippets, syntax highlighting, bracket matching and folding in BlitzMax files.",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Hezkore/vscode-blitzmax-support"
 	},
-	"license" : "MIT",
-	"icon" : "media/icon.png",
-	"publisher" : "Hezkore",
-	"categories" : [ "Programming Languages" ],
-	"engines" : {
-		"vscode" : "^0.10.1"
+	"license": "MIT",
+	"icon": "media/icon.png",
+	"publisher": "Hezkore",
+	"main": "./out/extension",
+	"categories": [
+		"Programming Languages",
+		"Snippets",
+		"Other"
+	],
+	"engines": {
+		"vscode": "^1.32.0"
 	},
-	"keywords" : [ "BlitzMax", "BlitzMax NG", "bmax", "bmx" ],
-	"contributes" : {
-		"languages" : [
+	"keywords": [
+		"BlitzMax",
+		"BlitzMax NG",
+		"bmax",
+		"bmx"
+	],
+	"activationEvents": [
+		"onCommand:workbench.action.tasks.runTask"
+	],
+	"contributes": {
+		"taskDefinitions": [
 			{
-				"id" : "blitzmax",
-				"extensions" : [ ".bmx" ],
-				"aliases" : [ "BlitzMax NG", "BlitzMax", "bmax" ],
-				"configuration" : "./language-configuration.json"
+				"type": "bmx",
+				"properties": {
+					"gui": {
+						"type": "boolean",
+						"description": "Build with GUI.",
+						"default": true
+					},
+					"file": {
+						"type": "string",
+						"description": "The main build file.",
+						"default": "main.bmx"
+					}
+				}
 			}
 		],
-		"configurationDefaults" : {
-			"[blitzmax]" : {
-				"editor.snippetSuggestions" : "top",
-				"editor.insertSpaces" : false,
-				"editor.detectIndentation" : false,
-				"editor.trimAutoWhitespace" : false
+		"languages": [
+			{
+				"id": "blitzmax",
+				"extensions": [
+					".bmx"
+				],
+				"aliases": [
+					"BlitzMax NG",
+					"BlitzMax",
+					"bmax"
+				],
+				"configuration": "./language-configuration.json"
+			}
+		],
+		"configurationDefaults": {
+			"[blitzmax]": {
+				"editor.snippetSuggestions": "top",
+				"editor.insertSpaces": false,
+				"editor.detectIndentation": false,
+				"editor.trimAutoWhitespace": false
 			}
 		},
-		"grammars" : [
+		"configuration": {
+			"type": "object",
+			"title": "BlitzMax",
+			"properties": {
+				"blitzmax.path": {
+					"type": "string",
+					"default": "",
+					"description": "Path to BlitzMax (e.g: C:\\Program Files (x86)\\BlitzMax)"
+				}
+			}
+		},
+		"grammars": [
 			{
-				"language" : "blitzmax",
-				"scopeName" : "source.bmx",
-				"path" : "./syntaxes/blitzmax.json"
+				"language": "blitzmax",
+				"scopeName": "source.bmx",
+				"path": "./syntaxes/blitzmax.json"
 			}
 		],
-		"snippets" : [
+		"snippets": [
 			{
-				"language" : "blitzmax",
-				"path" : "./snippets/blitzmax.json"
+				"language": "blitzmax",
+				"path": "./snippets/blitzmax.json"
 			}
 		],
-		"problemMatchers" : [
+		"debuggers": [
 			{
-				"name" : "blitzmax",
-				"owner" : "blitzmax",
-				"fileLocation" : "absolute",
-				"pattern" : [
+				"type": "bmx_task",
+				"label": "BlitzMax Task",
+				"program": "notepad.exe",
+				"languages": [
+					"blitzmax"
+				]
+			}
+		],
+		"problemMatchers": [
+			{
+				"name": "blitzmax",
+				"owner": "blitzmax",
+				"fileLocation": "absolute",
+				"pattern": [
 					{
-						"regexp" : "Compile (Error|Warning)?: (.*)",
-						"message" : 2,
-						"severity" : 1
+						"regexp": "Compile (Error|Warning)?: (.*)",
+						"message": 2,
+						"severity": 1
 					},
 					{
-						"regexp" : "^\\[(.*.bmx);(\\d+);(\\d+)]",
-						"file" : 1,
-						"line" : 2,
-						"column" : 3
+						"regexp": "^\\[(.*.bmx);(\\d+);(\\d+)]",
+						"file": 1,
+						"line": 2,
+						"column": 3
 					}
 				]
 			}
 		]
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -b",
+		"watch": "tsc -b -w"
+	},
+	"devDependencies": {
+		"@types/node": "^8.0.0",
+		"tslint": "^5.16.0",
+		"typescript": "^3.5.1",
+		"@types/vscode": "^1.32.0"
 	}
 }
