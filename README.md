@@ -6,6 +6,8 @@ Provides snippets, syntax highlighting, bracket matching and folding in BlitzMax
 
 ## Features
 * Syntax highlighting for BlitzMax and BlitzMax NG.
+* Build Tasks for Console, Gui, Lib and Mods.
+* Problem Matcher.
 * Snippets.
 
 ## Changelog
