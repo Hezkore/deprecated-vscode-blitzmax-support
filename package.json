@@ -1,6 +1,6 @@
 {
 	"name": "blitzmax",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"displayName": "BlitzMax Language Basics",
 	"description": "Provides snippets, syntax highlighting, bracket matching and folding in BlitzMax files.",
 	"repository": {
@@ -26,24 +26,48 @@
 		"bmx"
 	],
 	"activationEvents": [
+        "onCommand:blitzmax.buildConsole",
+		"onCommand:blitzmax.buildGui",
+		"onCommand:blitzmax.buildMods",
+		"onCommand:blitzmax.buildLib",
 		"onCommand:workbench.action.tasks.runTask"
 	],
 	"contributes": {
 		"taskDefinitions": [
 			{
 				"type": "bmx",
+				"required": [
+					"build"
+				],
 				"properties": {
-					"gui": {
-						"type": "boolean",
-						"description": "Build with GUI.",
-						"default": true
-					},
-					"file": {
+					"build": {
 						"type": "string",
-						"description": "The main build file.",
-						"default": "main.bmx"
+						"description": "Can either be 'console', 'gui', 'mods' or 'lib'.",
+						"default": "console"
 					}
 				}
+			}
+		],
+		"commands": [
+			{
+				"command": "blitzmax.buildConsole",
+				"title": "Build console application",
+				"category": "BlitzMax"
+			},
+			{
+				"command": "blitzmax.buildGui",
+				"title": "Build gui application",
+				"category": "BlitzMax"
+			},
+			{
+				"command": "blitzmax.buildMods",
+				"title": "Build module",
+				"category": "BlitzMax"
+			},
+			{
+				"command": "blitzmax.buildLib",
+				"title": "Build library",
+				"category": "BlitzMax"
 			}
 		],
 		"languages": [
@@ -72,10 +96,40 @@
 			"type": "object",
 			"title": "BlitzMax",
 			"properties": {
-				"blitzmax.path": {
+				"blitzmax.bmxPath": {
 					"type": "string",
 					"default": "",
-					"description": "Path to BlitzMax (e.g: C:\\Program Files (x86)\\BlitzMax)"
+					"description": "Path to BlitzMax. (e.g: C:\\Program Files (x86)\\BlitzMax)"
+				},
+				"blitzmax.sourceFile": {
+					"type": "string",
+					"default": "",
+					"description": "The main source file. (change in your workspace settings)"
+				},
+				"blitzmax.buildOut": {
+					"type": "string",
+					"default": "",
+					"description": "Specifies the output file."
+				},
+				"blitzmax.debug": {
+					"type": "boolean",
+					"default": true,
+					"description": "Set to false for release build. (change in your workspace settings)"
+				},
+				"blitzmax.threaded": {
+					"type": "boolean",
+					"default": true,
+					"description": "Builds multithreaded version. (change in your workspace settings)"
+				},
+				"blitzmax.warn": {
+					"type": "boolean",
+					"default": true,
+					"description": "Warns about function argument casting issues rather than error. (NG only)"
+				},
+				"blitzmax.execute": {
+					"type": "boolean",
+					"default": true,
+					"description": "Execute built application."
 				}
 			}
 		},
@@ -90,16 +144,6 @@
 			{
 				"language": "blitzmax",
 				"path": "./snippets/blitzmax.json"
-			}
-		],
-		"debuggers": [
-			{
-				"type": "bmx_task",
-				"label": "BlitzMax Task",
-				"program": "notepad.exe",
-				"languages": [
-					"blitzmax"
-				]
 			}
 		],
 		"problemMatchers": [
