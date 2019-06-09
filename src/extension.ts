@@ -4,36 +4,48 @@ import * as vscode from 'vscode'
 import * as path from 'path'
 
 let bmkPath: string
-let provider: vscode.Disposable | undefined
 
 export function activate(context: vscode.ExtensionContext): void {
 	
-	vscode.commands.registerCommand('blitzmax.buildConsole', () => {
-		
-		bmxBuild( "makeapp", "console" )
-	})
+	context.subscriptions.push(
+		vscode.commands.registerCommand('blitzmax.buildConsole', () => {
+			
+			bmxBuild( "makeapp", "console" )
+		})
+	)
 	
-	vscode.commands.registerCommand('blitzmax.buildGui', () => {
-		
-		bmxBuild( "makeapp", "gui" )
-	})
+	context.subscriptions.push(
+		vscode.commands.registerCommand('blitzmax.buildGui', () => {
+			
+			bmxBuild( "makeapp", "gui" )
+		})
+	)
 	
-	vscode.commands.registerCommand('blitzmax.buildMods', () => {
-		
-		bmxBuild( "makemods" )
-	})
+	context.subscriptions.push(
+		vscode.commands.registerCommand('blitzmax.buildMods', () => {
+			
+			bmxBuild( "makemods" )
+		})
+	)
 	
-	vscode.commands.registerCommand('blitzmax.buildLib', () => {
-		
-		bmxBuild( "makelib" )
-	})
+	context.subscriptions.push(
+		vscode.commands.registerCommand('blitzmax.buildLib', () => {
+			
+			bmxBuild( "makelib" )
+		})
+	)
 	
-	vscode.commands.registerCommand('blitzmax.setSourceFile', () => {
-		
-		setWorkspaceSourceFile( currentBmx() )
-	})
+	context.subscriptions.push(
+		vscode.commands.registerCommand('blitzmax.setSourceFile', () => {
+			
+			setWorkspaceSourceFile( currentBmx() )
+		})
+	)
 	
-	provider = vscode.tasks.registerTaskProvider( "bmx", new BmxTaskProvider() )
+	context.subscriptions.push(
+		
+		vscode.tasks.registerTaskProvider( "bmx", new BmxTaskProvider() )
+	)
 }
 
 class BmxTaskProvider implements vscode.TaskProvider {
@@ -224,6 +236,4 @@ async function updateBmkPath( askToSet:boolean ){
 }
 
 export function deactivate(): void {
-
-	if (provider) { provider.dispose() }
 }
