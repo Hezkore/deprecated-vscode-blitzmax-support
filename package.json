@@ -30,17 +30,15 @@
 		"onCommand:blitzmax.buildGui",
 		"onCommand:blitzmax.buildMods",
 		"onCommand:blitzmax.buildLib",
+		"onCommand:blitzmax.setSourceFile",
 		"onCommand:workbench.action.tasks.runTask"
 	],
 	"contributes": {
 		"taskDefinitions": [
 			{
 				"type": "bmx",
-				"required": [
-					"build"
-				],
 				"properties": {
-					"build": {
+					"make": {
 						"type": "string",
 						"description": "Can either be 'console', 'gui', 'mods' or 'lib'.",
 						"default": "console"
@@ -51,22 +49,27 @@
 		"commands": [
 			{
 				"command": "blitzmax.buildConsole",
-				"title": "Build console application",
+				"title": "Build Console application",
 				"category": "BlitzMax"
 			},
 			{
 				"command": "blitzmax.buildGui",
-				"title": "Build gui application",
+				"title": "Build Gui application",
 				"category": "BlitzMax"
 			},
 			{
 				"command": "blitzmax.buildMods",
-				"title": "Build module",
+				"title": "Build Module",
 				"category": "BlitzMax"
 			},
 			{
 				"command": "blitzmax.buildLib",
-				"title": "Build library",
+				"title": "Build Shared library",
+				"category": "BlitzMax"
+			},
+			{
+				"command": "blitzmax.setSourceFile",
+				"title": "Set current document as workspace source file",
 				"category": "BlitzMax"
 			}
 		],
@@ -130,6 +133,11 @@
 					"type": "boolean",
 					"default": true,
 					"description": "Execute built application."
+				},
+				"blitzmax.autoSetSourceFile": {
+					"type": "boolean",
+					"default": false,
+					"description": "Set the current active document as source file if no source file is specified."
 				}
 			}
 		},

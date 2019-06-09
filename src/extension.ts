@@ -1,15 +1,12 @@
 'use strict'
 
 import * as vscode from 'vscode'
-import * as path from 'path';
+import * as path from 'path'
 
 let bmkPath: string
 let provider: vscode.Disposable | undefined
-let channel: vscode.OutputChannel
 
 export function activate(context: vscode.ExtensionContext): void {
-	
-	channel = vscode.window.createOutputChannel('BlitzMax')
 	
 	vscode.commands.registerCommand('blitzmax.buildConsole', () => {
 		
@@ -31,46 +28,90 @@ export function activate(context: vscode.ExtensionContext): void {
 		bmxBuild( "makelib" )
 	})
 	
-	provider = vscode.tasks.registerTaskProvider( "bmx", new BmxProvider() )
+	vscode.commands.registerCommand('blitzmax.setSourceFile', () => {
+		
+		setWorkspaceSourceFile( currentBmx() )
+	})
+	
+	provider = vscode.tasks.registerTaskProvider( "bmx", new BmxTaskProvider() )
 }
 
-class BmxProvider implements vscode.TaskProvider {
+class BmxTaskProvider implements vscode.TaskProvider {
 	
 	provideTasks(token?: vscode.CancellationToken): vscode.ProviderResult<vscode.Task[]> {
 		
-		if (!checkBmxPath()){ return }
-		
 		let scope: vscode.TaskScope = vscode.TaskScope.Workspace
+		let name:string = 'BlitzMax'
 		
 		let execConsole: vscode.ProcessExecution = new vscode.ProcessExecution( '${command:blitzmax.buildConsole}' )
-		let kindConsole: vscode.TaskDefinition = { type: 'bmx', build: 'console' }
+		let kindConsole: BmxTaskDefinition = { type: 'bmx', make: 'console' }
 		
 		let execGui: vscode.ProcessExecution = new vscode.ProcessExecution( '${command:blitzmax.buildGui}' )
-		let kindGui: vscode.TaskDefinition = { type: 'bmx', build: 'gui' }
+		let kindGui: BmxTaskDefinition = { type: 'bmx', make: 'gui' }
 		
 		let execMods: vscode.ProcessExecution = new vscode.ProcessExecution( '${command:blitzmax.buildMods}' )
-		let kindMods: vscode.TaskDefinition = { type: 'bmx', build: 'mods' }
+		let kindMods: BmxTaskDefinition = { type: 'bmx', make: 'mods' }
 		
 		let execLib: vscode.ProcessExecution = new vscode.ProcessExecution( '${command:blitzmax.buildLib}' )
-		let kindLib: vscode.TaskDefinition = { type: 'bmx', build: 'lib' }
+		let kindLib: BmxTaskDefinition = { type: 'bmx', make: 'lib' }
 		
 		return [
-			new vscode.Task( kindConsole, scope, 'Console Application', 'BlitzMax', execConsole ),
-			new vscode.Task( kindGui, scope, 'Gui Application', 'BlitzMax', execGui ),
-			new vscode.Task( kindMods, scope, 'Module', 'BlitzMax', execMods ),
-			new vscode.Task( kindLib, scope, 'Library', 'BlitzMax', execLib )
+			new vscode.Task( kindConsole, scope, 'Console Application', name, execConsole ),
+			new vscode.Task( kindGui, scope, 'Gui Application', name, execGui ),
+			new vscode.Task( kindMods, scope, 'Module', name, execMods ),
+			new vscode.Task( kindLib, scope, 'Shared Library', name, execLib )
 		]
 	}
 	
 	resolveTask(task: vscode.Task, token?: vscode.CancellationToken): vscode.ProviderResult<vscode.Task> {
 		
 		vscode.window.showInformationMessage( "A TASK WAS RESOLVED?! Please report this to Hezkore" )
-		
 		return undefined
 	}
 }
 
+async function setWorkspaceSourceFile( file:string ){
+	
+	if (!file){ return }
+	
+	await vscode.workspace.getConfiguration('blitzmax').update( 'sourceFile', file, undefined )
+	vscode.window.showInformationMessage( file + ' has been set as the workspace source file.' )
+}
+
+function currentBmx():string{
+	
+	let fileType:string = '.bmx'
+	let noFileMsg:string = 'No ' + fileType + ' file open.'
+	let notFileMsg:string = 'This is not a ' + fileType + ' file'
+	
+	let textEditor = vscode.window.activeTextEditor
+	if (!textEditor) {
+		
+		vscode.window.showErrorMessage(noFileMsg)
+		return ''
+	}
+	
+	let document = textEditor.document
+	if (!document) {
+		
+		vscode.window.showErrorMessage(noFileMsg)
+		return ''
+	}
+	
+	let filename = path.basename(document.fileName)
+	if (!filename.toLocaleLowerCase().endsWith(fileType)) {
+		
+		vscode.window.showErrorMessage(notFileMsg)
+		return ''
+	}
+	
+	return filename
+}
+
 async function bmxBuild( make:string, type:string = '' ){
+	
+	// Make sure we know where the BMK compiler is
+	await updateBmkPath( true )
 	
 	// make* type (makeapp, makemods, makelib)
 	let args:string = make
@@ -96,41 +137,31 @@ async function bmxBuild( make:string, type:string = '' ){
 	
 	// Actual file to build
 	let source:string | undefined = vscode.workspace.getConfiguration('blitzmax').get('sourceFile')
-	if (!source){
+	if (!source){ // No source file set, figure one out!
 		
-		let textEditor = vscode.window.activeTextEditor
-		if (!textEditor) {
+		// Is a source file even open?
+		let filename:string = currentBmx()
+		if (!filename){ return }		
+		
+		// Do we automatically set the workspace source file?
+		if (vscode.workspace.getConfiguration('blitzmax').get('autoSetSourceFile')){
 			
-			vscode.window.showErrorMessage('No .bmx file open.')
-			return	
-		}
-		
-		let document = textEditor.document
-		if (!document) {
+			// Yep, set the current file as the workspace source file
+			await setWorkspaceSourceFile( filename )
 			
-			vscode.window.showErrorMessage('No .bmx file open.')
-			return
-		}
-		
-		let filename = path.basename(document.fileName)
-		if (!filename.toLocaleLowerCase().endsWith(".bmx")) {
+			// Update our source
+			source = vscode.workspace.getConfiguration('blitzmax').get('sourceFile')
+		}else{
 			
-			vscode.window.showErrorMessage('No .bmx file open.')
-			return
+			// Nope, use current file for now
+			source = filename
 		}
-		
-		// Update source
-		await vscode.workspace.getConfiguration('blitzmax').update( 'sourceFile', filename, undefined )
-		source = vscode.workspace.getConfiguration('blitzmax').get('sourceFile')
-		
-		await channel.appendLine( source + ' has been set as the main source file' )
-		await channel.show(true)
 	}
 	args += ' ' + source
 	
 	// Create a tmp task to execute
 	let exec: vscode.ShellExecution = new vscode.ShellExecution( bmkPath + ' ' + args )
-	let kind: vscode.TaskDefinition = { type: 'bmx' }
+	let kind: BmxTaskDefinition = { type: 'bmx' }
 	let task: vscode.Task = new vscode.Task( kind, vscode.TaskScope.Workspace, 'BlitzMax', 'Internal BlitzMax', exec, '$blitzmax')
 	
 	// Setup the task to function a bit like MaxIDE
@@ -149,32 +180,47 @@ async function bmxBuild( make:string, type:string = '' ){
 	vscode.tasks.executeTask( task )
 }
 
-function checkBmxPath(): boolean{
+interface BmxTaskDefinition extends vscode.TaskDefinition {
+	
+	make?: string
+}
+
+async function updateBmkPath( askToSet:boolean ){
 	
 	// Fetch the BlitzMax path
-	let bmxPath:string | undefined = vscode.workspace.getConfiguration('blitzmax').get('bmxPath')
+	let bmxPath:string | undefined = await vscode.workspace.getConfiguration('blitzmax').get('bmxPath')
 	if (bmxPath) {
 		
 		// Figure out the BMK (compiler) path
 		bmkPath = path.join(bmxPath,'bin')
 		bmkPath = path.join(bmkPath,'bmk')
-		return true
+		return
 	}
 	
 	// Notify that the path is not set and offer to set it
-	/*
-	const errorOption = await vscode.window.showErrorMessage("BlitzMax path not set in plugin configuration.", "Configure")
-	
-	if (errorOption) {
+	const opt = await vscode.window.showErrorMessage("BlitzMax path not set in extension configuration.", "Set Path")
+	if (opt) {
 		
-		vscode.commands.executeCommand("workbench.action.openSettings", "@ext:hezkore.blitzmax")
+		//vscode.commands.executeCommand("workbench.action.openSettings", "@ext:hezkore.blitzmax")
+		
+		const folderOpt: vscode.OpenDialogOptions = {
+			canSelectMany: false,
+			canSelectFolders: true,
+			canSelectFiles: false,
+			openLabel: 'Select'
+		}
+		
+		vscode.window.showOpenDialog( folderOpt ).then(fileUri => {
+			
+			if (fileUri && fileUri[0]) {
+				
+				vscode.workspace.getConfiguration('blitzmax').update('bmxPath', fileUri[0].fsPath, true)
+				vscode.window.showInformationMessage( "BlitzMax path set" )
+			}
+		})
 	}
-	*/
 	
-	vscode.window.showErrorMessage("BlitzMax path not set in plugin configuration.")
-	vscode.commands.executeCommand("workbench.action.openSettings", "@ext:hezkore.blitzmax")
-	
-	return false
+	return
 }
 
 export function deactivate(): void {
