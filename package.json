@@ -30,6 +30,7 @@
 		"onCommand:blitzmax.buildGui",
 		"onCommand:blitzmax.buildMods",
 		"onCommand:blitzmax.buildLib",
+		"onCommand:blitzmax.quickBuild",
 		"onCommand:blitzmax.setSourceFile",
 		"onCommand:workbench.action.tasks.runTask"
 	],
@@ -46,6 +47,11 @@
 				}
 			}
 		],
+		"keybindings": [{
+			"command": "blitzmax.quickBuild",
+			"key": "f5",
+			"when": "editorLangId == blitzmax"
+		}],
 		"commands": [
 			{
 				"command": "blitzmax.buildConsole",
@@ -70,6 +76,11 @@
 			{
 				"command": "blitzmax.setSourceFile",
 				"title": "Set current document as workspace source file",
+				"category": "BlitzMax"
+			},
+			{
+				"command": "blitzmax.quickBuild",
+				"title": "Quickly Build Debug Console application",
 				"category": "BlitzMax"
 			}
 		],

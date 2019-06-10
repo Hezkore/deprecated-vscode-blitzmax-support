@@ -2,7 +2,6 @@
 
 import * as vscode from 'vscode'
 import * as path from 'path'
-import * as fs from 'fs'
 
 let bmkPath: string
 let bmxPath:string | undefined
@@ -41,6 +40,13 @@ export function activate(context: vscode.ExtensionContext): void {
 		vscode.commands.registerCommand('blitzmax.setSourceFile', () => {
 			
 			setWorkspaceSourceFile( currentBmx() )
+		})
+	)
+	
+	context.subscriptions.push(
+		vscode.commands.registerCommand('blitzmax.quickBuild', () => {
+			
+			bmxBuild('makeapp', 'console', true, '-quick')
 		})
 	)
 	
@@ -122,10 +128,11 @@ function currentBmx():string{
 	return filename
 }
 
-async function bmxBuild( make:string, type:string = '' ){
+async function bmxBuild( make:string, type:string = '', forceDebug:boolean = false, extraArgs:string = '' ){
 	
 	// Make sure we know where the BMK compiler is
 	await updateBmkPath( true )
+	if (!bmkPath){ return }
 	
 	// make* type (makeapp, makemods, makelib)
 	let args:string = make
@@ -146,8 +153,17 @@ async function bmxBuild( make:string, type:string = '' ){
 	args += execute ? ' -x' : ''
 	
 	// Debug or Release
-	let debug:string | undefined = vscode.workspace.getConfiguration('blitzmax').get('debug')
-	args += debug ? ' -d' : ' -r'
+	if (forceDebug){
+		
+		args += ' -d'
+	}else{
+		
+		let debug:string | undefined = vscode.workspace.getConfiguration('blitzmax').get('debug')
+		args += debug ? ' -d' : ' -r'
+	}
+	
+	// Any extra args
+	args += extraArgs ? ' ' + extraArgs : ''
 	
 	// Actual file to build
 	let source:string | undefined = vscode.workspace.getConfiguration('blitzmax').get('sourceFile')
