@@ -2,36 +2,38 @@
 
 import * as vscode from 'vscode'
 import * as path from 'path'
+import * as fs from 'fs'
 
 let bmkPath: string
+let bmxPath:string | undefined
 
 export function activate(context: vscode.ExtensionContext): void {
 	
 	context.subscriptions.push(
 		vscode.commands.registerCommand('blitzmax.buildConsole', () => {
 			
-			bmxBuild( "makeapp", "console" )
+			bmxBuild('makeapp', 'console')
 		})
 	)
 	
 	context.subscriptions.push(
 		vscode.commands.registerCommand('blitzmax.buildGui', () => {
 			
-			bmxBuild( "makeapp", "gui" )
+			bmxBuild('makeapp', 'gui')
 		})
 	)
 	
 	context.subscriptions.push(
 		vscode.commands.registerCommand('blitzmax.buildMods', () => {
 			
-			bmxBuild( "makemods" )
+			bmxBuild('makemods')
 		})
 	)
 	
 	context.subscriptions.push(
 		vscode.commands.registerCommand('blitzmax.buildLib', () => {
 			
-			bmxBuild( "makelib" )
+			bmxBuild('makelib')
 		})
 	)
 	
@@ -200,12 +202,11 @@ interface BmxTaskDefinition extends vscode.TaskDefinition {
 async function updateBmkPath( askToSet:boolean ){
 	
 	// Fetch the BlitzMax path
-	let bmxPath:string | undefined = await vscode.workspace.getConfiguration('blitzmax').get('bmxPath')
+	bmxPath = await vscode.workspace.getConfiguration('blitzmax').get('bmxPath')
 	if (bmxPath) {
 		
 		// Figure out the BMK (compiler) path
-		bmkPath = path.join(bmxPath,'bin')
-		bmkPath = path.join(bmkPath,'bmk')
+		bmkPath = path.join( bmxPath, 'bin', 'bmk' )
 		return
 	}
 	
