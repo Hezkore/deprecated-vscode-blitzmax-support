@@ -41,8 +41,14 @@
 				"properties": {
 					"make": {
 						"type": "string",
-						"description": "Can either be 'console', 'gui', 'mods' or 'lib'.",
-						"default": "console"
+						"description": "What to build as.",
+						"default": "console",
+						"enum": [
+							"console",
+							"gui",
+							"mods",
+							"lib"
+						]
 					}
 				}
 			}
@@ -125,20 +131,26 @@
 					"default": "",
 					"description": "Specifies the output file."
 				},
-				"blitzmax.debug": {
-					"type": "boolean",
-					"default": true,
-					"description": "Set to false for release build. (change in your workspace settings)"
+				"blitzmax.version": {
+					"type": "string",
+					"description": "Build release or debug version. (change in your workspace settings)",
+					"enum": [
+						"debug",
+						"release"
+					]
 				},
 				"blitzmax.threaded": {
 					"type": "boolean",
 					"default": true,
 					"description": "Builds multithreaded version. (change in your workspace settings)"
 				},
-				"blitzmax.warn": {
-					"type": "boolean",
-					"default": true,
-					"description": "Warns about function argument casting issues rather than error. (NG only)"
+				"blitzmax.funcArgCasting": {
+					"type": "string",
+					"description": "How to handle function argument casting issues. (NG only)",
+					"enum": [
+						"warn",
+						"error"
+					]
 				},
 				"blitzmax.execute": {
 					"type": "boolean",

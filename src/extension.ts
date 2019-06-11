@@ -133,13 +133,14 @@ async function bmxBuild( make:string, type:string = '', forceDebug:boolean = fal
 	// Make sure we know where the BMK compiler is
 	await updateBmkPath( true )
 	if (!bmkPath){ return }
-	
+
 	// make* type (makeapp, makemods, makelib)
 	let args:string = make
 	args += type ? ' -t ' + type : ''
 	
 	// Warn about NG stuff
-	args += vscode.workspace.getConfiguration('blitzmax').get('warn') ? ' -w' : ''
+	let funcArgCasting = vscode.workspace.getConfiguration('blitzmax').get('funcArgCasting')
+	if (funcArgCasting == 'warn'){ args += ' -w' }
 	
 	// Build threaded
 	args += vscode.workspace.getConfiguration('blitzmax').get('threaded') ? ' -h' : ''
@@ -158,8 +159,8 @@ async function bmxBuild( make:string, type:string = '', forceDebug:boolean = fal
 		args += ' -d'
 	}else{
 		
-		let debug:string | undefined = vscode.workspace.getConfiguration('blitzmax').get('debug')
-		args += debug ? ' -d' : ' -r'
+		let version = vscode.workspace.getConfiguration('blitzmax').get('version')
+		if (version == 'release'){ args += ' -r' }else{ args += ' -d' }
 	}
 	
 	// Any extra args
@@ -178,9 +179,11 @@ async function bmxBuild( make:string, type:string = '', forceDebug:boolean = fal
 			
 			// Yep, set the current file as the workspace source file
 			await setWorkspaceSourceFile( filename )
+			//setWorkspaceSourceFile( filename )
 			
 			// Update our source
 			source = vscode.workspace.getConfiguration('blitzmax').get('sourceFile')
+			//source = filename
 		}else{
 			
 			// Nope, use current file for now
