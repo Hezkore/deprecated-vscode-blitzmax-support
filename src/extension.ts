@@ -44,6 +44,13 @@ export function activate(context: vscode.ExtensionContext): void {
 	)
 	
 	context.subscriptions.push(
+		vscode.commands.registerCommand('blitzmax.setSourceFileMenu', context => {
+			
+			setWorkspaceSourceFile( context.fsPath )
+		})
+	)
+	
+	context.subscriptions.push(
 		vscode.commands.registerCommand('blitzmax.quickBuild', () => {
 			
 			bmxBuild('makeapp', 'console', true, '-quick')

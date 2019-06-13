@@ -35,9 +35,22 @@
 		"onCommand:blitzmax.buildLib",
 		"onCommand:blitzmax.quickBuild",
 		"onCommand:blitzmax.setSourceFile",
+		"onCommand:blitzmax.setSourceFileMenu",
 		"onCommand:workbench.action.tasks.runTask"
 	],
 	"contributes": {
+		"menus": {
+			"explorer/context": [{
+				"when": "resourceLangId == blitzmax",
+				"command": "blitzmax.setSourceFileMenu",
+				"group": "1_modification"
+			}],
+			"editor/title/context": [{
+				"when": "resourceLangId == blitzmax",
+				"command": "blitzmax.setSourceFileMenu",
+				"group": "0"
+			}]
+		},
 		"taskDefinitions": [
 			{
 				"type": "bmx",
@@ -59,7 +72,7 @@
 		"keybindings": [{
 			"command": "blitzmax.quickBuild",
 			"key": "f5",
-			"when": "editorLangId == blitzmax"
+			"when": "resourceLangId == blitzmax"
 		}],
 		"commands": [
 			{
@@ -85,6 +98,11 @@
 			{
 				"command": "blitzmax.setSourceFile",
 				"title": "Set current document as workspace source file",
+				"category": "BlitzMax"
+			},
+			{
+				"command": "blitzmax.setSourceFileMenu",
+				"title": "Set as workspace source file",
 				"category": "BlitzMax"
 			},
 			{
