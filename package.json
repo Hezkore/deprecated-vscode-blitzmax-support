@@ -34,12 +34,24 @@
 		"onCommand:blitzmax.buildMods",
 		"onCommand:blitzmax.buildLib",
 		"onCommand:blitzmax.quickBuild",
+		"onCommand:blitzmax.build",
 		"onCommand:blitzmax.setSourceFile",
 		"onCommand:blitzmax.setSourceFileMenu",
 		"onCommand:workbench.action.tasks.runTask"
 	],
 	"contributes": {
 		"menus": {
+			"editor/title": [
+				{
+					"when": "resourceLangId == blitzmax",
+					"command": "blitzmax.build",
+					"group": "navigation@1"
+				},
+				{
+					"when": "resourceLangId == blitzmax",
+					"command": "blitzmax.quickBuild",
+					"group": "navigation@0"
+				}],
 			"explorer/context": [{
 				"when": "resourceLangId == blitzmax",
 				"command": "blitzmax.setSourceFileMenu",
@@ -106,9 +118,22 @@
 				"category": "BlitzMax"
 			},
 			{
+				"command": "blitzmax.build",
+				"title": "Build application",
+				"category": "BlitzMax",
+				"icon": {
+                    "light": "media/build_light.svg",
+                    "dark": "media/build_dark.svg"
+				}
+			},
+			{
 				"command": "blitzmax.quickBuild",
-				"title": "Quickly Build Debug Console application",
-				"category": "BlitzMax"
+				"title": "Quickly build a debug console application",
+				"category": "BlitzMax",
+				"icon": {
+                    "light": "media/build_run_light.svg",
+                    "dark": "media/build_run_dark.svg"
+				}
 			}
 		],
 		"languages": [

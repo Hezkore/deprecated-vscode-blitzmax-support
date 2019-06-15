@@ -2,11 +2,13 @@
 
 import * as vscode from 'vscode'
 import * as path from 'path'
+import { BmxTaskProvider } from './BmxTaskProvider'
 
 let bmkPath: string
 let bmxPath:string | undefined
 
 export function activate(context: vscode.ExtensionContext): void {
+	
 	
 	context.subscriptions.push(
 		vscode.commands.registerCommand('blitzmax.buildConsole', () => {
@@ -58,43 +60,16 @@ export function activate(context: vscode.ExtensionContext): void {
 	)
 	
 	context.subscriptions.push(
+		vscode.commands.registerCommand('blitzmax.build', () => {
+			
+			vscode.commands.executeCommand( 'workbench.action.tasks.build' )
+		})
+	)
+	
+	context.subscriptions.push(
 		
 		vscode.tasks.registerTaskProvider( "bmx", new BmxTaskProvider() )
 	)
-}
-
-class BmxTaskProvider implements vscode.TaskProvider {
-	
-	provideTasks(token?: vscode.CancellationToken): vscode.ProviderResult<vscode.Task[]> {
-		
-		let scope: vscode.TaskScope = vscode.TaskScope.Workspace
-		let name:string = 'BlitzMax'
-		
-		let execConsole: vscode.ProcessExecution = new vscode.ProcessExecution( '${command:blitzmax.buildConsole}' )
-		let kindConsole: BmxTaskDefinition = { type: 'bmx', make: 'console' }
-		
-		let execGui: vscode.ProcessExecution = new vscode.ProcessExecution( '${command:blitzmax.buildGui}' )
-		let kindGui: BmxTaskDefinition = { type: 'bmx', make: 'gui' }
-		
-		let execMods: vscode.ProcessExecution = new vscode.ProcessExecution( '${command:blitzmax.buildMods}' )
-		let kindMods: BmxTaskDefinition = { type: 'bmx', make: 'mods' }
-		
-		let execLib: vscode.ProcessExecution = new vscode.ProcessExecution( '${command:blitzmax.buildLib}' )
-		let kindLib: BmxTaskDefinition = { type: 'bmx', make: 'lib' }
-		
-		return [
-			new vscode.Task( kindConsole, scope, 'Console Application', name, execConsole ),
-			new vscode.Task( kindGui, scope, 'Gui Application', name, execGui ),
-			new vscode.Task( kindMods, scope, 'Module', name, execMods ),
-			new vscode.Task( kindLib, scope, 'Shared Library', name, execLib )
-		]
-	}
-	
-	resolveTask(task: vscode.Task, token?: vscode.CancellationToken): vscode.ProviderResult<vscode.Task> {
-		
-		vscode.window.showInformationMessage( "A TASK WAS RESOLVED?! Please report this to Hezkore" )
-		return undefined
-	}
 }
 
 async function setWorkspaceSourceFile( file:string ){
@@ -220,7 +195,7 @@ async function bmxBuild( make:string, type:string = '', forceDebug:boolean = fal
 	vscode.tasks.executeTask( task )
 }
 
-interface BmxTaskDefinition extends vscode.TaskDefinition {
+export interface BmxTaskDefinition extends vscode.TaskDefinition {
 	
 	make?: string
 }
