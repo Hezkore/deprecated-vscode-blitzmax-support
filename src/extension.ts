@@ -115,38 +115,44 @@ async function bmxBuild( make:string, type:string = '', forceDebug:boolean = fal
 	// Make sure we know where the BMK compiler is
 	await updateBmkPath( true )
 	if (!bmkPath){ return }
-
+	
 	// make* type (makeapp, makemods, makelib)
-	let args:string = make
-	args += type ? ' -t ' + type : ''
+	let args:string[] = [ make ]
+	if (type){
+		args.push( '-t' )
+		args.push( type )
+	}
 	
 	// Warn about NG stuff
 	let funcArgCasting = vscode.workspace.getConfiguration('blitzmax').get('funcArgCasting')
-	if (funcArgCasting == 'warn'){ args += ' -w' }
+	if (funcArgCasting == 'warn'){ args.push( '-w' ) }
 	
 	// Build threaded
-	args += vscode.workspace.getConfiguration('blitzmax').get('threaded') ? ' -h' : ''
+	args.push( vscode.workspace.getConfiguration('blitzmax').get('threaded') ? '-h' : '' )
 	
 	// Build output
 	let output:string | undefined = vscode.workspace.getConfiguration('blitzmax').get('buildOut')
-	args += output ? ' -o ' + output : ''
+	if (output){
+		args.push( '-o' )
+		args.push( output )
+	}
 	
 	// Execute after build
 	let execute:string | undefined = vscode.workspace.getConfiguration('blitzmax').get('execute')
-	args += execute ? ' -x' : ''
+	args.push( execute ? '-x' : '' )
 	
 	// Debug or Release
 	if (forceDebug){
 		
-		args += ' -d'
+		args.push( '-d' )
 	}else{
 		
 		let version = vscode.workspace.getConfiguration('blitzmax').get('version')
-		if (version == 'release'){ args += ' -r' }else{ args += ' -d' }
+		if (version == 'release'){ args.push( '-r' ) }else{ args.push( '-d' ) }
 	}
 	
 	// Any extra args
-	args += extraArgs ? ' ' + extraArgs : ''
+	args.push( extraArgs ? extraArgs : '' )
 	
 	// Actual file to build
 	let source:string | undefined = vscode.workspace.getConfiguration('blitzmax').get('sourceFile')
@@ -172,10 +178,11 @@ async function bmxBuild( make:string, type:string = '', forceDebug:boolean = fal
 			source = filename
 		}
 	}
-	args += ' ' + source
+	if (!source){ return }
+	args.push( source )
 	
 	// Create a tmp task to execute
-	let exec: vscode.ShellExecution = new vscode.ShellExecution( bmkPath + ' ' + args )
+	let exec: vscode.ShellExecution = new vscode.ShellExecution( bmkPath, args )
 	let kind: BmxTaskDefinition = { type: 'bmx' }
 	let task: vscode.Task = new vscode.Task( kind, vscode.TaskScope.Workspace, 'BlitzMax', 'Internal BlitzMax', exec, '$blitzmax')
 	
