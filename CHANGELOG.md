@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.4.1
+* Spaces in path now works correctly.
+
 ## Version 1.4.0
 * Added editor buttons for quick build and task build.
 
