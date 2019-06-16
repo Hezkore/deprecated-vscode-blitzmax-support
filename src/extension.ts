@@ -2,7 +2,7 @@
 
 import * as vscode from 'vscode'
 import * as path from 'path'
-import { BmxTaskProvider } from './BmxTaskProvider'
+import { BmxTaskProvider } from './taskProvider'
 
 let bmkPath: string
 let bmxPath:string | undefined
