@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.4.2
+* Made snippets less annyoing.
+
 ## Version 1.4.1
 * Spaces in path now works correctly.
 
