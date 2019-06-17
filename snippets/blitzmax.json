@@ -90,21 +90,27 @@
 	},
 	
 	"If" : {
-		"prefix" : "If Then",
+		"prefix" : "If",
 		"body" : [ "If ${1:Expression} Then", "\t", "\t$0", "EndIf" ],
 		"description" : "If Then Block"
 	},
 	
-	"IfElse" : {
-		"prefix" : "If Then Else",
-		"body" : [ "If ${1:Expression} Then", "\t", "\t$2", "Else", "\t", "\t$0", "EndIf" ],
-		"description" : "If Then Else Block"
+	"Then" : {
+		"prefix" : "Then",
+		"body" : [ "Then", "\t", "\t$0", "EndIf" ],
+		"description" : "Then Block"
 	},
 	
-	"IfElseIf" : {
-		"prefix" : "If Then ElseIf",
-		"body" : [ "If ${1:Expression} Then", "\t", "\t$2", "ElseIf ${3:Expression}", "\t", "\t$0", "EndIf" ],
-		"description" : "If Then ElseIf Block"
+	"ThenElse" : {
+		"prefix" : "Then Else",
+		"body" : [ "Then", "\t", "\t$1", "Else", "\t", "\t$0", "EndIf" ],
+		"description" : "Then Else Block"
+	},
+	
+	"ThenElseIf" : {
+		"prefix" : "Then ElseIf",
+		"body" : [ "Then", "\t", "\t$1", "ElseIf ${2:Expression}", "\t", "\t$0", "EndIf" ],
+		"description" : "Then ElseIf Block"
 	},
 	
 	"Conditional Compiling" : {
