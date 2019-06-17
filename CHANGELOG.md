@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.4.3
+* Fixed an issue with workspace sub-folder .bmx compiling.
+
 ## Version 1.4.2
 * Made snippets less annyoing.
 

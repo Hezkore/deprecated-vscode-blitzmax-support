@@ -100,10 +100,10 @@ function currentBmx():string{
 		return ''
 	}
 	
-	let filename = path.basename(document.fileName)
-	if (!filename.toLocaleLowerCase().endsWith(fileType)) {
+	let filename = document.fileName
+	if ( !filename.toLowerCase().endsWith( fileType ))  {
 		
-		vscode.window.showErrorMessage(notFileMsg)
+		vscode.window.showErrorMessage( notFileMsg )
 		return ''
 	}
 	
@@ -180,6 +180,8 @@ async function bmxBuild( make:string, type:string = '', forceDebug:boolean = fal
 	}
 	if (!source){ return }
 	args.push( source )
+	
+	console.log( args )
 	
 	// Create a tmp task to execute
 	let exec: vscode.ShellExecution = new vscode.ShellExecution( bmkPath, args )
