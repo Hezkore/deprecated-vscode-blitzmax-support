@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.4.4
+* BlitzMax Legacy and NG detection. Should fix some compile issues.
+
 ## Version 1.4.3
 * Fixed an issue with workspace sub-folder .bmx compiling.
 

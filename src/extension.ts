@@ -2,10 +2,13 @@
 
 import * as vscode from 'vscode'
 import * as path from 'path'
+import * as process from 'child_process'
 import { BmxTaskProvider } from './taskProvider'
 
 let bmkPath: string
 let bmxPath:string | undefined
+let bccPath:string | undefined
+let bmxNg:boolean
 
 export function activate(context: vscode.ExtensionContext): void {
 	
@@ -55,7 +58,7 @@ export function activate(context: vscode.ExtensionContext): void {
 	context.subscriptions.push(
 		vscode.commands.registerCommand('blitzmax.quickBuild', () => {
 			
-			bmxBuild('makeapp', 'console', true, '-quick')
+			bmxBuild('makeapp', 'console', true, true )
 		})
 	)
 	
@@ -110,7 +113,7 @@ function currentBmx():string{
 	return filename
 }
 
-async function bmxBuild( make:string, type:string = '', forceDebug:boolean = false, extraArgs:string = '' ){
+async function bmxBuild( make:string, type:string = '', forceDebug:boolean = false, quick:boolean = false ){
 	
 	// Make sure we know where the BMK compiler is
 	await updateBmkPath( true )
@@ -124,8 +127,11 @@ async function bmxBuild( make:string, type:string = '', forceDebug:boolean = fal
 	}
 	
 	// Warn about NG stuff
-	let funcArgCasting = vscode.workspace.getConfiguration('blitzmax').get('funcArgCasting')
-	if (funcArgCasting == 'warn'){ args.push( '-w' ) }
+	if (bmxNg) {
+		
+		let funcArgCasting = vscode.workspace.getConfiguration('blitzmax').get('funcArgCasting')
+		if (funcArgCasting == 'warn'){ args.push( '-w' ) }
+	}
 	
 	// Build threaded
 	args.push( vscode.workspace.getConfiguration('blitzmax').get('threaded') ? '-h' : '' )
@@ -151,8 +157,11 @@ async function bmxBuild( make:string, type:string = '', forceDebug:boolean = fal
 		if (version == 'release'){ args.push( '-r' ) }else{ args.push( '-d' ) }
 	}
 	
-	// Any extra args
-	args.push( extraArgs ? extraArgs : '' )
+	// Do a quick build
+	if (bmxNg && quick) {
+		
+		args.push( '-quick' )
+	}
 	
 	// Actual file to build
 	let source:string | undefined = vscode.workspace.getConfiguration('blitzmax').get('sourceFile')
@@ -181,7 +190,7 @@ async function bmxBuild( make:string, type:string = '', forceDebug:boolean = fal
 	if (!source){ return }
 	args.push( source )
 	
-	console.log( args )
+	//console.log( args )
 	
 	// Create a tmp task to execute
 	let exec: vscode.ShellExecution = new vscode.ShellExecution( bmkPath, args )
@@ -209,14 +218,71 @@ export interface BmxTaskDefinition extends vscode.TaskDefinition {
 	make?: string
 }
 
-async function updateBmkPath( askToSet:boolean ){
+function exec(command: string, options: process.ExecOptions): Promise<{ stdout: string; stderr: string }> {
 	
+	return new Promise<{ stdout: string; stderr: string }>((resolve, reject) => {
+		
+		process.exec(command, options, (error, stdout, stderr) => {
+			
+			if (error) {
+				
+				reject({ error, stdout, stderr })
+			}
+			
+			resolve({ stdout, stderr })
+		})
+	})
+}
+
+async function testNg() {
+	
+	bmxNg = false
+	
+	if (!bccPath) { return }
+	
+	try {
+		let { stdout, stderr } = await exec( bccPath, { cwd: vscode.workspace.rootPath } )
+		
+		if ( stderr && stderr.length > 0 ) {
+			
+			bmkPath = ''
+			vscode.window.showErrorMessage( "BMK Error:" + stderr )
+		}
+		
+		if ( stdout ) {
+			
+			if ( !stdout.toLowerCase().startsWith( 'blitzmax release version' ) ) {
+				
+				//console.log( "is NG" )
+				bmxNg = true
+			} else {
+				
+				//console.log( "is Legacy" )
+			}
+		}
+	} catch ( err ) {
+		
+		bmkPath = ''
+		
+		let msg:string = err
+		if ( err.stderr ) { msg = err.stderr }
+		if ( err.stdout ) { msg = err.stdout }
+		
+		vscode.window.showErrorMessage( "Error executing BMK: " + msg )
+	}
+}
+
+async function updateBmkPath( askToSet:boolean ){
+	 
 	// Fetch the BlitzMax path
 	bmxPath = await vscode.workspace.getConfiguration('blitzmax').get('bmxPath')
 	if (bmxPath) {
 		
-		// Figure out the BMK (compiler) path
+		// Figure out the BMK (compiler) path and BCC
 		bmkPath = path.join( bmxPath, 'bin', 'bmk' )
+		bccPath = path.join( bmxPath, 'bin', 'bcc' )
+		await testNg()
+		
 		return
 	}
 	
