@@ -1,9 +1,7 @@
 {
-	"information_for_contributors" : [ "Bloop!" ],
 	"version" : "",
 	"name" : "BlitzMax",
 	"scopeName" : "source.bmx",
-	"comment" : "I modified this!",
 	"patterns" : [
 		{
 			"match" : "\\n",
@@ -189,7 +187,7 @@
 			"name" : "support.class.collection.bmx"
 		},
 		{
-			"match" : "(?i:\\b(OnEnd|End|Throw|Pi|SizeOf|Assert|TNullMethodException|TNullFunctionException|TNullObjectException|TArrayBoundsException|TRuntimeException)\\b)",
+			"match" : "(?i:\\b(OnEnd|End|Throw|Pi|Assert|TNullMethodException|TNullFunctionException|TNullObjectException|TArrayBoundsException|TRuntimeException)\\b)",
 			"name" : "support.function.event.bmx"
 		},
 		{
@@ -197,7 +195,7 @@
 			"name" : "support.type.bmx"
 		},
 		{
-			"match" : "(?i:\\b(Var|Ptr|Varptr|Asc|Chr|Len)\\b)",
+			"match" : "(?i:\\b(Var|Ptr|Varptr)\\b)",
 			"name" : "support.function.bmx"
 		},
 		{
@@ -205,7 +203,7 @@
 			"name" : "entity.name.function.bmx"
 		},
 		{
-			"match": "(%|#|!|\\$|\\*|\\-|\\+|\\:|~|=|!=|<=|>=|<>|<|>|&|\\||\\/|\\.|\\(|\\)|\\[|\\]|\\,)",
+			"match": "(%|#|!|\\$|\\*|\\-|\\+|\\;|\\:|~|=|!=|<=|>=|<>|<|>|&|\\||\\/|\\.|\\(|\\)|\\[|\\]|\\,)",
 			"name" : "keyword.operator.bmx"
 		}
 	]

@@ -48,7 +48,7 @@
 	},
 	
 	"Repeat" : {
-		"prefix" : "Repeat",
+	"prefix" : "Repeat",
 		"body" : [ "Repeat", "\t", "\t$0", "Until ${1:Expression}" ],
 		"description" : "Repeat Until Loop"
 	},
@@ -85,8 +85,14 @@
 	
 	"Select" : {
 		"prefix" : "Select",
-		"body" : [ "Select ${1:Identifier}", "\tCase ${2:Identifier}", "\t", "\t\t$3", "\tDefault", "\t", "\t\t$0", "EndSelect" ],
-		"description" : "Select Case"
+		"body" : [ "Select ${1:Identifier}", "\tCase ${2:Identifier}", "\t\t$3", "\t\t", "\tDefault", "\t\t$0", "\t\t", "EndSelect" ],
+		"description" : "Select/Case Block"
+	},
+	
+	"Case" : {
+		"prefix" : "Case",
+		"body" : [ "Case ${1:Expression}", "\t$0", "\t" ],
+		"description" : "Case"
 	},
 	
 	"If" : {
@@ -98,19 +104,19 @@
 	"Then" : {
 		"prefix" : "Then",
 		"body" : [ "Then", "\t", "\t$0", "EndIf" ],
-		"description" : "Then Block"
+		"description" : "Then"
 	},
 	
-	"ThenElse" : {
-		"prefix" : "Then Else",
-		"body" : [ "Then", "\t", "\t$1", "Else", "\t", "\t$0", "EndIf" ],
-		"description" : "Then Else Block"
+	"Else" : {
+		"prefix" : "Else",
+		"body" : [ "Else", "\t", "\t$0" ],
+		"description" : "Else"
 	},
 	
-	"ThenElseIf" : {
-		"prefix" : "Then ElseIf",
-		"body" : [ "Then", "\t", "\t$1", "ElseIf ${2:Expression}", "\t", "\t$0", "EndIf" ],
-		"description" : "Then ElseIf Block"
+	"ElseIf" : {
+		"prefix" : "ElseIf",
+		"body" : [ "ElseIf ${1:Expression}", "\t", "\t$0" ],
+		"description" : "ElseIf"
 	},
 	
 	"Conditional Compiling" : {
@@ -147,5 +153,17 @@
 		"prefix" : "Try",
 		"body" : [ "Try", "\t${1:ExTest()}", "Catch ex:Object", "\t${0:Print ex.ToString()}", "EndTry" ],
 		"description" : "Try Catch Block"
+	},
+	
+	"Exit" : {
+		"prefix" : "Exit",
+		"body" : [ "Exit" ],
+		"description" : "Exit Loop"
+	},
+	
+	"Continue" : {
+		"prefix" : "Continue",
+		"body" : [ "Continue" ],
+		"description" : "Continue Loop"
 	}
 }
