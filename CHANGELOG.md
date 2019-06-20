@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.4.5
+* Made snippets even less annyoing.
+
 ## Version 1.4.4
 * BlitzMax Legacy and NG detection. Should fix some compile issues.
 
