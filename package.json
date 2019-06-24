@@ -1,6 +1,6 @@
 {
 	"name": "blitzmax",
-	"version": "1.4.5",
+	"version": "1.4.6",
 	"displayName": "BlitzMax Language Basics",
 	"description": "Provides snippets, syntax highlighting, bracket matching and folding in BlitzMax files.",
 	"repository": {
@@ -29,15 +29,7 @@
 		"bmx"
 	],
 	"activationEvents": [
-        "onCommand:blitzmax.buildConsole",
-		"onCommand:blitzmax.buildGui",
-		"onCommand:blitzmax.buildMods",
-		"onCommand:blitzmax.buildLib",
-		"onCommand:blitzmax.quickBuild",
-		"onCommand:blitzmax.build",
-		"onCommand:blitzmax.setSourceFile",
-		"onCommand:blitzmax.setSourceFileMenu",
-		"onCommand:workbench.action.tasks.runTask"
+		"onLanguage:blitzmax"
 	],
 	"contributes": {
 		"menus": {
