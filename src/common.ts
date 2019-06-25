@@ -128,7 +128,7 @@ export async function bmxBuild( make:string, type:string = '', forceDebug:boolea
 	//console.log( args )
 	
 	// Create a tmp task to execute
-	let exec: vscode.ShellExecution = new vscode.ShellExecution( 'bmk', args, { env: { 'path': binPath } } )
+	let exec: vscode.ShellExecution = new vscode.ShellExecution( 'bmk', args, { env: { 'PATH': binPath } } )
 	let kind: BmxTaskDefinition = { type: 'bmx' }
 	let task: vscode.Task = new vscode.Task( kind, vscode.TaskScope.Workspace, 'BlitzMax', 'Internal BlitzMax', exec, '$blitzmax' )
 	
@@ -170,7 +170,7 @@ async function testNg() {
 	if ( !binPath ) { return }
 	
 	try {
-		let { stdout, stderr } = await exec( 'bcc', { env: { 'path': binPath } } )
+		let { stdout, stderr } = await exec( 'bcc', { env: { 'PATH': binPath } } )
 		
 		if ( stderr && stderr.length > 0 ) {
 			

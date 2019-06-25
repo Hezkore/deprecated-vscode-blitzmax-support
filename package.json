@@ -43,17 +43,22 @@
 					"when": "resourceLangId == blitzmax",
 					"command": "blitzmax.quickBuild",
 					"group": "navigation@0"
-				}],
-			"explorer/context": [{
-				"when": "resourceLangId == blitzmax",
-				"command": "blitzmax.setSourceFileMenu",
-				"group": "1_modification"
-			}],
-			"editor/title/context": [{
-				"when": "resourceLangId == blitzmax",
-				"command": "blitzmax.setSourceFileMenu",
-				"group": "0"
-			}]
+				}
+			],
+			"explorer/context": [
+				{
+					"when": "resourceLangId == blitzmax",
+					"command": "blitzmax.setSourceFileMenu",
+					"group": "1_modification"
+				}
+			],
+			"editor/title/context": [
+				{
+					"when": "resourceLangId == blitzmax",
+					"command": "blitzmax.setSourceFileMenu",
+					"group": "0"
+				}
+			]
 		},
 		"taskDefinitions": [
 			{
@@ -73,11 +78,13 @@
 				}
 			}
 		],
-		"keybindings": [{
-			"command": "blitzmax.quickBuild",
-			"key": "f5",
-			"when": "resourceLangId == blitzmax"
-		}],
+		"keybindings": [
+			{
+				"command": "blitzmax.quickBuild",
+				"key": "f5",
+				"when": "resourceLangId == blitzmax"
+			}
+		],
 		"commands": [
 			{
 				"command": "blitzmax.buildConsole",
@@ -114,8 +121,8 @@
 				"title": "Build application",
 				"category": "BlitzMax",
 				"icon": {
-                    "light": "media/build_light.svg",
-                    "dark": "media/build_dark.svg"
+					"light": "media/build_light.svg",
+					"dark": "media/build_dark.svg"
 				}
 			},
 			{
@@ -123,8 +130,8 @@
 				"title": "Quickly build a debug console application",
 				"category": "BlitzMax",
 				"icon": {
-                    "light": "media/build_run_light.svg",
-                    "dark": "media/build_run_dark.svg"
+					"light": "media/build_run_light.svg",
+					"dark": "media/build_run_dark.svg"
 				}
 			}
 		],
