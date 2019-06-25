@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.4.7
+* Fixed a 'path' typo.
+
 ## Version 1.4.6
 * Env 'path' is now used for BCC and BMK. Should fix some path issues.
 
