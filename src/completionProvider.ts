@@ -2,7 +2,7 @@
 
 import * as vscode from 'vscode'
 
-export let completionProvider1 = vscode.languages.registerCompletionItemProvider( 'blitzmax', {
+export class BmxCompletionProvider implements vscode.CompletionItemProvider {
 	
 	provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
 		
@@ -40,24 +40,4 @@ export let completionProvider1 = vscode.languages.registerCompletionItemProvider
 			commandCompletion
 		];
 	}
-});
-
-export let completionProvider2 = vscode.languages.registerCompletionItemProvider( 'blitzmax', {
-		provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
-
-			// get all text until the `position` and check if it reads `console.`
-			// and iff so then complete if `log`, `warn`, and `error`
-			let linePrefix = document.lineAt(position).text.substr(0, position.character);
-			if (!linePrefix.endsWith('console.')) {
-				return undefined;
-			}
-
-			return [
-				new vscode.CompletionItem('log', vscode.CompletionItemKind.Method),
-				new vscode.CompletionItem('warn', vscode.CompletionItemKind.Method),
-				new vscode.CompletionItem('error', vscode.CompletionItemKind.Method),
-			];
-		}
-	},
-	'.' // triggered whenever a '.' is being typed
-);
+}
