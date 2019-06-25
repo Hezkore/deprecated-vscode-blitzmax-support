@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version
+* Much better indentation rules.
+
 ## Version 1.4.7
 * Fixed a 'path' typo.
 
