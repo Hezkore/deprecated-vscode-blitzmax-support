@@ -12,7 +12,7 @@ Provides snippets, syntax highlighting, bracket matching and folding in [BlitzMa
 
 ## Changelog
 
-Read [CHANGELOG](https://github.com/Hezkore/vscode-blitzmax-support/blob/master/CHANGELOG.md).
+Read [CHANGELOG](https://marketplace.visualstudio.com/items/Hezkore.blitzmax/changelog).
 
 ## Contributing
 
