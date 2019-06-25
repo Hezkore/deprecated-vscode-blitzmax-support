@@ -4,13 +4,17 @@ import * as vscode from 'vscode'
 import { setWorkspaceSourceFile, currentBmx, bmxBuild } from './common'
 import { BmxTaskProvider } from './taskProvider'
 import { BmxFormatProvider } from './formatProvider'
+import { completionProvider1, completionProvider2 } from './completionProvider'
 
 export function activate( context: vscode.ExtensionContext): void {
 	
 	// Format provider
-	//context.subscriptions.push(
-	//	vscode.languages.registerDocumentFormattingEditProvider('blitzmax', new BmxFormatProvider )
-	//)
+	/*context.subscriptions.push(
+		vscode.languages.registerDocumentFormattingEditProvider('blitzmax', new BmxFormatProvider )
+	)*/
+	
+	// Completion item provider
+	//context.subscriptions.push( completionProvider1, completionProvider2 )
 	
 	// Task provider
 	context.subscriptions.push(
