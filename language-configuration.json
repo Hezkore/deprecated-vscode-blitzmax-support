@@ -28,7 +28,7 @@
 		}
 	},
 	"indentationRules" : {
-		"increaseIndentPattern" : "\\s*\\b(Function|Method|Type|Struct|Enum|For|If|Else|Else *?If|While|Repeat|Select|Case)\\b\\s*",
-		"decreaseIndentPattern" : "\\s*\\b(End *?Function|End *?Method|End *?Type|End *?Struct|End *?Enum|Next|End *?If|WEnd|Until|End *?Select)\\b\\s*"
+		"increaseIndentPattern" : "^\\s*([iI]f.*([tT]hen\\s*?$)|[fF]unction|[mM]ethod|[tT]ype|[sS]truct|[eE]num|[fF]or|[eE]lse|[eE]lse *?[iI]f|[wW]hile|[rR]epeat|[sS]elect|[cC]ase)",
+		"decreaseIndentPattern" : "^\\s*([eE]nd *?[fF]unction|[eE]nd *?[mM]ethod|[eE]lse|[eE]lse *?[iI]f|[eE]nd *?[tT]ype|[eE]nd *?[sS]truct|[eE]nd *?[eE]num|[nN]ext|[eE]nd *?[iI]f|[wW][eE]nd|[uU]ntil|[eE]nd *?[sS]elect)"
 	}
 }
