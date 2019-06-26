@@ -1,11 +1,12 @@
 'use strict'
 
 import * as vscode from 'vscode'
-import { setWorkspaceSourceFile, currentBmx, bmxBuild } from './common'
+import { setWorkspaceSourceFile, currentWord, currentBmx, bmxBuild } from './common'
 import { BmxTaskProvider } from './taskProvider'
 import { BmxFormatProvider } from './formatProvider'
 import { BmxCompletionProvider } from './completionProvider'
 import { BmxActionProvider } from './actionProvider'
+import { showHelp } from './helpProvider'
 
 export function activate( context: vscode.ExtensionContext): void {
 	
@@ -29,6 +30,17 @@ export function activate( context: vscode.ExtensionContext): void {
 	// Task provider
 	context.subscriptions.push(
 		vscode.tasks.registerTaskProvider( 'bmx', new BmxTaskProvider)
+	)
+	
+	// Commands
+	context.subscriptions.push(
+		vscode.commands.registerCommand( 'blitzmax.findHelp', () => {
+			
+			if (!currentBmx()) { return }
+			let word:string = currentWord()
+			if (!word) { return }
+			showHelp( word )
+		})
 	)
 	
 	context.subscriptions.push(

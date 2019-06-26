@@ -17,6 +17,23 @@ export async function setWorkspaceSourceFile( file:string ){
 	vscode.window.showInformationMessage( file + ' has been set as the workspace source file.' )
 }
 
+export function currentWord():string{
+	
+	const editor = vscode.window.activeTextEditor
+	if (!editor) { return '' }
+	
+	let cursorPosition = editor.selection.start
+	if (!cursorPosition) { return '' }
+	
+	let wordRange = editor.document.getWordRangeAtPosition(cursorPosition)
+	if (!wordRange) { return '' }
+	
+	let highlight = editor.document.getText(wordRange)
+	if (!highlight) { return '' }
+	
+	return highlight
+}
+
 export function currentBmx():string{
 	
 	let fileType:string = '.bmx'

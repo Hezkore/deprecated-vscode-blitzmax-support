@@ -29,13 +29,13 @@ export class BmxActionProvider implements vscode.CodeActionProvider {
 		];
 	}
 	
-	private isAtStartOfSmiley(document: vscode.TextDocument, range: vscode.Range) {
+	private isAtStartOfSmiley( document: vscode.TextDocument, range: vscode.Range ) {
 		const start = range.start;
 		const line = document.lineAt(start.line);
 		return line.text[start.character] === ':' && line.text[start.character + 1] === ')';
 	}
 	
-	private createFix(document: vscode.TextDocument, range: vscode.Range, emoji: string): vscode.CodeAction {
+	private createFix( document: vscode.TextDocument, range: vscode.Range, emoji: string ): vscode.CodeAction {
 		const fix = new vscode.CodeAction(`Convert to ${emoji}`, vscode.CodeActionKind.QuickFix);
 		fix.edit = new vscode.WorkspaceEdit();
 		fix.edit.replace(document.uri, new vscode.Range(range.start, range.start.translate(0, 2)), emoji);
