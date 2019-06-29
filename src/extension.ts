@@ -6,9 +6,11 @@ import { BmxTaskProvider } from './taskProvider'
 import { BmxFormatProvider } from './formatProvider'
 import { BmxCompletionProvider } from './completionProvider'
 import { BmxActionProvider } from './actionProvider'
-import { showHelp } from './helpProvider'
+import { showHelp, cacheHelp } from './helpProvider'
 
 export function activate( context: vscode.ExtensionContext): void {
+	
+	cacheHelp( false )
 	
 	// Format provider
 	/*context.subscriptions.push(

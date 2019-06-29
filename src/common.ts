@@ -3,11 +3,12 @@
 import * as vscode from 'vscode'
 import * as path from 'path'
 import * as process from 'child_process'
+import * as fs from 'fs'
 import { BmxTaskDefinition } from './taskProvider'
 
-let bmxPath:string | undefined
-let binPath:string | undefined
-let bmxNg:boolean
+export let bmxPath:string | undefined
+export let binPath:string | undefined
+export let bmxNg:boolean
 
 export async function setWorkspaceSourceFile( file:string ){
 	
@@ -181,6 +182,17 @@ function exec( command: string, options: process.ExecOptions ): Promise<{ stdout
 	})
 }
 
+export async function exists( file: string ): Promise<boolean> {
+	
+	return new Promise<boolean>( ( resolve, _reject ) => {
+		
+		fs.exists( file, ( value ) => {
+			
+			resolve( value )
+		})
+	})
+}
+
 async function testNg() {
 	
 	bmxNg = false
@@ -219,7 +231,7 @@ async function testNg() {
 	}
 }
 
-async function updateBinPath( askToSet:boolean ){
+export async function updateBinPath( askToSet:boolean ){
 	 
 	// Fetch the BlitzMax path
 	binPath = ''
