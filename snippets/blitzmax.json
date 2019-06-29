@@ -1,7 +1,7 @@
 {
 	"Rem Block" : {
 		"prefix" : "rem",
-		"body" : [ "rem $1", "$2", "endrem" ],
+		"body" : [ "rem $0", "endrem" ],
 		"description" : "Remember"
 	},
 	
@@ -83,12 +83,6 @@
 		"description" : "Select/Case Block"
 	},
 	
-	"Case" : {
-		"prefix" : "Case",
-		"body" : [ "Case ${1:Expression}", "\t$0", "\t" ],
-		"description" : "Case"
-	},
-	
 	"If" : {
 		"prefix" : "If",
 		"body" : [ "If ${1:Expression} Then", "\t", "\t$0", "EndIf" ],
@@ -99,18 +93,6 @@
 		"prefix" : "Then",
 		"body" : [ "Then", "\t", "\t$0", "EndIf" ],
 		"description" : "Then"
-	},
-	
-	"Else" : {
-		"prefix" : "Else",
-		"body" : [ "Else", "\t", "\t$0" ],
-		"description" : "Else"
-	},
-	
-	"ElseIf" : {
-		"prefix" : "ElseIf",
-		"body" : [ "ElseIf ${1:Expression}", "\t", "\t$0" ],
-		"description" : "ElseIf"
 	},
 	
 	"Conditional Compiling" : {
@@ -147,17 +129,5 @@
 		"prefix" : "Try",
 		"body" : [ "Try", "\t${1:ExTest()}", "Catch ex:Object", "\t${0:Print ex.ToString()}", "EndTry" ],
 		"description" : "Try Catch Block"
-	},
-	
-	"Exit" : {
-		"prefix" : "Exit",
-		"body" : [ "Exit" ],
-		"description" : "Exit Loop"
-	},
-	
-	"Continue" : {
-		"prefix" : "Continue",
-		"body" : [ "Continue" ],
-		"description" : "Continue Loop"
 	}
 }

@@ -17,11 +17,12 @@ export class BmxCompletionProvider implements vscode.CompletionItemProvider {
 			
 			item = helpStack[i]
 			
-			comp.push( new vscode.CompletionItem( item.name ) )
+			comp.push( new vscode.CompletionItem( item.name, item.kind ) )
 			comp[ comp.length - 1 ].insertText = new vscode.SnippetString( item.insert )
-			comp[ comp.length - 1 ].documentation = new vscode.MarkdownString( item.desc )
-			comp[ comp.length - 1 ].detail = item.infoName
-			comp[ comp.length - 1 ].kind = item.kind
+			comp[ comp.length - 1 ].detail = item.desc
+			comp[ comp.length - 1 ].documentation = new vscode.MarkdownString()
+			.appendCodeblock( item.infoName, 'blitzmax' )
+			.appendMarkdown( item.module )
 		}
 		
 		/*

@@ -308,13 +308,16 @@ export class HelpObject {
 				this.param[i].clean()
 				if (i>=this.param.length-1){ insIndex = 0 }
 				
-				this.insert += '${' + insIndex + ':' + this.param[i].name + ':' + this.param[i].type + '}'
+				this.insert += '${' + insIndex + ':' + this.param[i].name + ':' + this.param[i].type
 				this.infoName += this.param[i].name + ':' + this.param[i].type
 				
 				if (this.param[i].default){
 					
+					this.insert += ' = ' + this.param[i].default
 					this.infoName += ' = ' + this.param[i].default
 				}
+				
+				this.insert += '}'
 				
 				insIndex ++
 				if (i<this.param.length-1){
@@ -326,6 +329,25 @@ export class HelpObject {
 			
 			this.insert += ' )'
 			this.infoName += ' )'
+		}else{
+			// Make sure auto complete always inserts () for methods and functions
+			if (this.kind == vscode.CompletionItemKind.Method){
+				this.insert += '()'
+				this.infoName += '()'
+			}
+		}
+		
+		// Make sure auto complete always inserts = for variables
+		if (this.kind == vscode.CompletionItemKind.Variable){
+			
+			if (this.default){
+				
+				this.infoName += ' = ' + this.default
+				this.insert += ' = ${0:' + this.default + '}'
+			}else{
+				
+				this.insert += ' = ${0}'
+			}
 		}
 		
 		// Module (from docs path)
@@ -335,9 +357,9 @@ export class HelpObject {
 			if (modSearch.length > 1){
 				for(var i=0; i<modSearch.length; i++){
 					
-					if (modSearch[i].toLowerCase() == 'modules'){
+					if (modSearch[i].toLowerCase() == 'modules'||modSearch[i].toLowerCase() == 'mod'){
 						this.module = modSearch[i+1]
-						this.module += '.' + modSearch[i+2]
+						this.module += ' / ' + modSearch[i+2]
 						
 						//console.log( this.module )
 						break
@@ -351,9 +373,9 @@ export class HelpObject {
 		}
 		
 		// Debug
-		if (this.name.startsWith( "AppTitle" )||this.name.startsWith( "Print" )) {
+		/*if (this.name.startsWith( "CAIRO_SURFACE_TYPE_WIN32_PRINTING" )) {
 			console.log( this )
-		}
+		}*/
 	}
 }
 
