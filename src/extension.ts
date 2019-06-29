@@ -6,11 +6,9 @@ import { BmxTaskProvider } from './taskProvider'
 import { BmxFormatProvider } from './formatProvider'
 import { BmxCompletionProvider } from './completionProvider'
 import { BmxActionProvider } from './actionProvider'
-import { showHelp, cacheHelp } from './helpProvider'
+import { showHelp } from './helpProvider'
 
 export function activate( context: vscode.ExtensionContext): void {
-	
-	cacheHelp( false )
 	
 	// Format provider
 	/*context.subscriptions.push(
@@ -18,9 +16,9 @@ export function activate( context: vscode.ExtensionContext): void {
 	)*/
 	
 	// Completion item provider
-	/*context.subscriptions.push(
+	context.subscriptions.push(
 		vscode.languages.registerCompletionItemProvider('blitzmax', new BmxCompletionProvider )
-	)*/
+	)
 	
 	// Action provider
 	/*context.subscriptions.push(

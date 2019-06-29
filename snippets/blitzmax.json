@@ -5,12 +5,6 @@
 		"description" : "Remember"
 	},
 	
-	"Print" : {
-		"prefix" : "Print",
-		"body" : [ "Print( ${0:Text} )" ],
-		"description" : "Print Text"
-	},
-	
 	"Function" : {
 		"prefix" : "Function",
 		"body" : [ "Function ${1:Identifier}:${2:ReturnType}( ${3:Parameters} )", "\t", "\t$0", "EndFunction" ],
@@ -48,7 +42,7 @@
 	},
 	
 	"Repeat" : {
-	"prefix" : "Repeat",
+		"prefix" : "Repeat",
 		"body" : [ "Repeat", "\t", "\t$0", "Until ${1:Expression}" ],
 		"description" : "Repeat Until Loop"
 	},

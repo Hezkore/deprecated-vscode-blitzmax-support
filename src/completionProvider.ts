@@ -1,11 +1,27 @@
 'use strict'
 
 import * as vscode from 'vscode'
+import { cacheHelp, helpStack, HelpObject } from './helpProvider'
 
 export class BmxCompletionProvider implements vscode.CompletionItemProvider {
 	
 	provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
 		
+		cacheHelp( false )
+		
+		let comp:Array<vscode.CompletionItem> = []
+		let item:HelpObject
+		
+		for(var i=0; i<helpStack.length; i++){
+			
+			item = helpStack[i]
+			
+			comp.push( new vscode.CompletionItem( item.name ) )
+			comp[ comp.length - 1 ].insertText = new vscode.SnippetString( item.name )
+			comp[ comp.length - 1 ].documentation = new vscode.MarkdownString( item.desc )
+		}
+		
+		/*
 		// a simple completion item which inserts `Hello World!`
 		const simpleCompletion = new vscode.CompletionItem('Hello World!')
 		
@@ -31,13 +47,9 @@ export class BmxCompletionProvider implements vscode.CompletionItemProvider {
 		commandCompletion.kind = vscode.CompletionItemKind.Keyword;
 		commandCompletion.insertText = 'new ';
 		commandCompletion.command = { command: 'editor.action.triggerSuggest', title: 'Re-trigger completions...' };
+		*/
 		
 		// return all completion items as array
-		return [
-			simpleCompletion,
-			snippetCompletion,
-			commitCharacterCompletion,
-			commandCompletion
-		];
+		return comp
 	}
 }

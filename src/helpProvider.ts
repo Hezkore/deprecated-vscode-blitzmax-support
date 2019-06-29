@@ -6,7 +6,7 @@ import * as path from 'path'
 import * as fs from 'fs'
 
 let cacheState:number = 0
-let helpStack:Array<HelpObject> = []
+export let helpStack:Array<HelpObject> = []
 
 export async function showHelp( word:string ){
 	
@@ -69,7 +69,7 @@ export async function cacheHelp( showErrorInfo:boolean ){
 						}
 						helpStack.push( hObj )
 					}
-					console.log( hObj )
+					//console.log( hObj )
 					stage = HelpConstructStage.name
 					fill = ''
 					hObj = new HelpObject
@@ -202,7 +202,7 @@ enum HelpParamStage {
 	default = 2
 }
 
-class HelpObject {
+export class HelpObject {
 	name:string = ''
 	return:string = ''
 	param:Array<HelpParam> = []
