@@ -64,9 +64,7 @@ export async function cacheHelp( showErrorInfo:boolean ){
 				case '\n':
 					if (hObj && hObj.name) {
 						
-						for(var i2=0; i2<hObj.param.length; i2++){
-							hObj.param[i2].clean()
-						}
+						hObj.finish()
 						helpStack.push( hObj )
 					}
 					//console.log( hObj )
@@ -75,6 +73,37 @@ export async function cacheHelp( showErrorInfo:boolean ){
 					hObj = new HelpObject
 					//return
 					break
+				
+				case '%':
+				case '#':
+				case '!':
+				case '$':
+					let short:string = 'Unknown'
+					switch (char) {
+						case '%':
+							short = 'Int'
+							break
+						case '#':
+							short = 'Float'
+							break
+						case '!':
+							short = 'Double'
+							break
+						case '$':
+							short = 'String'
+							break
+					}
+					
+					if (stage == HelpConstructStage.name) {
+						hObj.return = short
+						fill = ''
+					}
+					
+					if (stage == HelpConstructStage.param) {
+						paramStage = HelpParamStage.default
+						hObj.param[ hObj.param.length - 1 ].type = short
+						fill = ''
+					}
 					
 				case ':':
 					if (fill.endsWith( ' ' )){
@@ -208,6 +237,22 @@ export class HelpObject {
 	param:Array<HelpParam> = []
 	desc:string = ''
 	docs:string = ''
+	insert:string = ''
+	
+	finish () {		
+		this.insert = this.name
+		if (this.return){ this.insert += ':' + this.return }
+		if (this.param.length > 0){
+			this.insert += '( '
+			for(var i=0; i<this.param.length; i++){
+				this.param[i].clean()
+				this.insert += this.param[i].name + ':' + this.param[i].type
+				//if (this.param[i].default !== ''){ this.insert += ' = ' + this.param[i].default }
+				if (i<this.param.length-1){ this.insert += ',' }
+			}
+			this.insert += ' )'
+		}
+	}
 }
 
 class HelpParam {
