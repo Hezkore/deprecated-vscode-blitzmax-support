@@ -19,6 +19,7 @@ export class BmxCompletionProvider implements vscode.CompletionItemProvider {
 			comp.push( new vscode.CompletionItem( item.name ) )
 			comp[ comp.length - 1 ].insertText = new vscode.SnippetString( item.insert )
 			comp[ comp.length - 1 ].documentation = new vscode.MarkdownString( item.desc )
+			comp[ comp.length - 1 ].detail = 'Module: ' + item.module + ' Docs: ' + item.docs
 		}
 		
 		/*

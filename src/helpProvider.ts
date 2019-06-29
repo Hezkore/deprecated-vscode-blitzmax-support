@@ -70,6 +70,7 @@ export async function cacheHelp( showErrorInfo:boolean = false, force:boolean = 
 					}
 					//console.log( hObj )
 					stage = HelpConstructStage.name
+					paramStage = HelpParamStage.name
 					fill = ''
 					hObj = new HelpObject
 					//return
@@ -234,25 +235,55 @@ enum HelpParamStage {
 
 export class HelpObject {
 	name:string = ''
+	prettyName:string = ''
 	return:string = ''
 	param:Array<HelpParam> = []
 	desc:string = ''
 	docs:string = ''
 	insert:string = ''
+	module:string = ''
 	
 	finish () {		
 		this.insert = this.name
 		if (this.return){ this.insert += ':' + this.return }
 		if (this.param.length > 0){
 			this.insert += '( '
+			let insIndex = 1
 			for(var i=0; i<this.param.length; i++){
 				this.param[i].clean()
-				this.insert += this.param[i].name + ':' + this.param[i].type
+				if (i>=this.param.length-1){ insIndex = 0 }
+				this.insert += '${' + insIndex + ':' + this.param[i].name + ':' + this.param[i].type + '}'
+				insIndex ++
 				//if (this.param[i].default !== ''){ this.insert += ' = ' + this.param[i].default }
-				if (i<this.param.length-1){ this.insert += ',' }
+				if (i<this.param.length-1){ this.insert += ', ' }
 			}
 			this.insert += ' )'
 		}
+		
+		if (this.docs.length > 1){
+			
+			let modSearch = this.docs.split( '/' )
+			if (modSearch.length > 1){
+				for(var i=0; i<modSearch.length; i++){
+					
+					if (modSearch[i].toLowerCase() == 'modules'){
+						this.module = modSearch[i+1]
+						
+						if (modSearch[i+1].toLowerCase() !== modSearch[i+2].toLowerCase()){
+							this.module += '/' + modSearch[i+2]
+						}
+						
+						//console.log( this.module )
+						break
+					}
+				}
+			}else{
+				console.log( this.name + ' belongs to no module? - ' + this.docs )
+			}
+		}else{
+			console.log( this.name + ' has no docs? - ' + this.docs )
+		}
+		
 	}
 }
 
