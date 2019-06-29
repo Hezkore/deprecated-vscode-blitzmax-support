@@ -1,13 +1,14 @@
 'use strict'
 
 import * as vscode from 'vscode'
-import { cacheHelp, helpStack, HelpObject } from './helpProvider'
+import { cacheHelp, helpStack, HelpObject, cacheState } from './helpProvider'
 
 export class BmxCompletionProvider implements vscode.CompletionItemProvider {
 	
 	provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
 		
 		cacheHelp()
+		if (cacheState < 2){ return }
 		
 		let comp:Array<vscode.CompletionItem> = []
 		let item:HelpObject
@@ -19,7 +20,8 @@ export class BmxCompletionProvider implements vscode.CompletionItemProvider {
 			comp.push( new vscode.CompletionItem( item.name ) )
 			comp[ comp.length - 1 ].insertText = new vscode.SnippetString( item.insert )
 			comp[ comp.length - 1 ].documentation = new vscode.MarkdownString( item.desc )
-			comp[ comp.length - 1 ].detail = 'Module: ' + item.module + ' Docs: ' + item.docs
+			comp[ comp.length - 1 ].detail = item.infoName
+			comp[ comp.length - 1 ].kind = item.kind
 		}
 		
 		/*

@@ -5,7 +5,7 @@ import { bmxPath, updateBinPath, exists } from './common'
 import * as path from 'path'
 import * as fs from 'fs'
 
-let cacheState:number = 0
+export let cacheState:number = 0
 export let helpStack:Array<HelpObject> = []
 
 export async function showHelp( word:string ){
@@ -110,8 +110,15 @@ export async function cacheHelp( showErrorInfo:boolean = false, force:boolean = 
 				case ':':
 					if (fill.endsWith( ' ' )){
 						
-						stage = HelpConstructStage.desc
-						fill = ''
+						if (stage !== HelpConstructStage.desc) {
+							
+							if (stage == HelpConstructStage.name){
+								hObj.kind = vscode.CompletionItemKind.Keyword
+							}
+							
+							stage = HelpConstructStage.desc
+							fill = ''
+						}
 					}else{
 						
 						if (stage == HelpConstructStage.name) {
@@ -135,6 +142,11 @@ export async function cacheHelp( showErrorInfo:boolean = false, force:boolean = 
 					break
 					
 				case '=':
+					if (stage == HelpConstructStage.name||stage == HelpConstructStage.return) {
+						hObj.kind = vscode.CompletionItemKind.Variable
+						stage = HelpConstructStage.default
+						fill = ''
+					}
 					if (stage == HelpConstructStage.param) {
 						paramStage = HelpParamStage.default
 						fill = ''
@@ -143,6 +155,11 @@ export async function cacheHelp( showErrorInfo:boolean = false, force:boolean = 
 					
 				case '|':
 					if (stage !== HelpConstructStage.docs) {
+						
+						if (stage == HelpConstructStage.name||stage == HelpConstructStage.return){
+							hObj.kind = vscode.CompletionItemKind.Value
+						}
+						
 						stage = HelpConstructStage.docs
 						fill = ''
 					}
@@ -150,6 +167,7 @@ export async function cacheHelp( showErrorInfo:boolean = false, force:boolean = 
 					
 				case '(':
 					if (stage < HelpConstructStage.param) {
+						hObj.kind = vscode.CompletionItemKind.Method
 						stage = HelpConstructStage.param
 						paramStage = HelpParamStage.name
 						fill = ''
@@ -174,6 +192,10 @@ export async function cacheHelp( showErrorInfo:boolean = false, force:boolean = 
 							
 						case HelpConstructStage.return:
 							hObj.return += char
+							break
+							
+						case HelpConstructStage.default:
+							hObj.default += char
 							break
 							
 						case HelpConstructStage.param:
@@ -221,9 +243,10 @@ enum HelpConstructStage {
 	
 	name = 0,
 	return = 1,
-	param = 2,
-	desc = 3,
-	docs = 4
+	default = 2,
+	param = 3,
+	desc = 4,
+	docs = 5
 }
 
 enum HelpParamStage {
@@ -235,31 +258,77 @@ enum HelpParamStage {
 
 export class HelpObject {
 	name:string = ''
-	prettyName:string = ''
+	infoName:string = ''
 	return:string = ''
+	default:string = ''
 	param:Array<HelpParam> = []
 	desc:string = ''
 	docs:string = ''
 	insert:string = ''
 	module:string = ''
+	kind?:vscode.CompletionItemKind
 	
-	finish () {		
-		this.insert = this.name
-		if (this.return){ this.insert += ':' + this.return }
-		if (this.param.length > 0){
-			this.insert += '( '
-			let insIndex = 1
-			for(var i=0; i<this.param.length; i++){
-				this.param[i].clean()
-				if (i>=this.param.length-1){ insIndex = 0 }
-				this.insert += '${' + insIndex + ':' + this.param[i].name + ':' + this.param[i].type + '}'
-				insIndex ++
-				//if (this.param[i].default !== ''){ this.insert += ' = ' + this.param[i].default }
-				if (i<this.param.length-1){ this.insert += ', ' }
-			}
-			this.insert += ' )'
+	// Method to clean up fields
+	finish () {
+		
+		// Cleanup
+		if (this.return.startsWith( ' ' )){ this.return = this.return.slice( 1 ) }
+		if (this.return.endsWith( ' ' )){ this.return = this.return.slice( 0 , -1 ) }
+		if (this.default.startsWith( ' ' )){ this.default = this.default.slice( 1 ) }
+		if (this.default.endsWith( ' ' )){ this.default = this.default.slice( 0 , -1 ) }
+		if (this.desc.startsWith( ' ' )){ this.desc = this.desc.slice( 1 ) }
+		if (this.desc.endsWith( ' ' )){ this.desc = this.desc.slice( 0 , -1 ) }
+		if (this.docs.startsWith( ' ' )){ this.docs = this.docs.slice( 1 ) }
+		if (this.docs.endsWith( ' ' )){ this.docs = this.docs.slice( 0 , -1 ) }
+		
+		// Some kind testing
+		if (this.name.toLowerCase().split( ' extends ' ).length > 1){
+			this.kind = vscode.CompletionItemKind.Interface
 		}
 		
+		// Setup informative name start
+		this.infoName = this.name
+		if (this.return){ this.infoName += ':' + this.return }
+		
+		// Setup auto-complete 'insert' field start
+		this.insert = this.name
+		
+		// Return - More annoying than anything
+		//if (this.return){ this.insert += ':' + this.return }
+		
+		// Params
+		if (this.param.length > 0){
+			
+			this.insert += '( '
+			this.infoName += '( '
+			
+			let insIndex = 1
+			for(var i=0; i<this.param.length; i++){
+				
+				this.param[i].clean()
+				if (i>=this.param.length-1){ insIndex = 0 }
+				
+				this.insert += '${' + insIndex + ':' + this.param[i].name + ':' + this.param[i].type + '}'
+				this.infoName += this.param[i].name + ':' + this.param[i].type
+				
+				if (this.param[i].default){
+					
+					this.infoName += ' = ' + this.param[i].default
+				}
+				
+				insIndex ++
+				if (i<this.param.length-1){
+					
+					this.insert += ', '
+					this.infoName += ', '
+				}
+			}
+			
+			this.insert += ' )'
+			this.infoName += ' )'
+		}
+		
+		// Module (from docs path)
 		if (this.docs.length > 1){
 			
 			let modSearch = this.docs.split( '/' )
@@ -268,10 +337,7 @@ export class HelpObject {
 					
 					if (modSearch[i].toLowerCase() == 'modules'){
 						this.module = modSearch[i+1]
-						
-						if (modSearch[i+1].toLowerCase() !== modSearch[i+2].toLowerCase()){
-							this.module += '/' + modSearch[i+2]
-						}
+						this.module += '.' + modSearch[i+2]
 						
 						//console.log( this.module )
 						break
@@ -284,6 +350,10 @@ export class HelpObject {
 			console.log( this.name + ' has no docs? - ' + this.docs )
 		}
 		
+		// Debug
+		if (this.name.startsWith( "AppTitle" )||this.name.startsWith( "Print" )) {
+			console.log( this )
+		}
 	}
 }
 
@@ -293,8 +363,12 @@ class HelpParam {
 	default:string = ''
 	
 	clean() {
+		if (this.name.startsWith( ' ' )){ this.name = this.name.slice( 1 ) }
+		if (this.name.endsWith( ' ' )){ this.name = this.name.slice( 0 , -1 ) }
 		if (this.type.startsWith( ' ' )){ this.type = this.type.slice( 1 ) }
 		if (this.type.endsWith( ' ' )){ this.type = this.type.slice( 0 , -1 ) }
 		if (!this.type){ this.type = 'Int' }
+		if (this.default.startsWith( ' ' )){ this.default = this.default.slice( 1 ) }
+		if (this.default.endsWith( ' ' )){ this.default = this.default.slice( 0 , -1 ) }
     }
 }
