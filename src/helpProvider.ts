@@ -18,8 +18,9 @@ export async function showHelp( word:string ){
 	//vscode.window.showInformationMessage( 'NO HELP FOR: ' + word )
 }
 
-export async function cacheHelp( showErrorInfo:boolean ){
+export async function cacheHelp( showErrorInfo:boolean = false, force:boolean = false ){
 	
+	if (cacheState > 0  && force == false){ return }
 	cacheState = 1
 	
 	await updateBinPath( true )
@@ -73,7 +74,7 @@ export async function cacheHelp( showErrorInfo:boolean ){
 					hObj = new HelpObject
 					//return
 					break
-				
+					
 				case '%':
 				case '#':
 				case '!':

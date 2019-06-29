@@ -7,7 +7,7 @@ export class BmxCompletionProvider implements vscode.CompletionItemProvider {
 	
 	provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
 		
-		cacheHelp( false )
+		cacheHelp()
 		
 		let comp:Array<vscode.CompletionItem> = []
 		let item:HelpObject
