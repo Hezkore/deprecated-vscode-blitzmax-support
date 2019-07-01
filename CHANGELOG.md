@@ -1,6 +1,7 @@
 # BlitzMax Language Basics CHANGELOG
 
-## Version
+## Version 1.5.0
+* Module commands are now added and auto-corrected.
 * Much better indentation rules.
 
 ## Version 1.4.7

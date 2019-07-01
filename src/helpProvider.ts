@@ -9,13 +9,33 @@ export let cacheState:number = 0
 export let helpStack:Array<HelpObject> = []
 
 export async function showHelp( word:string ){
-	
+	/*
+	if (!bmxPath){ vscode.window.showInformationMessage( 'Please set your BlitzMax path first' ) ;return }
 	if (cacheState <= 0){ await cacheHelp( true ) }
 	if (cacheState < 2 || !word){ return }
 	
-	console.log( 'Searching through ' + helpStack.length + ' help items' )
+	word = word.toLowerCase()
 	
-	//vscode.window.showInformationMessage( 'NO HELP FOR: ' + word )
+	let item:HelpObject
+	
+	for(var i=0; i<helpStack.length; i++){
+		
+		item = helpStack[i]
+		
+		if (item.searchName == word){
+			
+			let docsPath = path.join( bmxPath, item.docs ) 
+			
+			const panel = vscode.window.createWebviewPanel( 'bmxQuickHelp', "BlitzMax Quick Help", 
+			vscode.ViewColumn.One, { })
+			
+			const filePath: vscode.Uri = vscode.Uri.file( docsPath )
+			panel.webview.html = fs.readFileSync( filePath.fsPath, 'utf8' )
+			
+			return
+		}
+	}
+	*/
 }
 
 export async function cacheHelp( showErrorInfo:boolean = false, force:boolean = false ){
@@ -96,6 +116,11 @@ export async function cacheHelp( showErrorInfo:boolean = false, force:boolean = 
 							break
 					}
 					
+					if (char == '#' && stage == HelpConstructStage.docs) {
+						stage = HelpConstructStage.section
+						fill = ''
+					}
+					
 					if (stage == HelpConstructStage.name) {
 						hObj.return = short
 						fill = ''
@@ -106,6 +131,7 @@ export async function cacheHelp( showErrorInfo:boolean = false, force:boolean = 
 						hObj.param[ hObj.param.length - 1 ].type = short
 						fill = ''
 					}
+					break
 					
 				case ':':
 					if (fill.endsWith( ' ' )){
@@ -227,6 +253,10 @@ export async function cacheHelp( showErrorInfo:boolean = false, force:boolean = 
 							hObj.docs += char
 							break
 							
+						case HelpConstructStage.section:
+								hObj.docsSection += char
+								break
+							
 						default:
 							break
 					}
@@ -246,7 +276,8 @@ enum HelpConstructStage {
 	default = 2,
 	param = 3,
 	desc = 4,
-	docs = 5
+	docs = 5,
+	section = 6
 }
 
 enum HelpParamStage {
@@ -258,12 +289,14 @@ enum HelpParamStage {
 
 export class HelpObject {
 	name:string = ''
+	searchName:string = ''
 	infoName:string = ''
 	return:string = ''
 	default:string = ''
 	param:Array<HelpParam> = []
 	desc:string = ''
 	docs:string = ''
+	docsSection:string = ''
 	insert:string = ''
 	module:string = ''
 	kind?:vscode.CompletionItemKind
@@ -281,8 +314,10 @@ export class HelpObject {
 		if (this.docs.startsWith( ' ' )){ this.docs = this.docs.slice( 1 ) }
 		if (this.docs.endsWith( ' ' )){ this.docs = this.docs.slice( 0 , -1 ) }
 		
+		this.searchName = this.name.toLowerCase()
+		
 		// Some kind testing
-		if (this.name.toLowerCase().split( ' extends ' ).length > 1){
+		if (this.searchName.split( ' extends ' ).length > 1){
 			this.kind = vscode.CompletionItemKind.Interface
 		}
 		
@@ -373,7 +408,7 @@ export class HelpObject {
 		}
 		
 		// Debug
-		/*if (this.name.startsWith( "CAIRO_SURFACE_TYPE_WIN32_PRINTING" )) {
+		/*if (this.name.startsWith( "Print" )) {
 			console.log( this )
 		}*/
 	}
