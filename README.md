@@ -8,6 +8,7 @@ Provides snippets, syntax highlighting, bracket matching and folding in [BlitzMa
 * Syntax highlighting for [BlitzMax](https://nitrologic.itch.io/blitzmax/) and [BlitzMax NG](https://blitzmax.org/).
 * Build Tasks for Console, Gui, Lib and Mods.
 * Problem Matcher.
+* Auto-Complete.
 * Snippets.
 
 ## Changelog
