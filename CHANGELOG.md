@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.6.1
+* New 'auto' option for 'Architecture' and 'Platform'.
+
 ## Version 1.6.0
 * New 'Build Docs' command.
 * New 'Architecture' and 'Platform' build options.

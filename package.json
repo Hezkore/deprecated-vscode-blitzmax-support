@@ -1,6 +1,6 @@
 {
 	"name": "blitzmax",
-	"version": "1.6.0",
+	"version": "1.6.1",
 	"displayName": "BlitzMax Language Basics",
 	"description": "Provides snippets, syntax highlighting, bracket matching and folding in BlitzMax files.",
 	"repository": {
@@ -216,8 +216,9 @@
 					"type": "string",
 					"description": "Compiles to the specified architecture. (NG only)",
 					"enum": [
-						"x64",
+						"auto",
 						"x86",
+						"x64",
 						"arm",
 						"arm64",
 						"armv7",
@@ -230,6 +231,7 @@
 					"type": "string",
 					"description": "Cross-compiles to the specific target platform. (NG only)",
 					"enum": [
+						"auto",
 						"win32",
 						"linux",
 						"macos",

@@ -85,20 +85,20 @@ export async function bmxBuild( make:string, type:string = '', forceDebug:boolea
 	if (bmxNg){
 		// Architecture
 		let arch:string | undefined = vscode.workspace.getConfiguration( 'blitzmax' ).get( 'architecture' )
-		if (!arch){ arch = os.arch() }
+		if (!arch || arch.toLowerCase() == 'auto'){ arch = os.arch() }
 		args.push( '-g' )
 		args.push( arch )
 		
 		// Platform
 		let platform:string | undefined = vscode.workspace.getConfiguration( 'blitzmax' ).get( 'platform' )
-		if (!platform){ 
-			switch (os.platform()) {
+		if (!platform || arch.toLowerCase() == 'auto'){ 
+			switch (os.platform().toLowerCase()) {
 				case 'darwin':
 					platform = 'macos'
 					break
 					
 				default:
-					platform = os.platform()
+					platform = os.platform().toLowerCase()
 					break
 			}
 		}
