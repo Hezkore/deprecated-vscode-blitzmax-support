@@ -4,6 +4,7 @@ import * as vscode from 'vscode'
 import * as path from 'path'
 import * as process from 'child_process'
 import * as fs from 'fs'
+import * as os from 'os'
 import { BmxTaskDefinition } from './taskProvider'
 
 export let bmxPath:string | undefined
@@ -72,17 +73,44 @@ export async function bmxBuild( make:string, type:string = '', forceDebug:boolea
 	if ( !binPath ){ return }
 	
 	// make* type (makeapp, makemods, makelib)
+	make = make.toLowerCase()
 	let args:string[] = [ make ]
-	if ( type ){
+	
+	// App type (makeapp only)
+	if (make == 'makeapp' && type){
 		args.push( '-t' )
 		args.push( type )
 	}
 	
-	// Warn about NG stuff
-	if ( bmxNg ){
+	if (bmxNg){
+		// Architecture
+		let arch:string | undefined = vscode.workspace.getConfiguration( 'blitzmax' ).get( 'architecture' )
+		if (!arch){ arch = os.arch() }
+		args.push( '-g' )
+		args.push( arch )
 		
+		// Platform
+		let platform:string | undefined = vscode.workspace.getConfiguration( 'blitzmax' ).get( 'platform' )
+		if (!platform){ 
+			switch (os.platform()) {
+				case 'darwin':
+					platform = 'macos'
+					break
+					
+				default:
+					platform = os.platform()
+					break
+			}
+		}
+		args.push( '-l' )
+		args.push( platform )
+		
+		// Warn about NG stuff
 		let funcArgCasting = vscode.workspace.getConfiguration( 'blitzmax' ).get( 'funcArgCasting' )
 		if ( funcArgCasting == 'warn' ){ args.push( '-w' ) }
+		
+		// Do a quick build
+		if (quick){ args.push( '-quick' ) }
 	}
 	
 	// Build threaded
@@ -90,7 +118,7 @@ export async function bmxBuild( make:string, type:string = '', forceDebug:boolea
 	
 	// Build output
 	let output:string | undefined = vscode.workspace.getConfiguration( 'blitzmax' ).get( 'buildOut' )
-	if ( output ){
+	if (output){
 		args.push( '-o' )
 		args.push( output )
 	}
@@ -99,20 +127,14 @@ export async function bmxBuild( make:string, type:string = '', forceDebug:boolea
 	let execute:string | undefined = vscode.workspace.getConfiguration( 'blitzmax' ).get( 'execute' )
 	args.push( execute ? '-x' : '' )
 	
-	// Debug or Release
-	if ( forceDebug ){
+	// Debug or Release version
+	if (forceDebug){
 		
 		args.push( '-d' )
 	}else{
 		
 		let version = vscode.workspace.getConfiguration( 'blitzmax' ).get( 'version' )
 		if ( version == 'release' ){ args.push( '-r' ) }else{ args.push( '-d' ) }
-	}
-	
-	// Do a quick build
-	if ( bmxNg && quick ){
-		
-		args.push( '-quick' )
 	}
 	
 	// Actual file to build
@@ -143,7 +165,7 @@ export async function bmxBuild( make:string, type:string = '', forceDebug:boolea
 	args.push( source )
 	
 	//console.log( "NG: " + bmxNg )
-	//console.log( args )
+	console.log( args )
 	
 	// Create a tmp task to execute
 	let exec: vscode.ShellExecution = new vscode.ShellExecution( 'bmk', args, { env: { 'PATH': binPath } } )

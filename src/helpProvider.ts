@@ -1,7 +1,8 @@
 'use strict'
 
 import * as vscode from 'vscode'
-import { bmxPath, updateBinPath, exists } from './common'
+import { bmxPath, binPath, updateBinPath, exists } from './common'
+import { BmxTaskDefinition } from './taskProvider'
 import * as path from 'path'
 import * as fs from 'fs'
 
@@ -38,6 +39,33 @@ export async function showHelp( word:string ){
 	*/
 }
 
+export async function bmxBuildDocs(){
+	
+	// Make sure we know where the BMK compiler is
+	await updateBinPath( true )
+	if ( !binPath ){ return }
+	
+	// Create a tmp task to execute
+	let exec: vscode.ShellExecution = new vscode.ShellExecution( 'makedocs', [], { env: { 'PATH': binPath } } )
+	let kind: BmxTaskDefinition = { type: 'bmx' }
+	let task: vscode.Task = new vscode.Task( kind, vscode.TaskScope.Workspace, 'BlitzMax', 'Internal BlitzMax Docs', exec, '$blitzmax' )
+	
+	// Setup the task to function a bit like MaxIDE
+	task.presentationOptions.echo = false
+	task.presentationOptions.reveal = vscode.TaskRevealKind.Always
+	task.presentationOptions.focus = false
+	task.presentationOptions.panel = vscode.TaskPanelKind.Shared
+	task.presentationOptions.showReuseMessage = false
+	task.presentationOptions.clear = true
+	
+	// Some cleanup
+	task.definition = kind
+	task.group = vscode.TaskGroup.Build
+	
+	// EXECUTE!
+	vscode.tasks.executeTask( task )
+}
+
 export async function cacheHelp( showErrorInfo:boolean = false, force:boolean = false ){
 	
 	if (cacheState > 0  && force == false){ return }
@@ -71,6 +99,9 @@ export async function cacheHelp( showErrorInfo:boolean = false, force:boolean = 
 			cacheState = 0
 			return
 		}
+		
+		// Reset our stack
+		helpStack = []
 		
 		let fill:string = '' 
 		let stage = HelpConstructStage.name

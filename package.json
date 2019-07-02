@@ -1,6 +1,6 @@
 {
 	"name": "blitzmax",
-	"version": "1.5.0",
+	"version": "1.6.0",
 	"displayName": "BlitzMax Language Basics",
 	"description": "Provides snippets, syntax highlighting, bracket matching and folding in BlitzMax files.",
 	"repository": {
@@ -97,13 +97,18 @@
 				"category": "BlitzMax"
 			},
 			{
+				"command": "blitzmax.buildDocs",
+				"title": "Build Docs",
+				"category": "BlitzMax"
+			},
+			{
 				"command": "blitzmax.buildConsole",
-				"title": "Build Console application",
+				"title": "Build Console Application",
 				"category": "BlitzMax"
 			},
 			{
 				"command": "blitzmax.buildGui",
-				"title": "Build Gui application",
+				"title": "Build Gui Application",
 				"category": "BlitzMax"
 			},
 			{
@@ -113,7 +118,7 @@
 			},
 			{
 				"command": "blitzmax.buildLib",
-				"title": "Build Shared library",
+				"title": "Build Shared Library",
 				"category": "BlitzMax"
 			},
 			{
@@ -128,7 +133,7 @@
 			},
 			{
 				"command": "blitzmax.build",
-				"title": "Build application",
+				"title": "Build Application",
 				"category": "BlitzMax",
 				"icon": {
 					"light": "media/build_light.svg",
@@ -205,6 +210,33 @@
 					"enum": [
 						"warn",
 						"error"
+					]
+				},
+				"blitzmax.architecture": {
+					"type": "string",
+					"description": "Compiles to the specified architecture. (NG only)",
+					"enum": [
+						"x64",
+						"x86",
+						"arm",
+						"arm64",
+						"armv7",
+						"armeabi",
+						"armeabiv7a",
+						"arm64v8a"
+					]
+				},
+				"blitzmax.platform": {
+					"type": "string",
+					"description": "Cross-compiles to the specific target platform. (NG only)",
+					"enum": [
+						"win32",
+						"linux",
+						"macos",
+						"ios",
+						"android",
+						"raspberrypi",
+						"nx"
 					]
 				},
 				"blitzmax.execute": {

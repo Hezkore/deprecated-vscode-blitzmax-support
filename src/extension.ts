@@ -2,13 +2,11 @@
 
 import * as vscode from 'vscode'
 import { setWorkspaceSourceFile, currentWord, currentBmx, bmxBuild } from './common'
-import { BmxTaskProvider } from './taskProvider'
 import { BmxFormatProvider } from './formatProvider'
-import { BmxCompletionProvider } from './completionProvider'
 import { BmxActionProvider } from './actionProvider'
-import { showHelp, cacheHelp } from './helpProvider'
-import * as path from 'path'
-import * as fs from 'fs'
+import { BmxTaskProvider } from './taskProvider'
+import { BmxCompletionProvider } from './completionProvider'
+import { showHelp, cacheHelp, bmxBuildDocs } from './helpProvider'
 
 export function activate( context: vscode.ExtensionContext): void {
 	
@@ -16,6 +14,7 @@ export function activate( context: vscode.ExtensionContext): void {
 	/*context.subscriptions.push(
 		vscode.languages.registerDocumentFormattingEditProvider('blitzmax', new BmxFormatProvider )
 	)*/
+	
 	// Completion item provider
 	cacheHelp()
 	context.subscriptions.push(
@@ -42,6 +41,13 @@ export function activate( context: vscode.ExtensionContext): void {
 			let word:string = currentWord()
 			if (!word) { return }
 			showHelp( word )
+		})
+	)
+	
+	context.subscriptions.push(
+		vscode.commands.registerCommand( 'blitzmax.buildDocs', () => {
+			
+			bmxBuildDocs()
 		})
 	)
 	

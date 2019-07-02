@@ -1,5 +1,9 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.6.0
+* New 'Build Docs' command.
+* New 'Architecture' and 'Platform' build options.
+
 ## Version 1.5.0
 * Module commands are now added and auto-corrected.
 * Much better indentation rules.
