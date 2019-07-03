@@ -16,7 +16,7 @@ export async function setWorkspaceSourceFile( file:string ){
 	if (!file){ return }
 	
 	await vscode.workspace.getConfiguration( 'blitzmax' ).update( 'sourceFile', file, undefined )
-	vscode.window.showInformationMessage( file + ' has been set as the workspace source file.' )
+	vscode.window.showInformationMessage( file + ' has been set as the workspace source file' )
 }
 
 export function currentWord():string{
@@ -91,7 +91,7 @@ export async function bmxBuild( make:string, type:string = '', forceDebug:boolea
 		
 		// Platform
 		let platform:string | undefined = vscode.workspace.getConfiguration( 'blitzmax' ).get( 'platform' )
-		if (!platform || arch.toLowerCase() == 'auto'){ 
+		if (!platform || platform.toLowerCase() == 'auto'){ 
 			switch (os.platform().toLowerCase()) {
 				case 'darwin':
 					platform = 'macos'
@@ -268,7 +268,7 @@ export async function updateBinPath( askToSet:boolean ){
 	}
 	
 	// Notify that the path is not set and offer to set it
-	const opt = await vscode.window.showErrorMessage( 'BlitzMax path not set in extension configuration.', 'Set Path' )
+	const opt = await vscode.window.showErrorMessage( 'BlitzMax path not set in extension configuration', 'Set Path' )
 	if (opt) {
 		
 		const folderOpt: vscode.OpenDialogOptions = {

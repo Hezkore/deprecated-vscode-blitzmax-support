@@ -7,6 +7,7 @@ import * as path from 'path'
 import * as fs from 'fs'
 
 export let cacheState:number = 0
+export let askedRebuild:boolean = false
 export let helpStack:Array<HelpObject> = []
 
 export async function showHelp( word:string ){
@@ -51,11 +52,11 @@ export async function bmxBuildDocs(){
 	let task: vscode.Task = new vscode.Task( kind, vscode.TaskScope.Workspace, 'BlitzMax', 'Internal BlitzMax Docs', exec, '$blitzmax' )
 	
 	// Setup the task to function a bit like MaxIDE
-	task.presentationOptions.echo = false
+	task.presentationOptions.echo = true
 	task.presentationOptions.reveal = vscode.TaskRevealKind.Always
 	task.presentationOptions.focus = false
 	task.presentationOptions.panel = vscode.TaskPanelKind.Shared
-	task.presentationOptions.showReuseMessage = false
+	task.presentationOptions.showReuseMessage = true
 	task.presentationOptions.clear = true
 	
 	// Some cleanup
@@ -66,9 +67,9 @@ export async function bmxBuildDocs(){
 	vscode.tasks.executeTask( task )
 }
 
-export async function cacheHelp( showErrorInfo:boolean = false, force:boolean = false ){
+export async function cacheHelp( showErrorInfo:boolean = false, force:boolean = false, askRebuild:boolean = true ){
 	
-	if (cacheState > 0  && force == false){ return }
+	if (cacheState > 0 && force == false){ return }
 	cacheState = 1
 	
 	await updateBinPath( true )
@@ -85,8 +86,20 @@ export async function cacheHelp( showErrorInfo:boolean = false, force:boolean = 
 	
 	if (!await exists( docsPath )){
 		
-		if (showErrorInfo) {
-			vscode.window.showInformationMessage( 'Please rebuild docs first in MaxIDE' )
+		if (askRebuild){
+			
+			askedRebuild = true
+			
+			const opt = await vscode.window.showErrorMessage( 'BlitzMax documentation needs to be rebuilt', 'Rebuild' )
+			if (opt) {
+				
+				vscode.commands.executeCommand( 'blitzmax.buildDocs' )
+			}
+		}else{
+			
+			if (showErrorInfo){
+				vscode.window.showInformationMessage( 'Please rebuild docs first in MaxIDE' )
+			}
 		}
 		cacheState = 0
 		return

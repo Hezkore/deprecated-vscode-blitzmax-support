@@ -1,5 +1,9 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.6.2
+* Fixed 'Platform' parameter typo.
+* New dialog asking to rebuild docs.
+
 ## Version 1.6.1
 * New 'auto' option for 'Architecture' and 'Platform'.
 

@@ -1,13 +1,13 @@
 'use strict'
 
 import * as vscode from 'vscode'
-import { cacheHelp, helpStack, HelpObject, cacheState } from './helpProvider'
+import { cacheHelp, askedRebuild, helpStack, HelpObject, cacheState } from './helpProvider'
 
 export class BmxCompletionProvider implements vscode.CompletionItemProvider {
 	
 	provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
 		
-		cacheHelp()
+		cacheHelp( false, false, !askedRebuild )
 		if (cacheState < 2){ return }
 		
 		let comp:Array<vscode.CompletionItem> = []
