@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.6.4
+* Fixed a BCC typo.
+
 ## Version 1.6.3
 * Better help for setting BlitzMax path.
 * Folding is now always shown by default.
