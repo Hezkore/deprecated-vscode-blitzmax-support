@@ -248,7 +248,7 @@ async function testNg() {
 			binPath = ''
 			
 			bmxProblem = true
-			await askSetPath( 'BMK error: ' + stderr )
+			await askSetPath( 'BCC error: ' + stderr )
 		}
 		
 		if ( stdout ) {
@@ -271,7 +271,7 @@ async function testNg() {
 		if ( err.stdout ) { msg = err.stdout }
 		
 		bmxProblem = true
-		await askSetPath( 'Error executing BMK: ' + msg )
+		await askSetPath( 'Error executing BCC: ' + msg )
 	}
 }
 
