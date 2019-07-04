@@ -1,7 +1,7 @@
 'use strict'
 
 import * as vscode from 'vscode'
-import { bmxPath, binPath, updateBinPath, exists } from './common'
+import { bmxProblem, bmxPath, binPath, updateBinPath, exists } from './common'
 import { BmxTaskDefinition } from './taskProvider'
 import * as path from 'path'
 import * as fs from 'fs'
@@ -10,10 +10,13 @@ export let cacheState:number = 0
 export let askedRebuild:boolean = false
 export let helpStack:Array<HelpObject> = []
 
-export async function showHelp( word:string ){
-	/*
-	if (!bmxPath){ vscode.window.showInformationMessage( 'Please set your BlitzMax path first' ) ;return }
-	if (cacheState <= 0){ await cacheHelp( true ) }
+export async function showHelp( word:string, context: vscode.ExtensionContext ){
+	
+	if (bmxProblem){ return }
+	
+	await updateBinPath( true )
+	if (!bmxPath){ return }
+	if (cacheState <= 0){ await cacheHelp( true, false, true ) }
 	if (cacheState < 2 || !word){ return }
 	
 	word = word.toLowerCase()
@@ -26,21 +29,17 @@ export async function showHelp( word:string ){
 		
 		if (item.searchName == word){
 			
-			let docsPath = path.join( bmxPath, item.docs ) 
+			//let docsPath = path.join( bmxPath, item.docs ) 
 			
-			const panel = vscode.window.createWebviewPanel( 'bmxQuickHelp', "BlitzMax Quick Help", 
-			vscode.ViewColumn.One, { })
-			
-			const filePath: vscode.Uri = vscode.Uri.file( docsPath )
-			panel.webview.html = fs.readFileSync( filePath.fsPath, 'utf8' )
 			
 			return
 		}
 	}
-	*/
 }
 
 export async function bmxBuildDocs(){
+	
+	if (bmxProblem){ return }
 	
 	// Make sure we know where the BMK compiler is
 	await updateBinPath( true )
@@ -69,6 +68,8 @@ export async function bmxBuildDocs(){
 
 export async function cacheHelp( showErrorInfo:boolean = false, force:boolean = false, askRebuild:boolean = true ){
 	
+	if (bmxProblem){ return }
+	
 	if (cacheState > 0 && force == false){ return }
 	cacheState = 1
 	
@@ -82,7 +83,14 @@ export async function cacheHelp( showErrorInfo:boolean = false, force:boolean = 
 		return
 	}
 	
+	let docsSrcPath =  path.join( bmxPath, 'docs', 'src' )
 	let docsPath = path.join( bmxPath, 'docs', 'html', 'Modules', 'commands.txt' )
+	
+	if (!await exists( docsSrcPath )){
+		
+		cacheState = 0
+		return
+	}
 	
 	if (!await exists( docsPath )){
 		

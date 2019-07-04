@@ -9,7 +9,23 @@ import { BmxTaskDefinition } from './taskProvider'
 
 export let bmxPath:string | undefined
 export let binPath:string | undefined
+export let bmxProblem:boolean
 export let bmxNg:boolean
+
+export function startup( context:vscode.ExtensionContext ) {
+	
+	context.subscriptions.push(
+		vscode.workspace.onDidChangeConfiguration( event => {
+			
+			if ( event.affectsConfiguration( 'blitzmax.bmxPath' ) ){
+				
+				bmxPath = ''
+				binPath = ''
+				bmxProblem = false
+			}
+		})
+	)
+}
 
 export async function setWorkspaceSourceFile( file:string ){
 	
@@ -67,6 +83,8 @@ export function currentBmx():string{
 }
 
 export async function bmxBuild( make:string, type:string = '', forceDebug:boolean = false, quick:boolean = false ){
+	
+	if (bmxProblem){ return }
 	
 	// Make sure we know where the BMK compiler is
 	await updateBinPath( true )
@@ -217,6 +235,8 @@ export async function exists( file: string ): Promise<boolean> {
 
 async function testNg() {
 	
+	if (bmxProblem){ return }
+	
 	bmxNg = false
 	if ( !binPath ) { return }
 	
@@ -227,7 +247,8 @@ async function testNg() {
 			
 			binPath = ''
 			
-			vscode.window.showErrorMessage( 'BMK error: ' + stderr )
+			bmxProblem = true
+			await askSetPath( 'BMK error: ' + stderr )
 		}
 		
 		if ( stdout ) {
@@ -249,26 +270,14 @@ async function testNg() {
 		if ( err.stderr ) { msg = err.stderr }
 		if ( err.stdout ) { msg = err.stdout }
 		
-		vscode.window.showErrorMessage( 'Error executing BMK: ' + msg )
+		bmxProblem = true
+		await askSetPath( 'Error executing BMK: ' + msg )
 	}
 }
 
-export async function updateBinPath( askToSet:boolean ){
-	 
-	// Fetch the BlitzMax path
-	binPath = ''
-	bmxPath = await vscode.workspace.getConfiguration( 'blitzmax' ).get( 'bmxPath' )
-	if (bmxPath) {
-		
-		// Figure out the bin path
-		binPath = path.join( bmxPath, 'bin' )
-		await testNg()
-		
-		return
-	}
+export async function askSetPath( msg:string ){
 	
-	// Notify that the path is not set and offer to set it
-	const opt = await vscode.window.showErrorMessage( 'BlitzMax path not set in extension configuration', 'Set Path' )
+	const opt = await vscode.window.showErrorMessage( msg, 'Set Path' )
 	if (opt) {
 		
 		const folderOpt: vscode.OpenDialogOptions = {
@@ -282,6 +291,8 @@ export async function updateBinPath( askToSet:boolean ){
 			
 			if (fileUri && fileUri[0]) {
 				
+				bmxProblem = false
+				
 				await vscode.workspace.getConfiguration( 'blitzmax' ).update( 'bmxPath', fileUri[0].fsPath, true )
 				await updateBinPath( false )
 				
@@ -292,6 +303,27 @@ export async function updateBinPath( askToSet:boolean ){
 			}
 		})
 	}
+}
+
+
+export async function updateBinPath( askToSet:boolean ){
+	 
+	if (bmxProblem){ return }
+	
+	// Fetch the BlitzMax path
+	binPath = ''
+	bmxPath = await vscode.workspace.getConfiguration( 'blitzmax' ).get( 'bmxPath' )
+	if (bmxPath) {
+		
+		// Figure out the bin path
+		binPath = path.join( bmxPath, 'bin' )
+		await testNg()
+		
+		return
+	}
+	
+	// Notify that the path is not set and offer to set it
+	await askSetPath( 'BlitzMax path not set in extension configuration' )
 	
 	return
 }

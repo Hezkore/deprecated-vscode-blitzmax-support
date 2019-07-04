@@ -1,5 +1,9 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.6.3
+* Better help for setting BlitzMax path.
+* Folding is now always shown by default.
+
 ## Version 1.6.2
 * Fixed 'Platform' parameter typo.
 * New dialog asking to rebuild docs.

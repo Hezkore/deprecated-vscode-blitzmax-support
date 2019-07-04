@@ -1,14 +1,16 @@
 'use strict'
 
 import * as vscode from 'vscode'
-import { setWorkspaceSourceFile, currentWord, currentBmx, bmxBuild } from './common'
+import { setWorkspaceSourceFile, currentWord, currentBmx, bmxBuild, startup } from './common'
 import { BmxFormatProvider } from './formatProvider'
 import { BmxActionProvider } from './actionProvider'
 import { BmxTaskProvider } from './taskProvider'
 import { BmxCompletionProvider } from './completionProvider'
 import { showHelp, cacheHelp, bmxBuildDocs } from './helpProvider'
 
-export function activate( context: vscode.ExtensionContext): void {
+export function activate( context:vscode.ExtensionContext ): void {
+	
+	startup( context )
 	
 	// Format provider
 	/*context.subscriptions.push(
@@ -40,7 +42,7 @@ export function activate( context: vscode.ExtensionContext): void {
 			if (!currentBmx()) { return }
 			let word:string = currentWord()
 			if (!word) { return }
-			showHelp( word )
+			showHelp( word, context )
 		})
 	)
 	

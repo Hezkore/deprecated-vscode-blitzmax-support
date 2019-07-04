@@ -1,6 +1,6 @@
 {
 	"name": "blitzmax",
-	"version": "1.6.2",
+	"version": "1.6.3",
 	"displayName": "BlitzMax Language Basics",
 	"description": "Provides snippets, syntax highlighting, bracket matching and folding in BlitzMax files.",
 	"repository": {
@@ -169,7 +169,8 @@
 				"editor.snippetSuggestions": "top",
 				"editor.insertSpaces": false,
 				"editor.detectIndentation": false,
-				"editor.trimAutoWhitespace": false
+				"editor.trimAutoWhitespace": false,
+				"editor.showFoldingControls": "always"
 			}
 		},
 		"configuration": {
