@@ -549,6 +549,9 @@ export class HelpObject {
 								
 								line = line.slice( line.split( '<pre>' )[0].length + 5 )
 								this.docsExample = line
+							}else if (line == '</table>'){
+								
+								break
 							}
 						}else{
 							
