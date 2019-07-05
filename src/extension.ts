@@ -1,7 +1,7 @@
 'use strict'
 
 import * as vscode from 'vscode'
-import { setWorkspaceSourceFile, currentWord, currentWordAt, currentBmx, bmxBuild, startup } from './common'
+import { setWorkspaceSourceFile, currentWord, getWordAt, currentBmx, bmxBuild, startup } from './common'
 import { BmxFormatProvider } from './formatProvider'
 import { BmxActionProvider } from './actionProvider'
 import { BmxTaskProvider } from './taskProvider'
@@ -13,9 +13,9 @@ export function activate( context:vscode.ExtensionContext ): void {
 	startup( context )
 	
 	vscode.languages.registerHoverProvider( 'blitzmax' , {
-		provideHover( doc:vscode.TextDocument, position:vscode.Position ) {
+		async provideHover( doc:vscode.TextDocument, position:vscode.Position ) {
 			
-			return new vscode.Hover( getHelp( currentWordAt( doc, position ) ) )
+			return new vscode.Hover( await getHelp( getWordAt( doc, position ) ) )
 		}
 	})
 	

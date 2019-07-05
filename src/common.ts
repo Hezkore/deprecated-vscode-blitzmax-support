@@ -35,7 +35,7 @@ export async function setWorkspaceSourceFile( file:string ){
 	vscode.window.showInformationMessage( file + ' has been set as the workspace source file' )
 }
 
-export function currentWordAt( document:vscode.TextDocument, position:vscode.Position ):string{
+export function getWordAt( document:vscode.TextDocument, position:vscode.Position ):string{
 	
 	let wordRange = document.getWordRangeAtPosition(position)
 	if (!wordRange) { return '' }

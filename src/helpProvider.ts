@@ -10,9 +10,11 @@ export let cacheState:number = 0
 export let askedRebuild:boolean = false
 export let helpStack:Array<HelpObject> = []
 
-export function getHelp( word:string ):string{
+export async function getHelp( word:string ):Promise<string[]>{
 	
-	if (bmxProblem){ return '' }
+	if (bmxProblem){ return [] }
+	if (!word){ return [] }
+	if (cacheState < 2){ return [] }
 	
 	word = word.toLowerCase()
 	
@@ -24,14 +26,16 @@ export function getHelp( word:string ):string{
 		
 		if (item.searchName == word){
 			
-			//let docsPath = path.join( bmxPath, item.docs ) 
+			await item.getDocs()
 			
+			let desc = item.desc
+			desc += item.docsInfo ? '\n\n*'+item.docsInfo+'*' : ''
 			
-			return item.desc
+			return [item.docsName.toLowerCase() == word ? '': item.docsName, desc]
 		}
 	}
 	
-	return `No help for "${word}"`
+	return []
 }
 
 export async function showHelp( word:string, context: vscode.ExtensionContext ){
@@ -376,6 +380,10 @@ export class HelpObject {
 	insert:string = ''
 	module:string = ''
 	kind?:vscode.CompletionItemKind
+	hasScraped:boolean = false
+	docsName:string = ''
+	docsInfo:string = ''
+	docsExample:string = ''
 	
 	// Method to clean up fields
 	finish () {
@@ -489,6 +497,83 @@ export class HelpObject {
 		/*if (this.name.startsWith( "While" )) {
 			console.log( this )
 		}*/
+	}
+	
+	async getDocs(){
+		
+		if (bmxPath && !this.hasScraped){
+			
+			this.hasScraped = true
+			
+			const data = fs.readFileSync( path.join( bmxPath, this.docs ), 'utf8' ).toString()
+			
+			let line:string = ''
+			let foundName:boolean = false
+			let foundExample:boolean = false
+			
+			for(var i=0; i<data.length; i++){
+				const char = data.charAt( i )
+				if (!char){ continue }
+				
+				if (char == '\n'){
+					
+					// First we must find the name
+					if (!foundName){
+						
+						if (line.startsWith( '<a name="' )){
+							
+							if (line.slice( 9, -6 ) == this.name){
+								
+								foundName = true
+							}
+						}
+					}else{ // Now we find the information we want
+						
+						if (!foundExample){
+							
+							if (line.startsWith( '<tr><td class=doctop' )){
+								
+								line = line.slice( line.split( '>' )[1].length + 5, -10 )
+								this.docsName = line
+								this.docsName = this.docsName.replace( "<b>", "**" ).replace( "</b>", "**" )
+								this.docsName = this.docsName.replace( "<i>", "**" ).replace( "</i>", "**" )
+							}else if (line.includes( '>Information</td>' )){
+								
+								line = line.slice( line.split( 'docright>' )[0].length + 9 )
+								this.docsInfo = line
+								this.docsInfo = this.docsInfo.replace( "<b>", "**" ).replace( "</b>", "**" )
+								this.docsInfo = this.docsInfo.replace( "<i>", "**" ).replace( "</i>", "**" )
+							}else if (line.includes( '>Example</a></td>' )){
+								
+								foundExample = true
+								
+								line = line.slice( line.split( '<pre>' )[0].length + 5 )
+								this.docsExample = line
+							}
+						}else{
+							
+							if (line.endsWith( '</pre>' )){
+								
+								line = line.split( '</pre>' )[0]
+								this.docsExample += "\n"+line
+								
+								break
+							}else{
+								
+								this.docsExample += "\n"+line
+							}
+						}
+					}
+					
+					line = ''
+				}else{
+					
+					line += char
+				}
+			}
+		}
+		
+		return
 	}
 }
 
