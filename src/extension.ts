@@ -1,16 +1,23 @@
 'use strict'
 
 import * as vscode from 'vscode'
-import { setWorkspaceSourceFile, currentWord, currentBmx, bmxBuild, startup } from './common'
+import { setWorkspaceSourceFile, currentWord, currentWordAt, currentBmx, bmxBuild, startup } from './common'
 import { BmxFormatProvider } from './formatProvider'
 import { BmxActionProvider } from './actionProvider'
 import { BmxTaskProvider } from './taskProvider'
 import { BmxCompletionProvider } from './completionProvider'
-import { showHelp, cacheHelp, bmxBuildDocs } from './helpProvider'
+import { showHelp, getHelp, cacheHelp, bmxBuildDocs } from './helpProvider'
 
 export function activate( context:vscode.ExtensionContext ): void {
 	
 	startup( context )
+	
+	vscode.languages.registerHoverProvider( 'blitzmax' , {
+		provideHover( doc:vscode.TextDocument, position:vscode.Position ) {
+			
+			return new vscode.Hover( getHelp( currentWordAt( doc, position ) ) )
+		}
+	})
 	
 	// Format provider
 	/*context.subscriptions.push(
@@ -108,6 +115,7 @@ export function activate( context:vscode.ExtensionContext ): void {
 			vscode.commands.executeCommand( 'workbench.action.tasks.build' )
 		})
 	)
+	
 }
 
 export function deactivate(): void {

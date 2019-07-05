@@ -10,6 +10,30 @@ export let cacheState:number = 0
 export let askedRebuild:boolean = false
 export let helpStack:Array<HelpObject> = []
 
+export function getHelp( word:string ):string{
+	
+	if (bmxProblem){ return '' }
+	
+	word = word.toLowerCase()
+	
+	let item:HelpObject
+	
+	for(var i=0; i<helpStack.length; i++){
+		
+		item = helpStack[i]
+		
+		if (item.searchName == word){
+			
+			//let docsPath = path.join( bmxPath, item.docs ) 
+			
+			
+			return item.desc
+		}
+	}
+	
+	return `No help for "${word}"`
+}
+
 export async function showHelp( word:string, context: vscode.ExtensionContext ){
 	
 	if (bmxProblem){ return }
@@ -357,6 +381,8 @@ export class HelpObject {
 	finish () {
 		
 		// Cleanup
+		if (this.name.startsWith( ' ' )){ this.name = this.name.slice( 1 ) }
+		if (this.name.endsWith( ' ' )){ this.name = this.name.slice( 0 , -1 ) }
 		if (this.return.startsWith( ' ' )){ this.return = this.return.slice( 1 ) }
 		if (this.return.endsWith( ' ' )){ this.return = this.return.slice( 0 , -1 ) }
 		if (this.default.startsWith( ' ' )){ this.default = this.default.slice( 1 ) }
@@ -460,7 +486,7 @@ export class HelpObject {
 		}
 		
 		// Debug
-		/*if (this.name.startsWith( "Print" )) {
+		/*if (this.name.startsWith( "While" )) {
 			console.log( this )
 		}*/
 	}
