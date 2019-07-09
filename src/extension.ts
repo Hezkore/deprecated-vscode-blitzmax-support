@@ -6,18 +6,11 @@ import { BmxFormatProvider } from './formatProvider'
 import { BmxActionProvider } from './actionProvider'
 import { BmxTaskProvider } from './taskProvider'
 import { BmxCompletionProvider } from './completionProvider'
-import { showHelp, getHelp, cacheHelp, bmxBuildDocs } from './helpProvider'
+import { showHelp, getHelp, cacheHelp, bmxBuildDocs, HelpObject, helpStack } from './helpProvider'
 
 export function activate( context:vscode.ExtensionContext ): void {
 	
 	startup( context )
-	
-	vscode.languages.registerHoverProvider( 'blitzmax' , {
-		async provideHover( doc:vscode.TextDocument, position:vscode.Position ) {
-			
-			return new vscode.Hover( await getHelp( getWordAt( doc, position ) ) )
-		}
-	})
 	
 	// Format provider
 	/*context.subscriptions.push(
@@ -29,6 +22,33 @@ export function activate( context:vscode.ExtensionContext ): void {
 	context.subscriptions.push(
 		vscode.languages.registerCompletionItemProvider('blitzmax', new BmxCompletionProvider )
 	)
+	
+	// Hover provider
+	context.subscriptions.push( vscode.languages.registerHoverProvider( 'blitzmax' , {
+		async provideHover( doc:vscode.TextDocument, position:vscode.Position ) {
+			
+			const result = await getHelp( getWordAt( doc, position ) )
+			if (!result){ return }
+			
+			return new vscode.Hover( result )
+		}
+	}))
+	
+	// Help document content provider
+	context.subscriptions.push( vscode.workspace.registerTextDocumentContentProvider( 'bmx-help',
+		new class implements vscode.TextDocumentContentProvider {		
+			provideTextDocumentContent( uri: vscode.Uri ): string {
+				
+				let word: string =  uri.path.slice(
+					uri.path.split( '-' )[0].length + 2).toLowerCase()
+				let item:HelpObject | undefined = helpStack.get( word )
+				
+				if (item){ return item.docsExample }
+				
+				return 'No help for "' + word + '"'
+			}
+		}
+	))
 	
 	// Action provider
 	/*context.subscriptions.push(
@@ -49,7 +69,7 @@ export function activate( context:vscode.ExtensionContext ): void {
 			if (!currentBmx()) { return }
 			let word:string = currentWord()
 			if (!word) { return }
-			showHelp( word, context )
+			showHelp( word )
 		})
 	)
 	

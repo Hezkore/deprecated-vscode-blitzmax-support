@@ -8,37 +8,39 @@ import * as fs from 'fs'
 
 export let cacheState:number = 0
 export let askedRebuild:boolean = false
-export let helpStack:Array<HelpObject> = []
+export let helpStack:Map<string,HelpObject> = new Map()
 
-export async function getHelp( word:string ):Promise<string[]>{
+export async function getHelp( word:string ):Promise<vscode.MarkdownString | undefined>{
 	
-	if (bmxProblem){ return [] }
-	if (!word){ return [] }
-	if (cacheState < 2){ return [] }
+	if (bmxProblem){ return }
+	if (!word){ return }
+	if (cacheState < 2){ return }
 	
 	word = word.toLowerCase()
 	
-	let item:HelpObject
+	let item:HelpObject | undefined = await helpStack.get( word )
 	
-	for(var i=0; i<helpStack.length; i++){
+	if (item){
 		
-		item = helpStack[i]
+		await item.getDocs()
 		
-		if (item.searchName == word){
-			
-			await item.getDocs()
-			
-			let desc = item.desc
-			desc += item.docsInfo ? '\n\n*'+item.docsInfo+'*' : ''
-			
-			return [item.docsName.toLowerCase() == word ? '': item.docsName, desc]
+		let desc = new vscode.MarkdownString()
+		if (item.docsName.toLowerCase() != word){
+			desc.appendCodeblock( item.docsName )
 		}
+		desc.appendMarkdown( item.desc )
+		desc.appendMarkdown( '\n\n' + item.docsInfo )
+		
+		let uri = vscode.Uri.parse( 'bmx-help:BlitzMax Quick Help - ' + word )
+		desc.appendMarkdown( `\n\n[*Example*](${uri})` )
+		
+		return desc
 	}
 	
-	return []
+	return
 }
 
-export async function showHelp( word:string, context: vscode.ExtensionContext ){
+export async function showHelp( word:string ){
 	
 	if (bmxProblem){ return }
 	
@@ -49,19 +51,13 @@ export async function showHelp( word:string, context: vscode.ExtensionContext ){
 	
 	word = word.toLowerCase()
 	
-	let item:HelpObject
+	let item:HelpObject | undefined = await helpStack.get( word )
 	
-	for(var i=0; i<helpStack.length; i++){
+	if (item){ await item.getDocs()
 		
-		item = helpStack[i]
-		
-		if (item.searchName == word){
-			
-			//let docsPath = path.join( bmxPath, item.docs ) 
-			
-			
-			return
-		}
+		let uri = vscode.Uri.parse( 'bmx-help:BlitzMax Quick Help - ' + word )
+		let doc = await vscode.workspace.openTextDocument( uri )
+		await vscode.window.showTextDocument( doc, { preview: false } )
 	}
 }
 
@@ -150,7 +146,7 @@ export async function cacheHelp( showErrorInfo:boolean = false, force:boolean = 
 		}
 		
 		// Reset our stack
-		helpStack = []
+		helpStack.clear()
 		
 		let fill:string = '' 
 		let stage = HelpConstructStage.name
@@ -166,7 +162,7 @@ export async function cacheHelp( showErrorInfo:boolean = false, force:boolean = 
 					if (hObj && hObj.name) {
 						
 						hObj.finish()
-						helpStack.push( hObj )
+						helpStack.set( hObj.searchName, hObj )
 					}
 					//console.log( hObj )
 					stage = HelpConstructStage.name

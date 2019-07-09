@@ -13,9 +13,9 @@ export class BmxCompletionProvider implements vscode.CompletionItemProvider {
 		let comp:Array<vscode.CompletionItem> = []
 		let item:HelpObject
 		
-		for(var i=0; i<helpStack.length; i++){
+		helpStack.forEach((value: HelpObject, key: string) => {
 			
-			item = helpStack[i]
+			item = value
 			
 			comp.push( new vscode.CompletionItem( item.name, item.kind ) )
 			comp[ comp.length - 1 ].insertText = new vscode.SnippetString( item.insert )
@@ -23,7 +23,7 @@ export class BmxCompletionProvider implements vscode.CompletionItemProvider {
 			.appendCodeblock( item.infoName, 'blitzmax' )
 			.appendMarkdown( item.desc )
 			.appendMarkdown( '\r\r*' + item.module + '*' )
-		}
+		})
 		
 		return comp
 	}
