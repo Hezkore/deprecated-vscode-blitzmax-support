@@ -1,7 +1,7 @@
 'use strict'
 
 import * as vscode from 'vscode'
-import { bmxProblem, bmxPath, binPath, updateBinPath, exists } from './common'
+import { exists, BlitzMax } from './common'
 import { BmxTaskDefinition } from './taskProvider'
 import * as path from 'path'
 import * as fs from 'fs'
@@ -12,9 +12,9 @@ export let helpStack:Map<string,HelpObject> = new Map()
 
 export async function getHelp( word:string ):Promise<vscode.MarkdownString | undefined>{
 	
-	if (bmxProblem){ return }
-	if (!word){ return }
-	if (cacheState < 2){ return }
+	if (!BlitzMax.ready) return
+	if (!word) return 
+	if (cacheState < 2) return 
 	
 	word = word.toLowerCase()
 	
@@ -42,10 +42,8 @@ export async function getHelp( word:string ):Promise<vscode.MarkdownString | und
 
 export async function showHelp( word:string ){
 	
-	if (bmxProblem){ return }
+	if (!BlitzMax.ready) return
 	
-	await updateBinPath( true )
-	if (!bmxPath){ return }
 	if (cacheState <= 0){ await cacheHelp( true, false, true ) }
 	if (cacheState < 2 || !word){ return }
 	
@@ -63,14 +61,10 @@ export async function showHelp( word:string ){
 
 export async function bmxBuildDocs(){
 	
-	if (bmxProblem){ return }
-	
-	// Make sure we know where the BMK compiler is
-	await updateBinPath( true )
-	if ( !binPath ){ return }
+	if (!BlitzMax.ready) return
 	
 	// Create a tmp task to execute
-	let exec: vscode.ShellExecution = new vscode.ShellExecution( 'makedocs', [], { env: { 'PATH': binPath } } )
+	let exec: vscode.ShellExecution = new vscode.ShellExecution( 'makedocs', [], { env: { 'PATH': BlitzMax.binPath } } )
 	let kind: BmxTaskDefinition = { type: 'bmx' }
 	let task: vscode.Task = new vscode.Task( kind, vscode.TaskScope.Workspace, 'BlitzMax', 'Internal BlitzMax Docs', exec, '$blitzmax' )
 	
@@ -92,11 +86,12 @@ export async function bmxBuildDocs(){
 
 export async function cacheHelp( showErrorInfo:boolean = false, force:boolean = false, askRebuild:boolean = true ){
 	
-	if (bmxProblem){ return }
+	if (!BlitzMax.ready) return
 	
 	if (cacheState > 0 && force == false){ return }
 	cacheState = 1
 	
+	/*
 	await updateBinPath( true )
 	if (!bmxPath){ 
 		
@@ -105,10 +100,10 @@ export async function cacheHelp( showErrorInfo:boolean = false, force:boolean = 
 		}
 		cacheState = 0
 		return
-	}
+	}*/
 	
-	let docsSrcPath =  path.join( bmxPath, 'docs', 'src' )
-	let docsPath = path.join( bmxPath, 'docs', 'html', 'Modules', 'commands.txt' )
+	let docsSrcPath =  path.join( await BlitzMax.path, 'docs', 'src' )
+	let docsPath = path.join( BlitzMax.path, 'docs', 'html', 'Modules', 'commands.txt' )
 	
 	if (!await exists( docsSrcPath )){
 		
@@ -375,6 +370,7 @@ export class HelpObject {
 	docsSection:string = ''
 	insert:string = ''
 	module:string = ''
+	modulePath:string = ''
 	kind?:vscode.CompletionItemKind
 	hasScraped:boolean = false
 	docsName:string = ''
@@ -489,19 +485,36 @@ export class HelpObject {
 			console.log( this.name + ' has no docs? - ' + this.docs )
 		}
 		
+		// Real module path
+		if (this.docs.length > 1){
+			
+			let modSearch = this.docs.split( '/' )
+			if (modSearch.length > 1){
+				for(var i=0; i<modSearch.length; i++){
+					
+					if (modSearch[i].toLowerCase() == 'modules'){
+						this.modulePath = path.join( 'mod', 'brl.mod', modSearch[i+2].toLowerCase().replace( ' ', '' ) + '.mod', modSearch[i+2].toLowerCase().replace( ' ', '' ) + '.bmx' )
+						
+						//console.log( this.module )
+						break
+					}
+				}
+			}
+		}
+		
 		// Debug
-		/*if (this.name.startsWith( "While" )) {
+		if (this.name.startsWith( "Print" )) {
 			console.log( this )
-		}*/
+		}
 	}
 	
 	async getDocs(){
 		
-		if (bmxPath && !this.hasScraped){
+		if (await BlitzMax.path && !this.hasScraped){
 			
 			this.hasScraped = true
 			
-			const data = fs.readFileSync( path.join( bmxPath, this.docs ), 'utf8' ).toString()
+			const data = fs.readFileSync( path.join( await BlitzMax.path, this.docs ), 'utf8' ).toString()
 			
 			let line:string = ''
 			let foundName:boolean = false

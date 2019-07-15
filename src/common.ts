@@ -6,27 +6,190 @@ import * as process from 'child_process'
 import * as fs from 'fs'
 import * as os from 'os'
 import { BmxTaskDefinition } from './taskProvider'
+import { scanModules } from './bmxModules'
 
-export let bmxPath:string | undefined
-export let binPath:string | undefined
-export let bmxProblem:boolean
-export let bmxNg:boolean
-
-export function startup( context:vscode.ExtensionContext ) {
+export class BlitzMaxHandler{
 	
-	context.subscriptions.push(
-		vscode.workspace.onDidChangeConfiguration( event => {
+	private _ready:boolean = false
+	private _path:string = ''
+	private _problem:boolean = false
+	private _legacy:boolean = false
+	private _askedForPath:boolean = false
+	
+	get path(): string {
+		
+		return this._path
+	}
+	get binPath(): string{
+		
+		return path.join( this.path, 'bin' )
+	}
+	
+	get modPath(): string{
+		
+		return path.join( this.path, 'mod' )
+	}
+	get ready(): boolean { return this._ready }
+	get problem(): boolean { return this._problem }
+	get legacy(): boolean { return this._legacy }
+	
+	async setup( context: vscode.ExtensionContext ){
+		
+		return new Promise<boolean>( async ( resolve, reject ) => {
 			
-			if ( event.affectsConfiguration( 'blitzmax.bmxPath' ) ){
-				
-				bmxPath = ''
-				binPath = ''
-				bmxProblem = false
+			console.log( 'Setting up BlitzMax' )
+			
+			this._askedForPath = false
+			this._problem = false
+			this._ready = false
+			this._legacy = false
+			this._path = ''
+			
+			await this.findPath()
+			if (this.path.length <= 3){
+				this._problem = true
+				reject()
 			}
+			
+			await this.checkLegacy()
+			if (this.problem) reject() 
+			
+			await scanModules( context )
+			
+			this._ready = true
+			console.log( 'BlitzMax correctly setup!' )
+			resolve()
 		})
-	)
+	}
+	
+	private async findPath(){
+		
+		let confPath: string | undefined = await vscode.workspace.getConfiguration( 'blitzmax' ).get( 'bmxPath' )
+		if (!confPath){
+			
+			if (!this._askedForPath){
+				
+				this._askedForPath = true
+				//this.AskForPath()
+			}
+			
+			return
+		}
+		
+		this._path = confPath
+	}
+	
+	private async askForPath( msg:string = 'BlitzMax path not set in extension configuration' ){
+		
+		const opt = await vscode.window.showErrorMessage( msg, 'Set Path' )
+		if (opt) {
+			
+			const folderOpt: vscode.OpenDialogOptions = {
+				canSelectMany: false,
+				canSelectFolders: true,
+				canSelectFiles: false,
+				openLabel: 'Select'
+			}
+			
+			await vscode.window.showOpenDialog( folderOpt ).then( async fileUri => {
+				
+				if (fileUri && fileUri[0]) {
+					
+					await vscode.workspace.getConfiguration( 'blitzmax' ).update( 'bmxPath', fileUri[0].fsPath, true )
+					this.findPath()
+					
+					if (this.path){
+							
+						vscode.window.showInformationMessage( 'BlitzMax Path Set' )
+					}
+				}
+			})
+		}
+	}
+	
+	private async checkLegacy(){
+		
+		try {
+			let { stdout, stderr } = await exec( 'bcc', { env: { 'PATH': this.binPath } } )
+			
+			if ( stderr && stderr.length > 0 ) {
+				
+				this._problem = true
+				vscode.window.showErrorMessage( 'BCC error: ' + stderr )
+			}
+			
+			if ( stdout ) {
+				
+				if ( stdout.toLowerCase().startsWith( 'blitzmax release version' ) ) {
+					
+					console.log( "is Legacy" )
+					this._legacy = true
+				} else {
+					
+					console.log( "is NG" )
+					this._legacy = false
+				}
+			}
+		} catch ( err ) {
+			
+			let msg:string = err
+			if ( err.stderr ) { msg = err.stderr }
+			if ( err.stdout ) { msg = err.stdout }
+			
+			this._problem = true
+			this.askForPath( 'Unable to determin BlitzMax version. Make sure your BlitzMax path is correct. (' + msg + ')' )
+		}
+	}
+}
+export let BlitzMax: BlitzMaxHandler = new BlitzMaxHandler()
+
+export async function readDir( path:string ): Promise<string[]> {
+	
+    return new Promise(function(resolve, reject) {
+        fs.readdir(path, 'utf8', function(err, filenames){
+            if (err) 
+                reject(err)
+            else 
+                resolve(filenames)
+        })
+    })
 }
 
+export async function readFile( filename:string ): Promise<string> {
+	
+    return new Promise(function(resolve, reject) {
+        fs.readFile(filename, function(err, data){
+            if (err) 
+                reject(err)
+            else 
+                resolve(data.toString())
+        })
+    })
+}
+
+export async function writeFile( filename: string, data: any ): Promise<boolean> {
+	
+    return new Promise(function(resolve, reject) {
+        fs.writeFile(filename, data, function(err){
+            if (err) 
+                reject(false)
+            else 
+                resolve(true)
+        })
+    })
+}
+
+export async function readStats( filename:string ): Promise<fs.Stats> {
+	
+	return new Promise(function(resolve, reject) {
+		fs.stat( filename, ( err, stats )=>{
+            if (err) 
+                reject(err)
+            else 
+                resolve(stats)
+		})
+	})
+}
 export async function setWorkspaceSourceFile( file:string ){
 	
 	if (!file){ return }
@@ -95,11 +258,7 @@ export function currentBmx():string{
 
 export async function bmxBuild( make:string, type:string = '', forceDebug:boolean = false, quick:boolean = false ){
 	
-	if (bmxProblem){ return }
-	
-	// Make sure we know where the BMK compiler is
-	await updateBinPath( true )
-	if ( !binPath ){ return }
+	if (!BlitzMax.ready) return
 	
 	// make* type (makeapp, makemods, makelib)
 	make = make.toLowerCase()
@@ -111,7 +270,7 @@ export async function bmxBuild( make:string, type:string = '', forceDebug:boolea
 		args.push( type )
 	}
 	
-	if (bmxNg){
+	if (!BlitzMax.legacy){
 		// Architecture
 		let arch:string | undefined = vscode.workspace.getConfiguration( 'blitzmax' ).get( 'architecture' )
 		if (!arch || arch.toLowerCase() == 'auto'){ arch = os.arch() }
@@ -197,7 +356,7 @@ export async function bmxBuild( make:string, type:string = '', forceDebug:boolea
 	console.log( args )
 	
 	// Create a tmp task to execute
-	let exec: vscode.ShellExecution = new vscode.ShellExecution( 'bmk', args, { env: { 'PATH': binPath } } )
+	let exec: vscode.ShellExecution = new vscode.ShellExecution( 'bmk', args, { env: { 'PATH': BlitzMax.binPath } } )
 	let kind: BmxTaskDefinition = { type: 'bmx' }
 	let task: vscode.Task = new vscode.Task( kind, vscode.TaskScope.Workspace, 'BlitzMax', 'Internal BlitzMax', exec, '$blitzmax' )
 	
@@ -244,97 +403,3 @@ export async function exists( file: string ): Promise<boolean> {
 	})
 }
 
-async function testNg() {
-	
-	if (bmxProblem){ return }
-	
-	bmxNg = false
-	if ( !binPath ) { return }
-	
-	try {
-		let { stdout, stderr } = await exec( 'bcc', { env: { 'PATH': binPath } } )
-		
-		if ( stderr && stderr.length > 0 ) {
-			
-			binPath = ''
-			
-			bmxProblem = true
-			await askSetPath( 'BCC error: ' + stderr )
-		}
-		
-		if ( stdout ) {
-			
-			if ( stdout.toLowerCase().startsWith( 'blitzmax release version' ) ) {
-				
-				//console.log( "is Legacy" )
-			} else {
-				
-				//console.log( "is NG" )
-				bmxNg = true
-			}
-		}
-	} catch ( err ) {
-		
-		binPath = ''
-		
-		let msg:string = err
-		if ( err.stderr ) { msg = err.stderr }
-		if ( err.stdout ) { msg = err.stdout }
-		
-		bmxProblem = true
-		await askSetPath( 'Error executing BCC: ' + msg )
-	}
-}
-
-export async function askSetPath( msg:string ){
-	
-	const opt = await vscode.window.showErrorMessage( msg, 'Set Path' )
-	if (opt) {
-		
-		const folderOpt: vscode.OpenDialogOptions = {
-			canSelectMany: false,
-			canSelectFolders: true,
-			canSelectFiles: false,
-			openLabel: 'Select'
-		}
-		
-		vscode.window.showOpenDialog( folderOpt ).then( async fileUri => {
-			
-			if (fileUri && fileUri[0]) {
-				
-				bmxProblem = false
-				
-				await vscode.workspace.getConfiguration( 'blitzmax' ).update( 'bmxPath', fileUri[0].fsPath, true )
-				await updateBinPath( false )
-				
-				if (binPath){
-					
-					vscode.window.showInformationMessage( 'BlitzMax Path Set' )
-				}
-			}
-		})
-	}
-}
-
-
-export async function updateBinPath( askToSet:boolean ){
-	 
-	if (bmxProblem){ return }
-	
-	// Fetch the BlitzMax path
-	binPath = ''
-	bmxPath = await vscode.workspace.getConfiguration( 'blitzmax' ).get( 'bmxPath' )
-	if (bmxPath) {
-		
-		// Figure out the bin path
-		binPath = path.join( bmxPath, 'bin' )
-		await testNg()
-		
-		return
-	}
-	
-	// Notify that the path is not set and offer to set it
-	await askSetPath( 'BlitzMax path not set in extension configuration' )
-	
-	return
-}
