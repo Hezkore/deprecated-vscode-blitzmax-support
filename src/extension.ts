@@ -1,29 +1,67 @@
 'use strict'
 
 import * as vscode from 'vscode'
-import { setWorkspaceSourceFile, currentWord, getWordAt, currentBmx, bmxBuild, startup } from './common'
+import { readDir,readFile,setWorkspaceSourceFile, currentWord, getWordAt, currentBmx, bmxBuild, BlitzMax } from './common'
 import { BmxFormatProvider } from './formatProvider'
 import { BmxActionProvider } from './actionProvider'
 import { BmxTaskProvider } from './taskProvider'
-import { BmxCompletionProvider } from './completionProvider'
-import { showHelp, getHelp, cacheHelp, bmxBuildDocs, HelpObject, helpStack } from './helpProvider'
+//import { BmxCompletionProvider } from './completionProvider'
+//import { showHelp, getHelp, cacheHelp, bmxBuildDocs, HelpObject, helpStack } from './helpProvider'
 
-export function activate( context:vscode.ExtensionContext ): void {
+
+/*
+class MyProvider implements vscode.DefinitionProvider {
+    provideDefinition(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.ProviderResult<vscode.Definition> {
+		
+		if (BlitzMax.Problem()){ return null }
+		
+        const word = currentWord().toLowerCase()
+		if (!word){ return null }
+		
+		let item:HelpObject | undefined = helpStack.get( word )
+		if (!item){ return null }
+		
+        return new vscode.Location( vscode.Uri.parse( 'bmx-external:' + path.join( BlitzMax.PathSync(), item.modulePath ) ), new vscode.Position( 0, 0 ) )
+    }
+}*/
+
+async function startup( context:vscode.ExtensionContext ) {
+	
+	await BlitzMax.setup( context )
+	
+	context.subscriptions.push(
+		vscode.workspace.onDidChangeConfiguration( event => {
+			
+			if ( event.affectsConfiguration( 'blitzmax.bmxPath' ) ){
+				
+				BlitzMax.setup( context )
+			}
+		})
+	)
+}
+
+export function activate( context: vscode.ExtensionContext ): void {
 	
 	startup( context )
 	
+	/*
+	vscode.languages.registerDefinitionProvider('blitzmax', new MyProvider());
+	
+	startup( context )
+	*/
 	// Format provider
 	/*context.subscriptions.push(
 		vscode.languages.registerDocumentFormattingEditProvider('blitzmax', new BmxFormatProvider )
 	)*/
 	
 	// Completion item provider
-	cacheHelp()
+	//cacheHelp()
 	context.subscriptions.push(
-		vscode.languages.registerCompletionItemProvider('blitzmax', new BmxCompletionProvider )
+		//vscode.languages.registerCompletionItemProvider('blitzmax', new BmxCompletionProvider )
 	)
 	
 	// Hover provider
+	/*
 	context.subscriptions.push( vscode.languages.registerHoverProvider( 'blitzmax' , {
 		async provideHover( doc:vscode.TextDocument, position:vscode.Position ) {
 			
@@ -32,9 +70,20 @@ export function activate( context:vscode.ExtensionContext ): void {
 			
 			return new vscode.Hover( result )
 		}
-	}))
+	}))*/
+	
+	/*
+	context.subscriptions.push( vscode.workspace.registerTextDocumentContentProvider( 'bmx-external',
+		new class implements vscode.TextDocumentContentProvider {		
+			provideTextDocumentContent( uri: vscode.Uri ): string {
+				
+				return fs.readFile( uri.fsPath, 'utf8' ).toString()
+			}
+		}
+	))*/
 	
 	// Help document content provider
+	/*
 	context.subscriptions.push( vscode.workspace.registerTextDocumentContentProvider( 'bmx-help',
 		new class implements vscode.TextDocumentContentProvider {		
 			provideTextDocumentContent( uri: vscode.Uri ): string {
@@ -48,7 +97,7 @@ export function activate( context:vscode.ExtensionContext ): void {
 				return 'No help for "' + word + '"'
 			}
 		}
-	))
+	))*/
 	
 	// Action provider
 	/*context.subscriptions.push(
@@ -69,14 +118,14 @@ export function activate( context:vscode.ExtensionContext ): void {
 			if (!currentBmx()) { return }
 			let word:string = currentWord()
 			if (!word) { return }
-			showHelp( word )
+			//showHelp( word )
 		})
 	)
 	
 	context.subscriptions.push(
 		vscode.commands.registerCommand( 'blitzmax.buildDocs', () => {
 			
-			bmxBuildDocs()
+			//bmxBuildDocs()
 		})
 	)
 	
