@@ -1,13 +1,13 @@
 'use strict'
 
 import * as vscode from 'vscode'
-import { readDir,readFile,setWorkspaceSourceFile, currentWord, getWordAt, currentBmx, bmxBuild, BlitzMax } from './common'
+import { setWorkspaceSourceFile, currentWord, currentBmx, bmxBuild } from './common'
 import { BmxFormatProvider } from './formatProvider'
 import { BmxActionProvider } from './actionProvider'
 import { BmxTaskProvider } from './taskProvider'
 //import { BmxCompletionProvider } from './completionProvider'
 //import { showHelp, getHelp, cacheHelp, bmxBuildDocs, HelpObject, helpStack } from './helpProvider'
-
+import { BlitzMax } from './blitzmax'
 
 /*
 class MyProvider implements vscode.DefinitionProvider {
@@ -26,9 +26,6 @@ class MyProvider implements vscode.DefinitionProvider {
 }*/
 
 async function startup( context:vscode.ExtensionContext ) {
-	
-	await BlitzMax.setup( context )
-	
 	context.subscriptions.push(
 		vscode.workspace.onDidChangeConfiguration( event => {
 			
@@ -38,6 +35,8 @@ async function startup( context:vscode.ExtensionContext ) {
 			}
 		})
 	)
+	
+	BlitzMax.setup( context )
 }
 
 export function activate( context: vscode.ExtensionContext ): void {

@@ -1,10 +1,11 @@
 'use strict'
 
 import * as vscode from 'vscode'
-import { exists, BlitzMax } from './common'
-import { BmxTaskDefinition } from './taskProvider'
+import { exists } from './common'
 import * as path from 'path'
 import * as fs from 'fs'
+import { BlitzMax } from './blitzmax'
+import { BmxTaskDefinition } from './taskProvider'
 
 export let cacheState:number = 0
 export let askedRebuild:boolean = false

@@ -2,7 +2,8 @@
 
 import * as vscode from 'vscode'
 import * as path from 'path'
-import { readFile, readDir, readStats, writeFile, exists, BlitzMax } from './common'
+import { readFile, readDir, readStats, writeFile, exists } from './common'
+import { BlitzMax } from './blitzmax'
 
 export interface BmxModule{
 	name?: string,
@@ -149,7 +150,7 @@ async function pause(timeout:number){
 
 async function UpdateModule( mod: BmxModule ){
 	
-	console.log( 'Updating:', mod.parent + "/" + mod.folderName )
+	//console.log( 'Updating:', mod.parent + "/" + mod.folderName )
 	
 	return new Promise(async function(resolve, reject) {
 		
@@ -619,7 +620,7 @@ async function AnalyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 		// DEBUG
 		if (result.moduleName && result.moduleName.data.startsWith( 'mky.' )){
 			
-			console.log( result )
+			//console.log( result )
 		}
 		
 		return resolve( result )
