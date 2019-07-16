@@ -25,7 +25,11 @@ class MyProvider implements vscode.DefinitionProvider {
     }
 }*/
 
-async function startup( context:vscode.ExtensionContext ) {
+async function startup( context:vscode.ExtensionContext ) {	
+	
+	await BlitzMax.setup( context )
+	
+	// Make BlitzMax reload if path is changed
 	context.subscriptions.push(
 		vscode.workspace.onDidChangeConfiguration( event => {
 			
@@ -35,13 +39,6 @@ async function startup( context:vscode.ExtensionContext ) {
 			}
 		})
 	)
-	
-	BlitzMax.setup( context )
-}
-
-export function activate( context: vscode.ExtensionContext ): void {
-	
-	startup( context )
 	
 	/*
 	vscode.languages.registerDefinitionProvider('blitzmax', new MyProvider());
@@ -184,6 +181,11 @@ export function activate( context: vscode.ExtensionContext ): void {
 		})
 	)
 	
+}
+
+export function activate( context: vscode.ExtensionContext ): void {
+	
+	startup( context )
 }
 
 export function deactivate(): void {
