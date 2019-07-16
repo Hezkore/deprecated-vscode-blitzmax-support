@@ -15,6 +15,7 @@ export interface BmxModule{
 }
 
 let modules: Map<string, BmxModule> = new Map()
+export let commands: Map<string, AnalyzeDoc> = new Map()
 
 export async function scanModules( context: vscode.ExtensionContext, forceUpdate:boolean = false ) {
 	
@@ -27,6 +28,7 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 	}, (progress, token) => { return new Promise(async function(resolve, reject) {
 			
 			modules.clear()
+			commands.clear()
 			
 			let changedModules: number = 0
 			
@@ -105,11 +107,21 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 							
 							await progress.report( {message: keyName } )
 							
-							await UpdateModule( mod )
+							await updateModule( mod )
 							changedModules++
 						}else{
 							
 							//console.log( "NO ENTRY POINT FOR: " + mod.file )
+						}
+					}
+					
+					// Turn docs into commands
+					if (mod && mod.commands && mod.commands.length){
+						for(var i3=0; i3<mod.commands.length; i3++){
+							
+							if (mod.commands[i3].searchName.length > 0){
+								commands.set( mod.commands[i3].searchName, mod.commands[i3] )
+							}
 						}
 					}
 				}
@@ -129,6 +141,7 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 			// Save updated modules
 			console.log( 'Module changes:', changedModules )
 			if (changedModules > 0) saveModules( modJsonPath )
+			console.log( 'Commands:', commands.size )
 			return resolve()
 		})
 	})
@@ -148,7 +161,7 @@ async function pause(timeout:number){
 	})
 }
 
-async function UpdateModule( mod: BmxModule ){
+async function updateModule( mod: BmxModule ){
 	
 	//console.log( 'Updating:', mod.parent + "/" + mod.folderName )
 	
@@ -160,11 +173,13 @@ async function UpdateModule( mod: BmxModule ){
 		const data = await readFile( path.join( BlitzMax.modPath, mod.file ) )
 		
 		// Send the module source to our analyzer
-		let result = await AnalyzeBmx( { data: data, file: path.join( 'mod', mod.file ), module: true, imports: true } )
+		let result = await analyzeBmx( { data: data, file: path.join( 'mod', mod.file ), module: true, imports: true } )
 		
 		// Read the analyzer result and apply to our module
 		if (result.moduleName){ mod.name = result.moduleName.data }
-		if (result.bbdoc){ mod.commands = result.bbdoc }
+		if (result.bbdoc){
+			mod.commands = result.bbdoc
+		}
 		
 		//console.log( "done" )
 		return resolve()
@@ -178,31 +193,32 @@ export interface AnalyzeOptions{
 	imports?:boolean
 }
 export interface AnalyzeResult{
-	moduleName?:AnalyzeItem,
+	moduleName?: AnalyzeItem,
 	import?: AnalyzeItem[],
 	include?: AnalyzeItem[]
 	bbdoc?: AnalyzeDoc[]
 }
 export interface AnalyzeItem{
-	data:string,
-	line:number,
-	args?:AnalyzeItemArgs[],
-	file:string,
-	name?:string,
-	returns?:string,
-	type?:string
+	data: string,
+	line: number,
+	args?: AnalyzeItemArgs[],
+	file: string,
+	name?: string,
+	returns?: string,
+	type?: string
 }
 export interface AnalyzeItemArgs{
-	name:string,
-	returns:string,
-	default?:string
+	name: string,
+	returns: string,
+	default?: string
 }
 export interface AnalyzeDoc{
-	info:string,
-	line:number,
-	about?:string,
-	returns?:string,
-	regards?:AnalyzeItem
+	info: string,
+	line: number,
+	about?: string,
+	returns?: string,
+	regards?: AnalyzeItem,
+	searchName: string
 }
 enum AnalyzeBlock{
 	nothing,
@@ -218,12 +234,12 @@ enum ItemProcessPart{
 	argDefault
 }
 
-async function ProcessAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
+async function processAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
 	
 	return new Promise( async function( resolve, reject ) {
 		
 		let letter: string
-		let nextLetter: string
+		let nextSymbol: string
 		let part: ItemProcessPart = ItemProcessPart.type
 		let insideString: boolean = false
 		let insideArgs: number = 0
@@ -253,10 +269,14 @@ async function ProcessAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
 				}
 			}
 			
-			if (item.data[i+1]){ 
-				nextLetter = item.data[i+1]
-			}else{
-				nextLetter = ''
+			nextSymbol = ''
+			for(var i2=i+1; i2<item.data.length; i2++){
+				
+				if (item.data[i2] != ' '){
+					
+					nextSymbol = item.data[i2]
+					break
+				}
 			}
 			
 			switch (part) {
@@ -275,14 +295,45 @@ async function ProcessAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
 					
 					if (insideString){ break }
 					if (item.name == undefined){item.name = ''}
-					if (letter != ' ' && letter != ':'){
+					
+					if (letter != ' '){
+						
+						if (letter == ':'){
+							part = ItemProcessPart.returns
+							break
+						}
+						
+						if (letter == '('){
+							part = ItemProcessPart.arg
+							argCount++
+							break
+						}
+						
+						item.name += letter
+					}else{
+						
+						if (nextSymbol == ':'){
+							part = ItemProcessPart.returns
+							break
+						}
+						
+						if (nextSymbol == '('){
+							part = ItemProcessPart.arg
+							argCount++
+							break
+						}
+					}
+					
+					/*
+					if (letter != ' ' && letter != ':' && letter != '('){
 						item.name += letter
 					}else if(letter == ':') {
 						part = ItemProcessPart.returns
-					}else if(nextLetter != ':'){
+					}else{
 						part = ItemProcessPart.arg
 						argCount++
 					}
+					*/
 					break
 					
 				case ItemProcessPart.returns:
@@ -374,7 +425,7 @@ async function ProcessAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
 	})
 }
 
-async function AnalyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
+async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 	
 	return new Promise( async function( resolve, reject ) {
 		
@@ -410,11 +461,15 @@ async function AnalyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 			// Find what the BBDoc item regards (next line)
 			if (regardsParent && inside < AnalyzeBlock.rem && !line.startsWith( '?' )){
 				
-				regardsParent.regards = await ProcessAnalyzeItem({
+				regardsParent.regards = await processAnalyzeItem({
 					line: i,
 					file: options.file,
 					data: line
 				})
+				
+				if (regardsParent.regards.name){
+					regardsParent.searchName = regardsParent.regards.name.toLowerCase()
+				}
 				
 				// Push our now complete tmp bbdock into our array
 				if (!result.bbdoc){ result.bbdoc = [] }
@@ -487,7 +542,8 @@ async function AnalyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 						// Create a tmp new bbdoc
 						regardsParent = {
 							line: i,
-							info: line.slice( 'bbdoc:'.length ).trim()
+							info: line.slice( 'bbdoc:'.length ).trim(),
+							searchName: ''
 						}
 						
 						break
@@ -597,7 +653,7 @@ async function AnalyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 				let data = await readFile( path.join( BlitzMax.path, importPath ) )			
 				
 				// Send the module source to our analyzer
-				let importResult = await AnalyzeBmx( { data: data, file: importPath, module: options.module, imports: true } )
+				let importResult = await analyzeBmx( { data: data, file: importPath, module: options.module, imports: true } )
 				
 				if (importResult.bbdoc){
 					

@@ -23,8 +23,8 @@
 	],
 	"folding" : {
 		"markers" : {
-			"start" : "^\\s*rem\\b",
-			"end" : "^\\s*endrem\\b"
+			"start" : "^\\s*[rR][eE][mM]",
+			"end" : "^\\s*[eE][nN][dD] *?[rR][eE][mM]"
 		}
 	},
 	"indentationRules" : {

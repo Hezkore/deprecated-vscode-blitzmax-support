@@ -87,7 +87,7 @@
 			]
 		},
 		{
-			"begin" : "(^[ \\t]+)?(?=rem)",
+			"begin" : "(^[ \\t]+)?(?=[rR][eE][mM])",
 			"beginCaptures" : {
 				"1" : {
 					"name" : "punctuation.whitespace.comment.leading.bmx"
@@ -96,13 +96,13 @@
 			"end" : "(?!\\G)",
 			"patterns" : [
 				{
-					"begin" : "rem",
+					"begin" : "[rR][eE][mM]",
 					"beginCaptures" : {
 						"0" : {
 							"name" : "punctuation.definition.comment.bmx"
 						}
 					},
-					"end" : "endrem",
+					"end" : "[eE][nN][dD] *?[rR][eE][mM]",
 					"name" : "comment.line.apostrophe.bmx"
 				}
 			]

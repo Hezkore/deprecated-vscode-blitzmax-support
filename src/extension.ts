@@ -1,29 +1,15 @@
 'use strict'
 
 import * as vscode from 'vscode'
+import * as fs from 'fs'
 import { setWorkspaceSourceFile, currentWord, currentBmx, bmxBuild } from './common'
 import { BmxFormatProvider } from './formatProvider'
 import { BmxActionProvider } from './actionProvider'
+import { BmxDefinitionProvider } from './definitionProvider'
 import { BmxTaskProvider } from './taskProvider'
 //import { BmxCompletionProvider } from './completionProvider'
 //import { showHelp, getHelp, cacheHelp, bmxBuildDocs, HelpObject, helpStack } from './helpProvider'
 import { BlitzMax } from './blitzmax'
-
-/*
-class MyProvider implements vscode.DefinitionProvider {
-    provideDefinition(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.ProviderResult<vscode.Definition> {
-		
-		if (BlitzMax.Problem()){ return null }
-		
-        const word = currentWord().toLowerCase()
-		if (!word){ return null }
-		
-		let item:HelpObject | undefined = helpStack.get( word )
-		if (!item){ return null }
-		
-        return new vscode.Location( vscode.Uri.parse( 'bmx-external:' + path.join( BlitzMax.PathSync(), item.modulePath ) ), new vscode.Position( 0, 0 ) )
-    }
-}*/
 
 async function startup( context:vscode.ExtensionContext ) {	
 	
@@ -40,11 +26,10 @@ async function startup( context:vscode.ExtensionContext ) {
 		})
 	)
 	
-	/*
-	vscode.languages.registerDefinitionProvider('blitzmax', new MyProvider());
+	context.subscriptions.push(
+		vscode.languages.registerDefinitionProvider( 'blitzmax', new BmxDefinitionProvider() )
+	)
 	
-	startup( context )
-	*/
 	// Format provider
 	/*context.subscriptions.push(
 		vscode.languages.registerDocumentFormattingEditProvider('blitzmax', new BmxFormatProvider )
@@ -52,9 +37,9 @@ async function startup( context:vscode.ExtensionContext ) {
 	
 	// Completion item provider
 	//cacheHelp()
-	context.subscriptions.push(
+	//context.subscriptions.push(
 		//vscode.languages.registerCompletionItemProvider('blitzmax', new BmxCompletionProvider )
-	)
+	//)
 	
 	// Hover provider
 	/*
@@ -68,15 +53,15 @@ async function startup( context:vscode.ExtensionContext ) {
 		}
 	}))*/
 	
-	/*
+	
 	context.subscriptions.push( vscode.workspace.registerTextDocumentContentProvider( 'bmx-external',
 		new class implements vscode.TextDocumentContentProvider {		
 			provideTextDocumentContent( uri: vscode.Uri ): string {
 				
-				return fs.readFile( uri.fsPath, 'utf8' ).toString()
+				return fs.readFileSync( uri.fsPath, 'utf8' ).toString()
 			}
 		}
-	))*/
+	))
 	
 	// Help document content provider
 	/*
