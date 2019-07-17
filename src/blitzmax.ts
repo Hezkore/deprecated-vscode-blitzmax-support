@@ -2,10 +2,15 @@
 
 import * as vscode from 'vscode'
 import * as path from 'path'
-import { scanModules } from './bmxModules'
+import { scanModules, BmxModule, AnalyzeDoc } from './bmxModules'
 import { exec } from './common'
+import { promises } from 'dns';
 
 export class BlitzMaxHandler{
+	
+	_modules: Map<string, BmxModule> = new Map()
+	_commands: AnalyzeDoc[] = []
+	_autoCompletes: vscode.CompletionItem[] = []
 	
 	private _ready: boolean = false
 	private _path: string = ''
@@ -109,6 +114,102 @@ export class BlitzMaxHandler{
 		}
 	}
 	
+	getModule( parent: string, name:string ): BmxModule | undefined {
+		
+		return this._modules.get( parent + "/" + name )
+	}
+	
+	getCommand( name:string, allowMethod: boolean = false ): AnalyzeDoc[] {
+		
+		name = name.toLowerCase()
+		
+		let result: AnalyzeDoc[] = []
+		let cmd: AnalyzeDoc
+		for(var i=0; i<this._commands.length; i++){
+			
+			cmd = this._commands[i]
+			if (cmd.searchName == name){
+				
+				if (cmd.regards.type == 'method'){
+					if (allowMethod) result.push( cmd )
+				}else{ result.push( cmd ) }
+			}
+		}
+		
+		return result
+	}
+	
+	getCommands( allowMethod: boolean = false): AnalyzeDoc[]{
+		
+		if (!allowMethod){
+			
+			let result: AnalyzeDoc[] = []
+			
+			for(var i=0; i<this._commands.length; i++){
+				
+				if (this._commands[i].regards.type != 'method'){
+					result.push( this._commands[i] )
+				}
+			}
+			
+			return result
+		}else{ return this._commands }	
+	}
+	
+	getAutoCompletes(): vscode.CompletionItem[]{
+		if (this._autoCompletes.length <= 0) this.generateAutoCompletes()
+		return this._autoCompletes
+	}
+	
+	generateAutoCompletes() {
+		
+		console.log( 'Generating auto completes' )
+		
+		const cmds = this.getCommands( false )
+		for(var i=0; i<cmds.length; i++){
+			
+			// Get the label
+			const label = cmds[i].regards.name
+			if (!label) break 
+			
+			// Generate the kind
+			let kind: vscode.CompletionItemKind = vscode.CompletionItemKind.Text
+			switch (cmds[i].regards.type) {
+				case 'function':
+					kind = vscode.CompletionItemKind.Function
+					break
+					
+				case 'method':
+						kind = vscode.CompletionItemKind.Method
+						break
+					
+				case 'type':
+						kind = vscode.CompletionItemKind.Class
+						break
+					
+				case 'enum':
+						kind = vscode.CompletionItemKind.Enum
+						break
+					
+				case 'keyword':
+						kind = vscode.CompletionItemKind.Keyword
+						break
+					
+				case 'local':
+				case 'global':
+				case 'const':
+						kind = vscode.CompletionItemKind.Variable
+						break
+			}
+			
+			// Push the complete item to our array
+			this._autoCompletes.push(
+				
+				new vscode.CompletionItem( label, kind )
+			)
+		}
+	}
+	
 	private async checkLegacy(){
 		
 		try {
@@ -126,7 +227,7 @@ export class BlitzMaxHandler{
 					
 					console.log( "is Legacy" )
 					this._legacy = true
-				} else {
+				}else{
 					
 					console.log( "is NG" )
 					this._legacy = false

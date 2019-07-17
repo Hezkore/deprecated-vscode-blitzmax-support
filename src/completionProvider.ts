@@ -1,30 +1,13 @@
 'use strict'
 
 import * as vscode from 'vscode'
-import { cacheHelp, askedRebuild, helpStack, HelpObject, cacheState } from './helpProvider'
+import { BlitzMax } from './blitzmax'
 
 export class BmxCompletionProvider implements vscode.CompletionItemProvider {
-	
 	provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
 		
-		cacheHelp( false, false, !askedRebuild )
-		if (cacheState < 2){ return }
+		if (!BlitzMax.ready) return null
 		
-		let comp:Array<vscode.CompletionItem> = []
-		let item:HelpObject
-		
-		helpStack.forEach((value: HelpObject, key: string) => {
-			
-			item = value
-			
-			comp.push( new vscode.CompletionItem( item.name, item.kind ) )
-			comp[ comp.length - 1 ].insertText = new vscode.SnippetString( item.insert )
-			comp[ comp.length - 1 ].documentation = new vscode.MarkdownString()
-			.appendCodeblock( item.infoName, 'blitzmax' )
-			.appendMarkdown( item.desc )
-			.appendMarkdown( '\r\r*' + item.module + '*' )
-		})
-		
-		return comp
+		return BlitzMax.getAutoCompletes()
 	}
 }

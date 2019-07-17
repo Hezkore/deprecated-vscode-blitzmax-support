@@ -14,8 +14,8 @@ export interface BmxModule{
 	commands?: AnalyzeDoc[]
 }
 
-let modules: Map<string, BmxModule> = new Map()
-export let commands: Map<string, AnalyzeDoc> = new Map()
+//let modules: Map<string, BmxModule> = new Map()
+//export let commands: Map<string, AnalyzeDoc> = new Map()
 
 export async function scanModules( context: vscode.ExtensionContext, forceUpdate:boolean = false ) {
 	
@@ -27,23 +27,24 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 		cancellable: false
 	}, (progress, token) => { return new Promise(async function(resolve, reject) {
 			
-			modules.clear()
-			commands.clear()
+			BlitzMax._modules.clear()
+			BlitzMax._commands = []
+			BlitzMax._autoCompletes = []
 			
 			let changedModules: number = 0
 			
 			// Load existing modules
 			let modJsonPath: string = path.join( context.extensionPath, 'modules.json' )
 			if (await exists( modJsonPath )){
-				modules = modulesFromJson( await readFile( modJsonPath ) )
+				BlitzMax._modules = modulesFromJson( await readFile( modJsonPath ) )
 			}else{
 				//console.log( 'No cached modules' )
 			}
 			
 			// Create an array of existing modules
 			let modArray: string[] = []
-			if (modules && modules.size > 0){
-				modArray = Array.from( modules.keys() )
+			if (BlitzMax._modules && BlitzMax._modules.size > 0){
+				modArray = Array.from( BlitzMax._modules.keys() )
 			}
 			
 			// Make sure modules are up to date
@@ -66,7 +67,7 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 					if (!keyName.toLowerCase().endsWith( '.mod' )) continue
 					
 					// Attempt to grab existing mod
-					let mod = modules.get( keyName )
+					let mod = BlitzMax._modules.get( keyName )
 					
 					// Check out these stats!
 					const stats = await readStats( path.join( BlitzMax.modPath, parentDir[i], modDir[i2] ) )
@@ -89,14 +90,14 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 					// Does this module need to be updated?
 					if (forceUpdate || !mod || newestTime != mod.lastModified){
 						
-						modules.set( keyName, {
+						BlitzMax._modules.set( keyName, {
 							parent: parentDir[i],
 							folderName: modDir[i2],
 							file: path.join( parentDir[i], modDir[i2], fileName ),
 							lastModified: newestTime
 						})
 						
-						mod = modules.get( keyName )
+						mod = BlitzMax._modules.get( keyName )
 						if (!mod){
 							vscode.window.showErrorMessage( "Unable to update module!" )
 							return reject()
@@ -120,7 +121,7 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 						for(var i3=0; i3<mod.commands.length; i3++){
 							
 							if (mod.commands[i3].searchName.length > 0){
-								commands.set( mod.commands[i3].searchName, mod.commands[i3] )
+								BlitzMax._commands.push( mod.commands[i3] )
 							}
 						}
 					}
@@ -133,7 +134,7 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 					
 					console.log( 'Module', modArray[i3], 'was removed' )
 					
-					modules.delete( modArray[i3] )
+					BlitzMax._modules.delete( modArray[i3] )
 					changedModules++
 				}
 			}
@@ -141,7 +142,7 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 			// Save updated modules
 			console.log( 'Module changes:', changedModules )
 			//if (changedModules > 0) saveModules( modJsonPath )
-			console.log( 'Commands:', commands.size )
+			console.log( 'Commands:', BlitzMax._commands.length )
 			return resolve()
 		})
 	})
@@ -150,7 +151,7 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 async function saveModules( path: string ){
 	
 	console.log( 'Saving modules' )
-	await writeFile( path, modulesToJson( modules ) )
+	await writeFile( path, modulesToJson( BlitzMax._modules ) )
 }
 
 async function pause(timeout:number){
@@ -217,7 +218,7 @@ export interface AnalyzeDoc{
 	line: number,
 	about?: string,
 	returns?: string,
-	regards?: AnalyzeItem,
+	regards: AnalyzeItem,
 	searchName: string
 }
 enum AnalyzeBlock{
@@ -285,7 +286,7 @@ async function processAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
 					if (insideString){ break }
 					if (item.type == undefined){item.type = ''}
 					if (letter != ' '){
-						item.type += letter
+						item.type += letter.toLowerCase()
 					}else{
 						part = ItemProcessPart.name
 					}
@@ -546,7 +547,11 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 						result.bbdoc.push({
 							line: i,
 							info: line.slice( 'bbdoc:'.length ).trim(),
-							searchName: ''
+							searchName: '',
+							regards: { file: '',
+							line: 0,
+							data: ''
+						 	}
 						})
 						regardsParent = result.bbdoc[ result.bbdoc.length - 1 ]
 						
@@ -559,85 +564,6 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 						
 						break
 					}
-					
-					/*
-					if (lineLower.startsWith( 'returns:' )){
-						
-						if (!regardsParent) break
-						
-						sliceLine = line.slice( 'returns:'.length ).trim()
-						if (result.bbdoc){
-							
-							if (sliceLine.length > 0){
-								regardsParent.returns = sliceLine
-							}else{
-								regardsParent.returns = ''
-							}	
-						}
-						
-						break
-					}
-					
-					if (lineLower.startsWith( 'keyword:' )){
-						
-						if (!regardsParent) break
-						
-						sliceLine = line.slice( 'keyword:'.length ).trim()
-						if (result.bbdoc){
-							
-							if (sliceLine.length > 0){
-								
-								regardsParent.regards = {
-									line: i,
-									file: options.file,
-									data: line,
-									name: sliceLine
-								}
-								
-								if (regardsParent.regards.name){
-									regardsParent.searchName = regardsParent.regards.name.toLowerCase()
-								}
-								
-								// Push our now complete tmp bbdock into our array
-								if (!result.bbdoc){ result.bbdoc = [] }
-								if (regardsParent.regards.name){
-									result.bbdoc.push( regardsParent )
-								}
-							}	
-						}
-						
-						regardsParent = undefined
-						
-						break
-					}
-					
-					if (lineLower.startsWith( 'about:' )){
-						
-						if (!regardsParent) break
-						
-						sliceLine = line.slice( 'about:'.length ).trim()
-						if (result.bbdoc){
-							
-							if (sliceLine.length > 0){
-								regardsParent.about = sliceLine
-							}else{
-								regardsParent.about = ''
-							}	
-						}
-						
-						// Is this a multi-lined about block?
-						if (nextLine.replace( ' ', '' ) == 'endrem'){
-							
-							
-						}else{
-							
-							if (inside) insideHistory.push( inside )
-							inside = AnalyzeBlock.bbdocAbout
-						}
-						
-						break
-					}
-					*/
 					break
 					
 				case AnalyzeBlock.bbdoc:
@@ -704,7 +630,8 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 								line: i,
 								file: options.file,
 								data: line,
-								name: sliceLine.trim().slice( 1, -1 )
+								name: sliceLine.trim().slice( 1, -1 ),
+								type: 'keyword'
 							}
 							
 							if (regardsParent.regards.name){
@@ -734,7 +661,7 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 						
 						// If we know what this is regarding
 						// we don't need to continue looking
-						if (regardsParent.regards) regardsParent = undefined
+						if (regardsParent.regards.file.length > 0) regardsParent = undefined
 					}
 					
 					break
