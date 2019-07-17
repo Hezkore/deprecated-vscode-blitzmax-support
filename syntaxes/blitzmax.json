@@ -7,7 +7,11 @@
 			"match" : "\\n",
 			"name" : "meta.ending-space"
 		},
-
+		{
+			"begin" : "^(?:[ \\t]+)?(?i:rem\\b)($|\\s)",
+			"end" : "^(?:[ \\t]+)?(?i:end *?rem)",
+			"name" : "comment.block.bmx"
+		},
 		{
 			"begin" : "^(?=\\t)",
 			"end" : "(?=[^\\t])",
@@ -82,27 +86,6 @@
 						}
 					},
 					"end" : "\\n",
-					"name" : "comment.line.apostrophe.bmx"
-				}
-			]
-		},
-		{
-			"begin" : "(^[ \\t]+)?(?=[rR][eE][mM])",
-			"beginCaptures" : {
-				"1" : {
-					"name" : "punctuation.whitespace.comment.leading.bmx"
-				}
-			},
-			"end" : "(?!\\G)",
-			"patterns" : [
-				{
-					"begin" : "[rR][eE][mM]",
-					"beginCaptures" : {
-						"0" : {
-							"name" : "punctuation.definition.comment.bmx"
-						}
-					},
-					"end" : "[eE][nN][dD] *?[rR][eE][mM]",
 					"name" : "comment.line.apostrophe.bmx"
 				}
 			]

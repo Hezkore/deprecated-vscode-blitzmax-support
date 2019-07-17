@@ -140,7 +140,7 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 			
 			// Save updated modules
 			console.log( 'Module changes:', changedModules )
-			if (changedModules > 0) saveModules( modJsonPath )
+			//if (changedModules > 0) saveModules( modJsonPath )
 			console.log( 'Commands:', commands.size )
 			return resolve()
 		})
@@ -223,7 +223,7 @@ export interface AnalyzeDoc{
 enum AnalyzeBlock{
 	nothing,
 	rem,
-	bbdocAbout,
+	bbdoc
 }
 enum ItemProcessPart{
 	type,
@@ -323,17 +323,6 @@ async function processAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
 							break
 						}
 					}
-					
-					/*
-					if (letter != ' ' && letter != ':' && letter != '('){
-						item.name += letter
-					}else if(letter == ':') {
-						part = ItemProcessPart.returns
-					}else{
-						part = ItemProcessPart.arg
-						argCount++
-					}
-					*/
 					break
 					
 				case ItemProcessPart.returns:
@@ -441,6 +430,7 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 		let insideHistory: AnalyzeBlock[] = []
 		let inside: AnalyzeBlock | undefined = AnalyzeBlock.nothing
 		let regardsParent: AnalyzeDoc | undefined
+		let bbdocTag: string = ''
 		
 		for(var i=0; i<lines.length; i++){
 			
@@ -453,10 +443,22 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 			sliceLine = line
 			
 			// Next line
+			/*
 			if (i+1 < lines.length){
 				nextLine = lines[i+1].trim()
 				if (nextLine.length > 0) nextLine = nextLine.toLowerCase()
 			}else{ nextLine = '' }
+			*/
+			
+			nextLine = ''
+			for(var i2=i+1; i2<lines.length; i2++){
+				
+				if (lines[i2].trim().length > 0){
+					
+					nextLine = lines[i2].trim().toLowerCase()
+					break
+				}
+			}
 			
 			// Find what the BBDoc item regards (next line)
 			if (regardsParent && inside < AnalyzeBlock.rem && !line.startsWith( '?' )){
@@ -472,10 +474,10 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 				}
 				
 				// Push our now complete tmp bbdock into our array
-				if (!result.bbdoc){ result.bbdoc = [] }
-				if (regardsParent.regards.name){
-					result.bbdoc.push( regardsParent )
-				}
+				// if (!result.bbdoc){ result.bbdoc = [] }
+				// if (regardsParent.regards.name){
+				// 	result.bbdoc.push( regardsParent )
+				// }
 				
 				regardsParent = undefined
 			}
@@ -539,19 +541,29 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 					
 					if (lineLower.startsWith( 'bbdoc:' )){
 						
-						// Create a tmp new bbdoc
-						regardsParent = {
+						// Create a new bbdoc and set it as our parent
+						if (!result.bbdoc){ result.bbdoc = [] }
+						result.bbdoc.push({
 							line: i,
 							info: line.slice( 'bbdoc:'.length ).trim(),
 							searchName: ''
+						})
+						regardsParent = result.bbdoc[ result.bbdoc.length - 1 ]
+						
+						if (nextLine.replace( ' ', '' ) != 'endrem'){
+							bbdocTag = 'bbdoc'
+							
+							if (inside) insideHistory.push( inside )
+							inside = AnalyzeBlock.bbdoc
 						}
 						
 						break
 					}
 					
+					/*
 					if (lineLower.startsWith( 'returns:' )){
 						
-						if (!regardsParent){ break }
+						if (!regardsParent) break
 						
 						sliceLine = line.slice( 'returns:'.length ).trim()
 						if (result.bbdoc){
@@ -562,6 +574,39 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 								regardsParent.returns = ''
 							}	
 						}
+						
+						break
+					}
+					
+					if (lineLower.startsWith( 'keyword:' )){
+						
+						if (!regardsParent) break
+						
+						sliceLine = line.slice( 'keyword:'.length ).trim()
+						if (result.bbdoc){
+							
+							if (sliceLine.length > 0){
+								
+								regardsParent.regards = {
+									line: i,
+									file: options.file,
+									data: line,
+									name: sliceLine
+								}
+								
+								if (regardsParent.regards.name){
+									regardsParent.searchName = regardsParent.regards.name.toLowerCase()
+								}
+								
+								// Push our now complete tmp bbdock into our array
+								if (!result.bbdoc){ result.bbdoc = [] }
+								if (regardsParent.regards.name){
+									result.bbdoc.push( regardsParent )
+								}
+							}	
+						}
+						
+						regardsParent = undefined
 						
 						break
 					}
@@ -592,27 +637,104 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 						
 						break
 					}
-					
+					*/
 					break
-				
-				case AnalyzeBlock.bbdocAbout:
 					
+				case AnalyzeBlock.bbdoc:
+					
+					// Do we have a parent?
 					if (!regardsParent){
+						console.log( 'No bbdoc parent!' )
 						inside = insideHistory.pop()
 						break
 					}
-					if (regardsParent.about) regardsParent.about += '\n'
-					regardsParent.about += line
 					
+					// Are we entering a new tag?
+					if (lineLower.length > 0){
+						const split = line.trim().split( ':' )
+						if (split.length > 1 && split[0].length < 8){
+							
+							switch (split[0].toLowerCase()) {
+								case 'bbdoc':
+								case 'about':
+								case 'keyword':
+								case 'returns':
+									bbdocTag = split[0]
+									sliceLine = split[1]
+									break
+									
+								default:
+									if (bbdocTag != 'about'){
+										console.log( 'Unknown bbdoc tag:',
+										line.slice( 0, -line.length + split[0].length + 1 ).trim(),
+										'(' + options.file + ':' + regardsParent.line + ')'
+										)
+									}
+									break
+							}
+						}else{ sliceLine = line }
+					}
+					
+					// What part are we adding to?
+					switch (bbdocTag) {
+						case 'bbdoc':
+							regardsParent.info += sliceLine
+							break
+							
+						case 'about':
+							if (regardsParent.about == undefined){
+								regardsParent.about = ''
+							}else if(regardsParent.about.length > 0){
+								regardsParent.about += '\n'
+							}
+							regardsParent.about += sliceLine
+							break
+							
+						case 'returns':
+							if (regardsParent.returns == undefined){
+								regardsParent.returns = ''
+							}else if(regardsParent.returns.length > 0){
+								regardsParent.returns += '\n'
+							}
+							regardsParent.returns += sliceLine
+							break
+							
+						case 'keyword':
+							regardsParent.regards = {
+								line: i,
+								file: options.file,
+								data: line,
+								name: sliceLine.trim().slice( 1, -1 )
+							}
+							
+							if (regardsParent.regards.name){
+								regardsParent.searchName = regardsParent.regards.name.toLowerCase()
+							}
+							
+							break
+					
+						default:
+							break
+					}
+					
+					// Is the next line the end?
 					if (nextLine.replace( ' ', '' ) == 'endrem'){
 						
-						// Clear out empty abouts
-						if (regardsParent.about == ''){
-							
-							regardsParent = undefined
+						bbdocTag = ''
+						
+						// Clear out empty stuff
+						if (regardsParent.about){
+							regardsParent.about = regardsParent.about.trim()
+							if (regardsParent.about == '') regardsParent.about = undefined
 						}
 						
 						inside = insideHistory.pop()
+						
+						//console.log( regardsParent )
+						
+						// If we know what this is regarding
+						// we don't need to continue looking
+						if (regardsParent.regards) regardsParent = undefined
 					}
 					
 					break
@@ -622,11 +744,11 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 			
 			// DEBUG
 			if (!regardsParent) {
-			
+				
 				//console.log( inside + ': ' +  line )
 			}else{
 				
-				//console.log( "REGARDS: " + inside + ': ' +  line )
+				//console.log( 'REGARDS: ' + inside + ': ' +  line )
 			}
 		}
 		
@@ -674,7 +796,7 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 		}
 		
 		// DEBUG
-		if (result.moduleName && result.moduleName.data.startsWith( 'mky.' )){
+		if (result.moduleName && result.moduleName.data.endsWith( 'BRL.Blitz' )){
 			
 			//console.log( result )
 		}
