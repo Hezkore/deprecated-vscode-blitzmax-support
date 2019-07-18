@@ -141,7 +141,7 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 			
 			// Save updated modules
 			console.log( 'Module changes:', changedModules )
-			//if (changedModules > 0) saveModules( modJsonPath )
+			if (changedModules > 0) saveModules( modJsonPath )
 			console.log( 'Commands:', BlitzMax._commands.length )
 			return resolve()
 		})
@@ -188,10 +188,11 @@ async function updateModule( mod: BmxModule ){
 }
 
 export interface AnalyzeOptions{
-	data:string,
-	file:string,
-	module?:boolean,
-	imports?:boolean
+	data: string,
+	file: string,
+	module?: boolean,
+	forceModuleName?: AnalyzeItem,
+	imports?: boolean
 }
 export interface AnalyzeResult{
 	moduleName?: AnalyzeItem,
@@ -219,7 +220,8 @@ export interface AnalyzeDoc{
 	about?: string,
 	returns?: string,
 	regards: AnalyzeItem,
-	searchName: string
+	searchName: string,
+	module: string
 }
 enum AnalyzeBlock{
 	nothing,
@@ -344,7 +346,13 @@ async function processAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
 					if (insideString){ break }
 					if (letter == ' '){ break }
 					if (letter == '('){ break }
-					if (letter != ',' && letter != ':' && letter != '='){
+					if (letter != ',' &&
+						letter != ':' &&
+						letter != '=' &&
+						letter != '%' &&
+						letter != '#' &&
+						letter != '!' &&
+						letter != '$'){
 						
 						if (item.args == undefined){item.args = []}
 						
@@ -357,13 +365,23 @@ async function processAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
 							item.args[argCount].name += letter
 						}
 						
-					}else if(letter == ',') {
+					}else if(letter == ','){
 						part = ItemProcessPart.arg
 						argCount++
-					}else if(letter == ':') {
+					}else if(letter == ':'){
 						part = ItemProcessPart.argReturn
-					}else{
+					}else if(letter == '='){
 						part = ItemProcessPart.argDefault
+					}else if(letter == '%'){
+						if (item.args) item.args[argCount].returns = 'Int'
+					}else if(letter == '#'){
+						if (item.args) item.args[argCount].returns = 'Float'
+					}else if(letter == '!'){
+						if (item.args) item.args[argCount].returns = 'Double'
+					}else if(letter == '$'){
+						if (item.args) item.args[argCount].returns = 'String'
+					}else{
+						console.log( 'Unkown part!' )
 					}
 					break
 					
@@ -380,15 +398,34 @@ async function processAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
 						item.args[argCount].returns += letter
 					}else if(letter == ',') {
 						
-						item.args[argCount].returns = item.args[argCount].returns.trim()
-						
 						part = ItemProcessPart.arg
 						argCount++
 					}else{
 						
+						part = ItemProcessPart.argDefault
+					}
+					
+					// Final cleanup and convert type tag shortcuts
+					if (item.args[argCount] && part != ItemProcessPart.argReturn){
 						item.args[argCount].returns = item.args[argCount].returns.trim()
 						
-						part = ItemProcessPart.argDefault
+						switch (item.args[argCount].returns) {
+							case '%':
+								item.args[argCount].returns = 'Int'
+								break
+									
+							case '#':
+								item.args[argCount].returns = 'Float'
+								break
+									
+							case '!':
+								item.args[argCount].returns = 'Double'
+								break
+									
+							case '$':
+								item.args[argCount].returns = 'String'
+								break
+						}
 					}
 					break
 					
@@ -408,6 +445,76 @@ async function processAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
 						argCount++
 					}
 					break
+			}
+		}
+		
+		// Prettify arg returns
+		if (item.args && item.args.length > 0){
+			for(var i=0; i<item.args.length; i++){
+				
+				if (item.args[i].returns.length <= 0){
+					
+					item.args[i].returns = 'Int'
+					continue
+				}
+				
+				switch (item.args[i].returns.toLowerCase()) {
+					case 'byte':
+						item.args[i].returns = 'Byte'
+						break
+						
+					case 'short':
+						item.args[i].returns = 'Short'
+						break
+					
+					case 'int':
+						item.args[i].returns = 'Int'
+						break
+						
+					case 'uint':
+						item.args[i].returns = 'UInt'
+						break
+									
+					case 'long':
+						item.args[i].returns = 'Long'
+						break
+										
+					case 'ulong':
+						item.args[i].returns = 'ULong'
+						break
+						
+					case 'float':
+						item.args[i].returns = 'Float'
+						break
+						
+					case 'double':
+						item.args[i].returns = 'Double'
+						break
+						
+					case 'string':
+						item.args[i].returns = 'String'
+						break
+						
+					case 'size_t':
+						item.args[i].returns = 'Size_T'
+						break
+						
+					case 'float64':
+						item.args[i].returns = 'Float64'
+						break
+						
+					case 'int128':
+						item.args[i].returns = 'Int128'
+						break
+						
+					case 'float128':
+						item.args[i].returns = 'Float128'
+						break
+						
+					case 'double128':
+						item.args[i].returns = 'Double128'
+						break
+				}
 			}
 		}
 		
@@ -432,6 +539,11 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 		let inside: AnalyzeBlock | undefined = AnalyzeBlock.nothing
 		let regardsParent: AnalyzeDoc | undefined
 		let bbdocTag: string = ''
+		
+		if (options.forceModuleName){
+			
+			result.moduleName = options.forceModuleName
+		}
 		
 		for(var i=0; i<lines.length; i++){
 			
@@ -543,11 +655,15 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 					if (lineLower.startsWith( 'bbdoc:' )){
 						
 						// Create a new bbdoc and set it as our parent
+						let moduleName: string = options.file
+						if (result.moduleName) moduleName = result.moduleName.data
+						
 						if (!result.bbdoc){ result.bbdoc = [] }
 						result.bbdoc.push({
 							line: i,
 							info: line.slice( 'bbdoc:'.length ).trim(),
 							searchName: '',
+							module: moduleName,
 							regards: { file: '',
 							line: 0,
 							data: ''
@@ -702,7 +818,13 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 				let data = await readFile( path.join( BlitzMax.path, importPath ) )			
 				
 				// Send the module source to our analyzer
-				let importResult = await analyzeBmx( { data: data, file: importPath, module: options.module, imports: true } )
+				let importResult = await analyzeBmx({
+					data: data,
+					file: importPath,
+					forceModuleName: result.moduleName,
+					module: options.module,
+					imports: true
+				})
 				
 				if (importResult.bbdoc){
 					
@@ -723,9 +845,9 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 		}
 		
 		// DEBUG
-		if (result.moduleName && result.moduleName.data.endsWith( 'BRL.Blitz' )){
+		if (result.moduleName && result.moduleName.data.endsWith( 'BRL.StandardIO' )){
 			
-			//console.log( result )
+			console.log( result )
 		}
 		
 		return resolve( result )

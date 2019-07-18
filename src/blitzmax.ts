@@ -136,6 +136,12 @@ export class BlitzMaxHandler{
 			}
 		}
 		
+		/*
+		if (result.length <= 0){
+			console.log( 'No command matching:', name )
+		}
+		*/
+		
 		return result
 	}
 	
@@ -166,15 +172,19 @@ export class BlitzMaxHandler{
 		console.log( 'Generating auto completes' )
 		
 		const cmds = this.getCommands( false )
-		for(var i=0; i<cmds.length; i++){
+		for(var ci=0; ci<cmds.length; ci++){
+			
+			// Get the command
+			const cmd = cmds[ci]
+			if (!cmd) break 
 			
 			// Get the label
-			const label = cmds[i].regards.name
-			if (!label) break 
+			const label = cmd.regards.name
+			if (!label || label.length <= 0) break 
 			
 			// Generate the kind
 			let kind: vscode.CompletionItemKind = vscode.CompletionItemKind.Text
-			switch (cmds[i].regards.type) {
+			switch (cmd.regards.type) {
 				case 'function':
 					kind = vscode.CompletionItemKind.Function
 					break
@@ -202,11 +212,53 @@ export class BlitzMaxHandler{
 						break
 			}
 			
+			// Construct item with our information
+			const item = new vscode.CompletionItem( label, kind )
+			item.documentation = new vscode.MarkdownString()
+			.appendCodeblock( cmd.regards.data, 'blitzmax' )
+			.appendMarkdown( cmd.info )
+			.appendMarkdown( '\r\r*' + cmd.module + '*' )
+			
+			// Prettify document insert data
+			item.insertText = new vscode.SnippetString( cmd.regards.name )
+			switch (cmd.regards.type) {
+				case 'function':
+				case 'method':
+					item.insertText.appendText( '( ' )
+					
+					let args = cmd.regards.args
+					if (args){
+						for(var i=0; i<args.length; i++){
+							
+							switch (args[i].returns.toLowerCase()) {
+								case 'string':
+									item.insertText.appendText( '"' )
+									let def = args[i].default
+									if (def){
+										if (def.startsWith( '"' )) def = def.slice( 1 )
+										if (def.endsWith( '"' )) def = def.slice( 0, -1 )
+										item.insertText.appendPlaceholder( def )
+									}else{
+										item.insertText.appendPlaceholder( args[i].name )
+									}
+									item.insertText.appendText( '"' )
+									break
+							
+								default:
+									item.insertText.appendPlaceholder( args[i].name + ':' + args[i].returns )
+									break
+							}
+							
+							if (i < args.length - 1) item.insertText.appendText( ', ' )
+						}
+					}
+					
+					item.insertText.appendText( ' )' )
+					break
+			}
+			
 			// Push the complete item to our array
-			this._autoCompletes.push(
-				
-				new vscode.CompletionItem( label, kind )
-			)
+			this._autoCompletes.push(item)				
 		}
 	}
 	

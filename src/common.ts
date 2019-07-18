@@ -63,7 +63,7 @@ export async function setWorkspaceSourceFile( file:string ){
 	vscode.window.showInformationMessage( file + ' has been set as the workspace source file' )
 }
 
-export function getWordAt( document:vscode.TextDocument, position:vscode.Position ):string{
+export function getWordAt( document:vscode.TextDocument, position:vscode.Position ): string{
 	
 	let wordRange = document.getWordRangeAtPosition(position)
 	if (!wordRange) { return '' }
@@ -74,7 +74,7 @@ export function getWordAt( document:vscode.TextDocument, position:vscode.Positio
 	return highlight
 }
 
-export function currentWord():string{
+export function currentWord(): string{
 	
 	const editor = vscode.window.activeTextEditor
 	if (!editor) { return '' }
@@ -82,10 +82,10 @@ export function currentWord():string{
 	let cursorPosition = editor.selection.start
 	if (!cursorPosition) { return '' }
 	
-	let wordRange = editor.document.getWordRangeAtPosition(cursorPosition)
+	let wordRange = editor.document.getWordRangeAtPosition( cursorPosition )
 	if (!wordRange) { return '' }
 	
-	let highlight = editor.document.getText(wordRange)
+	let highlight = editor.document.getText( wordRange )
 	if (!highlight) { return '' }
 	
 	return highlight

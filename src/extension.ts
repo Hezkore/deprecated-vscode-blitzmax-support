@@ -8,10 +8,12 @@ import { BmxActionProvider } from './actionProvider'
 import { BmxDefinitionProvider } from './definitionProvider'
 import { BmxTaskProvider } from './taskProvider'
 import { BmxCompletionProvider } from './completionProvider'
-//import { showHelp, getHelp, cacheHelp, bmxBuildDocs, HelpObject, helpStack } from './helpProvider'
+import { BmxSignatureHelpProvider } from './signatureHelpProvider'
 import { BlitzMax } from './blitzmax'
 
 async function startup( context:vscode.ExtensionContext ) {	
+	
+	console.log( 'Start' )
 	
 	await BlitzMax.setup( context )
 	
@@ -30,6 +32,15 @@ async function startup( context:vscode.ExtensionContext ) {
 	context.subscriptions.push(
 		vscode.languages.registerCompletionItemProvider( { scheme: 'file', language: 'blitzmax' },
 			new BmxCompletionProvider()
+		)
+	)
+	
+	// Signature help provider
+	context.subscriptions.push(
+		vscode.languages.registerSignatureHelpProvider( { scheme: 'file', language: 'blitzmax' },
+			new BmxSignatureHelpProvider()
+			,{triggerCharacters: ['('],
+			retriggerCharacters: [',']}
 		)
 	)
 	
