@@ -214,10 +214,12 @@ export class BlitzMaxHandler{
 			
 			// Construct item with our information
 			const item = new vscode.CompletionItem( label, kind )
-			item.documentation = new vscode.MarkdownString()
-			.appendCodeblock( cmd.regards.data, 'blitzmax' )
-			.appendMarkdown( cmd.info )
-			.appendMarkdown( '\r\r*' + cmd.module + '*' )
+			if (cmd.regards.prettyData){
+				item.documentation = new vscode.MarkdownString()
+				.appendCodeblock( cmd.regards.prettyData, 'blitzmax' )
+				.appendMarkdown( cmd.info )
+				.appendMarkdown( '\r\r*' + cmd.module + '*' )
+			}
 			
 			// Prettify document insert data
 			item.insertText = new vscode.SnippetString( cmd.regards.name )

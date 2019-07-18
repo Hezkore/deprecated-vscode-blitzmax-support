@@ -2,8 +2,9 @@
 
 import * as vscode from 'vscode'
 import * as path from 'path'
-import { readFile, readDir, readStats, writeFile, exists } from './common'
+import { readFile, readDir, readStats, writeFile, exists, capitalize } from './common'
 import { BlitzMax } from './blitzmax'
+import { fstat } from 'fs';
 
 export interface BmxModule{
 	name?: string,
@@ -141,7 +142,7 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 			
 			// Save updated modules
 			console.log( 'Module changes:', changedModules )
-			if (changedModules > 0) saveModules( modJsonPath )
+			//if (changedModules > 0) saveModules( modJsonPath )
 			console.log( 'Commands:', BlitzMax._commands.length )
 			return resolve()
 		})
@@ -202,6 +203,7 @@ export interface AnalyzeResult{
 }
 export interface AnalyzeItem{
 	data: string,
+	prettyData?: string,
 	line: number,
 	args?: AnalyzeItemArgs[],
 	file: string,
@@ -237,9 +239,69 @@ enum ItemProcessPart{
 	argDefault
 }
 
-async function processAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
-	
-	return new Promise( async function( resolve, reject ) {
+function cleanAboutInfo( item: AnalyzeDoc ): Promise<AnalyzeDoc>{
+	return new Promise( async function( resolve ) {		
+		if (!item.about) return resolve( item )
+		
+		let result: string = ''
+		let finishWith: string = ''
+		let skipChars = ['@','#','{','}']
+		let endChars = [' ',',','.']
+		let buildLink: boolean = false
+		let linkWord: string = ''
+		
+		for (let i = 0; i < item.about.length; i++){
+			const letter = item.about[i]
+			
+			if (letter == '\n'){
+				
+				buildLink = false
+				linkWord = ''
+			}
+			
+			if (finishWith.length <= 0){
+				switch (letter) {
+					case '@':
+						result += '*'
+						finishWith = '*'
+						break
+						
+					case '#':
+						buildLink = true
+						result += `[`
+						finishWith = `]`
+						break
+				}
+			}else{
+				if (endChars.includes( letter )){
+					result += finishWith
+					finishWith = ''
+					
+					if (buildLink){
+						let linkCmd = vscode.Uri.parse(
+							`command:blitzmax.findHelp?${encodeURIComponent(JSON.stringify(linkWord))}`
+						)
+						result += `(${linkCmd})`
+						linkWord = ''
+						buildLink = false
+					}
+				}
+			}
+			
+			if (!skipChars.includes( letter )){
+				result += letter
+				if (buildLink) linkWord += letter
+			}
+		}
+		
+		if (result.length > 0) item.about = result
+		
+		return resolve( item )
+	})
+}
+
+async function cleanAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
+	return new Promise( async function( resolve ) {
 		
 		let letter: string
 		let nextSymbol: string
@@ -285,7 +347,7 @@ async function processAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
 			switch (part) {
 				case ItemProcessPart.type:
 					
-					if (insideString){ break }
+					if (insideString) break
 					if (item.type == undefined){item.type = ''}
 					if (letter != ' '){
 						item.type += letter.toLowerCase()
@@ -296,7 +358,7 @@ async function processAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
 					
 				case ItemProcessPart.name:
 					
-					if (insideString){ break }
+					if (insideString) break
 					if (item.name == undefined){item.name = ''}
 					
 					if (letter != ' '){
@@ -518,12 +580,48 @@ async function processAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
 			}
 		}
 		
+		// Make a pretty data string that we show the user
+		switch (item.type) {
+			case 'function':
+			case 'method':
+				item.prettyData = capitalize( item.type ) + ' '
+				item.prettyData += item.name
+				if (item.args){
+					item.prettyData += '( '
+					for(var i=0; i<item.args.length; i++){
+						
+						item.prettyData += item.args[i].name + ':'
+						item.prettyData += item.args[i].returns
+						if (item.args[i].default){
+							item.prettyData += ' = ' + item.args[i].default
+						}
+						if (i < item.args.length - 1){
+							item.prettyData += ', '
+						}
+					}
+					item.prettyData += ' )'
+				}else{ item.prettyData += '()' }
+				
+				break
+				
+			case 'keyword:':
+				if (item.name){
+					item.prettyData = 'Keyword ' + item.name.slice( 1, -1 )
+				}
+				break
+				
+			default:
+				if (item.name && item.type){
+					item.prettyData = capitalize(item.type) + ' ' + item.name
+				}
+				break
+		}
+		
 		return resolve( item )
 	})
 }
 
 async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
-	
 	return new Promise( async function( resolve, reject ) {
 		
 		let lines = options.data.split( "\n" )
@@ -576,7 +674,7 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 			// Find what the BBDoc item regards (next line)
 			if (regardsParent && inside < AnalyzeBlock.rem && !line.startsWith( '?' )){
 				
-				regardsParent.regards = await processAnalyzeItem({
+				regardsParent.regards = await cleanAnalyzeItem({
 					line: i,
 					file: options.file,
 					data: line
@@ -585,12 +683,7 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 				if (regardsParent.regards.name){
 					regardsParent.searchName = regardsParent.regards.name.toLowerCase()
 				}
-				
-				// Push our now complete tmp bbdock into our array
-				// if (!result.bbdoc){ result.bbdoc = [] }
-				// if (regardsParent.regards.name){
-				// 	result.bbdoc.push( regardsParent )
-				// }
+				regardsParent = await cleanAboutInfo( regardsParent )
 				
 				regardsParent = undefined
 			}
@@ -694,14 +787,15 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 					// Are we entering a new tag?
 					if (lineLower.length > 0){
 						const split = line.trim().split( ':' )
+						const enteringTag = split[0].toLowerCase()
 						if (split.length > 1 && split[0].length < 8){
 							
-							switch (split[0].toLowerCase()) {
+							switch (enteringTag) {
 								case 'bbdoc':
 								case 'about':
 								case 'keyword':
-								case 'returns':
-									bbdocTag = split[0]
+								case 'returns':									
+									bbdocTag = enteringTag
 									sliceLine = split[1]
 									break
 									
@@ -746,13 +840,13 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 								line: i,
 								file: options.file,
 								data: line,
-								name: sliceLine.trim().slice( 1, -1 ),
-								type: 'keyword'
+								name: '',
+								type: ''
 							}
 							
-							if (regardsParent.regards.name){
-								regardsParent.searchName = regardsParent.regards.name.toLowerCase()
-							}
+							regardsParent.searchName = 	sliceLine.trim().slice( 1, -1 ).toLowerCase()
+							regardsParent.regards = await cleanAnalyzeItem( regardsParent.regards )
+							regardsParent = await cleanAboutInfo( regardsParent )
 							
 							break
 					
@@ -763,13 +857,13 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 					// Is the next line the end?
 					if (nextLine.replace( ' ', '' ) == 'endrem'){
 						
-						bbdocTag = ''
-						
 						// Clear out empty stuff
 						if (regardsParent.about){
 							regardsParent.about = regardsParent.about.trim()
 							if (regardsParent.about == '') regardsParent.about = undefined
 						}
+						
+						bbdocTag = ''
 						
 						inside = insideHistory.pop()
 						

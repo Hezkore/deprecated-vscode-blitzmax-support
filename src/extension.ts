@@ -2,7 +2,8 @@
 
 import * as vscode from 'vscode'
 import * as fs from 'fs'
-import { setWorkspaceSourceFile, currentWord, currentBmx, bmxBuild } from './common'
+import * as path from 'path'
+import { setWorkspaceSourceFile, currentWord, currentBmx, bmxBuild, exists } from './common'
 import { BmxFormatProvider } from './formatProvider'
 import { BmxActionProvider } from './actionProvider'
 import { BmxDefinitionProvider } from './definitionProvider'
@@ -105,12 +106,42 @@ async function startup( context:vscode.ExtensionContext ) {
 	
 	// Commands
 	context.subscriptions.push(
-		vscode.commands.registerCommand( 'blitzmax.findHelp', () => {
+		vscode.commands.registerCommand( 'blitzmax.findHelp', async ( word: string ) => {
 			
-			if (!currentBmx()) { return }
-			let word:string = currentWord()
-			if (!word) { return }
-			//showHelp( word )
+			if (!BlitzMax.ready) return
+			
+			if (!word) word = currentWord()
+			if (!word) return
+			word = word.toLowerCase()
+			
+			let cmds = BlitzMax.getCommand( word )
+			if (!cmds || cmds.length <= 0) return
+			
+			// Find a command
+			for(var i=0; i<cmds.length; i++){
+				
+				const cmd = cmds[i]
+				if (!cmd || !cmd.info) continue
+				
+				let examplePath = path.join( BlitzMax.path,
+					path.dirname( cmd.regards.file ),
+					'doc',
+					cmd.searchName + '.bmx'
+				)
+				if (!exists( examplePath )){
+					examplePath = path.join( BlitzMax.path,
+						path.dirname( cmd.regards.file ),
+						'examples',
+						cmd.searchName + '.bmx'
+					)
+				}
+				
+				let uri = vscode.Uri.parse( 'bmx-external:' + examplePath )
+				let doc = await vscode.workspace.openTextDocument( uri )
+				vscode.window.showTextDocument( doc, { preview: true } )
+				
+				return
+			}
 		})
 	)
 	

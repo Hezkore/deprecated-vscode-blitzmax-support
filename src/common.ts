@@ -77,18 +77,26 @@ export function getWordAt( document:vscode.TextDocument, position:vscode.Positio
 export function currentWord(): string{
 	
 	const editor = vscode.window.activeTextEditor
-	if (!editor) { return '' }
+	if (!editor) return ''
 	
 	let cursorPosition = editor.selection.start
-	if (!cursorPosition) { return '' }
+	if (!cursorPosition) return ''
 	
 	let wordRange = editor.document.getWordRangeAtPosition( cursorPosition )
-	if (!wordRange) { return '' }
+	if (!wordRange) return ''
 	
 	let highlight = editor.document.getText( wordRange )
-	if (!highlight) { return '' }
+	if (!highlight) return ''
 	
 	return highlight
+}
+
+export function capitalize( text:string ): string{
+	
+	let result = text[0].toUpperCase()
+	result += text.slice( 1 )
+	
+	return result
 }
 
 export function currentBmx():string{
