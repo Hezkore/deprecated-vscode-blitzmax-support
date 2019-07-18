@@ -9,6 +9,7 @@ import { BmxDefinitionProvider } from './definitionProvider'
 import { BmxTaskProvider } from './taskProvider'
 import { BmxCompletionProvider } from './completionProvider'
 import { BmxSignatureHelpProvider } from './signatureHelpProvider'
+import { BmxHoverProvider } from './hoverProvider'
 import { BlitzMax } from './blitzmax'
 
 async function startup( context:vscode.ExtensionContext ) {	
@@ -60,23 +61,18 @@ async function startup( context:vscode.ExtensionContext ) {
 			}
 		}
 	))
-		
+	
+	// Hover provider
+	context.subscriptions.push(
+		vscode.languages.registerHoverProvider( { scheme: 'file', language: 'blitzmax' },
+			new BmxHoverProvider()
+		)
+	)
+	
 	// Format provider
 	/*context.subscriptions.push(
 		vscode.languages.registerDocumentFormattingEditProvider('blitzmax', new BmxFormatProvider )
 	)*/
-	
-	// Hover provider
-	/*
-	context.subscriptions.push( vscode.languages.registerHoverProvider( 'blitzmax' , {
-		async provideHover( doc:vscode.TextDocument, position:vscode.Position ) {
-			
-			const result = await getHelp( getWordAt( doc, position ) )
-			if (!result){ return }
-			
-			return new vscode.Hover( result )
-		}
-	}))*/
 	
 	// Help document content provider
 	/*
@@ -115,13 +111,6 @@ async function startup( context:vscode.ExtensionContext ) {
 			let word:string = currentWord()
 			if (!word) { return }
 			//showHelp( word )
-		})
-	)
-	
-	context.subscriptions.push(
-		vscode.commands.registerCommand( 'blitzmax.buildDocs', () => {
-			
-			//bmxBuildDocs()
 		})
 	)
 	

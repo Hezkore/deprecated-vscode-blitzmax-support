@@ -229,26 +229,7 @@ export class BlitzMaxHandler{
 					let args = cmd.regards.args
 					if (args){
 						for(var i=0; i<args.length; i++){
-							
-							switch (args[i].returns.toLowerCase()) {
-								case 'string':
-									item.insertText.appendText( '"' )
-									let def = args[i].default
-									if (def){
-										if (def.startsWith( '"' )) def = def.slice( 1 )
-										if (def.endsWith( '"' )) def = def.slice( 0, -1 )
-										item.insertText.appendPlaceholder( def )
-									}else{
-										item.insertText.appendPlaceholder( args[i].name )
-									}
-									item.insertText.appendText( '"' )
-									break
-							
-								default:
-									item.insertText.appendPlaceholder( args[i].name + ':' + args[i].returns )
-									break
-							}
-							
+							item.insertText.appendPlaceholder( args[i].name + ':' + args[i].returns )
 							if (i < args.length - 1) item.insertText.appendText( ', ' )
 						}
 					}

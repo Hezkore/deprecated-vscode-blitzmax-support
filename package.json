@@ -97,11 +97,6 @@
 				"category": "BlitzMax"
 			},
 			{
-				"command": "blitzmax.buildDocs",
-				"title": "Build Docs",
-				"category": "BlitzMax"
-			},
-			{
 				"command": "blitzmax.buildConsole",
 				"title": "Build Console Application",
 				"category": "BlitzMax"

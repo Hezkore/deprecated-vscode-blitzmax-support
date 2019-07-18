@@ -2,7 +2,6 @@
 
 import * as vscode from 'vscode'
 import { BlitzMax } from './blitzmax'
-import { createBrotliDecompress } from 'zlib';
 
 export class BmxSignatureHelpProvider implements vscode.SignatureHelpProvider {
     provideSignatureHelp( document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.SignatureHelpContext): vscode.ProviderResult<vscode.SignatureHelp> {
