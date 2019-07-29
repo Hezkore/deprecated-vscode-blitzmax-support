@@ -1,5 +1,11 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.7.0
+* New custom documentations scanner.
+* Hover tips.
+* Signature help provider.
+* Lots of other small improvments.
+
 ## Version 1.6.4
 * Fixed a BCC typo.
 
