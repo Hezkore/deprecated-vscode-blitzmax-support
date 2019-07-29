@@ -2,9 +2,8 @@
 
 import * as vscode from 'vscode'
 import * as path from 'path'
-import { scanModules, BmxModule, AnalyzeDoc } from './bmxModules'
-import { exec } from './common'
-import { promises } from 'dns';
+import { scanModules, BmxModule, AnalyzeDoc, AnalyzeItem } from './bmxModules'
+import { exec, exists, readFile } from './common'
 
 export class BlitzMaxHandler{
 	
@@ -116,10 +115,14 @@ export class BlitzMaxHandler{
 	
 	getModule( parent: string, name:string ): BmxModule | undefined {
 		
+		if (!this.ready) return undefined
+		
 		return this._modules.get( parent + "/" + name )
 	}
 	
 	getCommand( name:string, allowMethod: boolean = false ): AnalyzeDoc[] {
+		
+		if (!this.ready) return []
 		
 		name = name.toLowerCase()
 		
@@ -130,22 +133,18 @@ export class BlitzMaxHandler{
 			cmd = this._commands[i]
 			if (cmd.searchName == name){
 				
-				if (cmd.regards.type == 'method'){
+				if (cmd.regards.inside){
 					if (allowMethod) result.push( cmd )
 				}else{ result.push( cmd ) }
 			}
 		}
 		
-		/*
-		if (result.length <= 0){
-			console.log( 'No command matching:', name )
-		}
-		*/
-		
 		return result
 	}
 	
 	getCommands( allowMethod: boolean = false): AnalyzeDoc[]{
+		
+		if (!this.ready) return []
 		
 		if (!allowMethod){
 			
@@ -153,7 +152,7 @@ export class BlitzMaxHandler{
 			
 			for(var i=0; i<this._commands.length; i++){
 				
-				if (this._commands[i].regards.type != 'method'){
+				if (!this._commands[i].regards.inside){
 					result.push( this._commands[i] )
 				}
 			}
@@ -163,11 +162,14 @@ export class BlitzMaxHandler{
 	}
 	
 	getAutoCompletes(): vscode.CompletionItem[]{
+		
+		if (!this.ready) return []
+		
 		if (this._autoCompletes.length <= 0) this.generateAutoCompletes()
 		return this._autoCompletes
 	}
 	
-	generateAutoCompletes() {
+	private generateAutoCompletes() {
 		
 		console.log( 'Generating auto completes' )
 		
@@ -277,6 +279,81 @@ export class BlitzMaxHandler{
 			this._problem = 'Unable to determin BlitzMax version'
 			this.askForPath( 'Make sure your BlitzMax path is correct. (' + msg + ')' )
 		}
+	}
+	
+	async hasExample( cmd: AnalyzeDoc ): Promise<string>{
+		return new Promise<string>( async ( resolve, reject ) => {
+			
+			if (!this.ready){
+				vscode.window.showErrorMessage( 'BlitzMax not ready!' )
+				return reject()
+			}
+			
+			// File length must be greater than 4
+			// .bmx is 4 letters by itself!
+			if (!cmd || !cmd.regards || !cmd.regards.file || cmd.regards.file.length <= 4) return ''
+			
+			const exampleFolders = ['doc','examples','docs','example','test','tests']
+			
+			for (let i = 0; i < exampleFolders.length; i++) {
+				const examplePath = path.join( BlitzMax.path,
+					path.dirname( cmd.regards.file ),
+					exampleFolders[i],
+					cmd.searchName + '.bmx'
+				)
+				if (await exists( examplePath )) return resolve( examplePath )
+			}
+			
+			return resolve( '' )
+		})
+	}
+	
+	async getExample( cmd: AnalyzeDoc ): Promise<string>{
+		
+		return new Promise<string>( async ( resolve, reject ) => {
+			
+			if (!this.ready){
+				vscode.window.showErrorMessage( 'BlitzMax not ready!' )
+				return reject()
+			}
+			
+			let text = await readFile( await this.hasExample( cmd ) )
+			
+			return resolve( text )
+		})
+	}
+	
+	async showExample( cmd: AnalyzeDoc, showAbout: boolean ){
+		return new Promise<string>( async ( resolve, reject ) => {
+			
+			if (!this.ready){
+				vscode.window.showErrorMessage( 'BlitzMax not ready!' )
+				return reject()
+			}
+			
+			let doc: vscode.TextDocument
+			
+			if (showAbout){
+				let text: string = 'rem ' + cmd.regards.name
+				text += '\n\ninfo: ' + cmd.info
+				if (cmd.aboutStripped ) text += '\n\nabout: ' + cmd.aboutStripped
+				text += '\nendrem\n'
+				
+				if (await this.hasExample( cmd )){
+					text += '\n\' example:\n'
+					text += await this.getExample( cmd )
+				}
+				
+				doc = await vscode.workspace.openTextDocument( { content: text, language: 'blitzmax' } )
+			}else{
+				const uri = vscode.Uri.parse( 'file:' + await this.hasExample( cmd ) )
+				doc = await vscode.workspace.openTextDocument( uri )
+			}
+			
+			await vscode.window.showTextDocument( doc, { preview: true, viewColumn: vscode.ViewColumn.Active } )
+			
+			return resolve()
+		})
 	}
 }
 export let BlitzMax: BlitzMaxHandler = new BlitzMaxHandler()

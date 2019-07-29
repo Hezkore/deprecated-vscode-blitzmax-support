@@ -4,7 +4,6 @@ import * as vscode from 'vscode'
 import * as path from 'path'
 import { readFile, readDir, readStats, writeFile, exists, capitalize } from './common'
 import { BlitzMax } from './blitzmax'
-import { fstat } from 'fs';
 
 export interface BmxModule{
 	name?: string,
@@ -142,7 +141,7 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 			
 			// Save updated modules
 			console.log( 'Module changes:', changedModules )
-			//if (changedModules > 0) saveModules( modJsonPath )
+			if (changedModules > 0) saveModules( modJsonPath )
 			console.log( 'Commands:', BlitzMax._commands.length )
 			return resolve()
 		})
@@ -193,7 +192,8 @@ export interface AnalyzeOptions{
 	file: string,
 	module?: boolean,
 	forceModuleName?: AnalyzeItem,
-	imports?: boolean
+	imports?: boolean,
+	skipImports?: string[]
 }
 export interface AnalyzeResult{
 	moduleName?: AnalyzeItem,
@@ -209,7 +209,8 @@ export interface AnalyzeItem{
 	file: string,
 	name?: string,
 	returns?: string,
-	type?: string
+	type?: string,
+	inside?: AnalyzeItem
 }
 export interface AnalyzeItemArgs{
 	name: string,
@@ -220,6 +221,7 @@ export interface AnalyzeDoc{
 	info: string,
 	line: number,
 	about?: string,
+	aboutStripped?: string,
 	returns?: string,
 	regards: AnalyzeItem,
 	searchName: string,
@@ -258,7 +260,6 @@ function cleanAboutInfo( item: AnalyzeDoc ): Promise<AnalyzeDoc>{
 				buildLink = false
 				linkWord = ''
 			}
-			
 			if (finishWith.length <= 0){
 				switch (letter) {
 					case '@':
@@ -289,6 +290,8 @@ function cleanAboutInfo( item: AnalyzeDoc ): Promise<AnalyzeDoc>{
 			}
 			
 			if (!skipChars.includes( letter )){
+				if (!item.aboutStripped) item.aboutStripped = ''
+				item.aboutStripped += letter
 				result += letter
 				if (buildLink) linkWord += letter
 			}
@@ -637,6 +640,9 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 		let inside: AnalyzeBlock | undefined = AnalyzeBlock.nothing
 		let regardsParent: AnalyzeDoc | undefined
 		let bbdocTag: string = ''
+		let insideCommand: AnalyzeItem[] = []
+		let insideKeywords = ['type','enum','interface','struct']
+		let insideKeywordsEnds = ['endtype','endenum','endinterface','endstruct']
 		
 		if (options.forceModuleName){
 			
@@ -654,13 +660,6 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 			sliceLine = line
 			
 			// Next line
-			/*
-			if (i+1 < lines.length){
-				nextLine = lines[i+1].trim()
-				if (nextLine.length > 0) nextLine = nextLine.toLowerCase()
-			}else{ nextLine = '' }
-			*/
-			
 			nextLine = ''
 			for(var i2=i+1; i2<lines.length; i2++){
 				
@@ -677,7 +676,8 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 				regardsParent.regards = await cleanAnalyzeItem({
 					line: i,
 					file: options.file,
-					data: line
+					data: line,
+					inside: regardsParent.regards.inside
 				})
 				
 				if (regardsParent.regards.name){
@@ -699,7 +699,8 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 						result.import.push({
 							line: i,
 							file: options.file,
-							data: line.slice( 'import '.length )
+							data: line.slice( 'import '.length ),
+							inside: insideCommand[insideCommand.length - 1]
 						})
 						break
 					}
@@ -710,7 +711,8 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 						result.include.push({
 							line: i,
 							file: options.file,
-							data: line.slice( 'include '.length )
+							data: line.slice( 'include '.length ),
+							inside: insideCommand[insideCommand.length - 1]
 						})
 						break
 					}
@@ -729,12 +731,36 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 							result.moduleName ={
 								line: i,
 								file: options.file,
-								data: line.slice( 'module '.length )
+								data: line.slice( 'module '.length ),
+								inside: insideCommand[insideCommand.length - 1]
 							}
 							break
 						}
 					}
 					
+					// Blocks
+					for (let ki = 0; ki < insideKeywords.length; ki++) {
+						const key = insideKeywords[ki]
+						
+						if (lineLower.startsWith(key + ' ')){
+							
+							insideCommand.push({
+								line: i,
+								file: options.file,
+								data: line
+							})
+							break
+						}
+					}
+					for (let ki = 0; ki < insideKeywordsEnds.length; ki++) {
+						const key = insideKeywordsEnds[ki]
+						
+						if (lineLower.replace( ' ', '' ).startsWith(key)){
+							
+							insideCommand.pop()
+							break
+						}
+					}
 					break
 				
 				case AnalyzeBlock.rem:
@@ -759,7 +785,8 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 							module: moduleName,
 							regards: { file: '',
 							line: 0,
-							data: ''
+							data: '',
+							inside: insideCommand[insideCommand.length - 1]
 						 	}
 						})
 						regardsParent = result.bbdoc[ result.bbdoc.length - 1 ]
@@ -889,7 +916,11 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 			}
 		}
 		
+		// Scan imports as well
 		if (result && result.import){
+			
+			let filesToImport: string[] = []
+			
 			for(var i=0; i<result.import.length; i++){
 				
 				let imp = result.import[i]
@@ -908,16 +939,33 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 				
 				let importPath = path.join( path.dirname( imp.file ), importFile )
 				
+				// Do we skip this import?
+				if (options.skipImports && options.skipImports.includes( importPath ) || !options.skipImports){
+					
+					filesToImport.push( importPath )
+					if (!options.skipImports) options.skipImports = []
+					options.skipImports.push( importPath )
+					//console.log( importPath )
+				}else{
+					
+					//console.log( 'Skipping import: ' + importPath )
+				}
+			}
+			
+			for (let i = 0; i < filesToImport.length; i++) {
+				let importFile: string = filesToImport[i]
+				
 				// Load the import source file
-				let data = await readFile( path.join( BlitzMax.path, importPath ) )			
+				let data = await readFile( path.join( BlitzMax.path, importFile ) )			
 				
 				// Send the module source to our analyzer
 				let importResult = await analyzeBmx({
 					data: data,
-					file: importPath,
+					file: importFile,
 					forceModuleName: result.moduleName,
 					module: options.module,
-					imports: true
+					imports: true,
+					skipImports: options.skipImports
 				})
 				
 				if (importResult.bbdoc){
@@ -934,14 +982,13 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 						}
 					}
 				}
-				
 			}
 		}
 		
 		// DEBUG
 		if (result.moduleName && result.moduleName.data.endsWith( 'BRL.StandardIO' )){
 			
-			console.log( result )
+			//console.log( result )
 		}
 		
 		return resolve( result )

@@ -4,7 +4,7 @@ import * as vscode from 'vscode'
 import { BlitzMax } from './blitzmax'
 
 export class BmxHoverProvider implements vscode.HoverProvider {
-	provideHover( document: vscode.TextDocument, position: vscode.Position ): any {
+	async provideHover( document: vscode.TextDocument, position: vscode.Position ): Promise<any> {
 		
 		let wordRange = document.getWordRangeAtPosition( position )
 		if (!wordRange) return
@@ -22,12 +22,21 @@ export class BmxHoverProvider implements vscode.HoverProvider {
 			if (!cmd || !cmd.info) continue
 			
 			const contents = new vscode.MarkdownString()
+			
 			let dataLine = cmd.regards.prettyData
 			if (!dataLine) dataLine = cmd.regards.data
+			
 			contents.appendCodeblock( dataLine, 'blitzmax' )
 			contents.appendMarkdown( cmd.info )
 			if (cmd.about){
 				contents.appendMarkdown( '\n\n' + cmd.about )
+			}
+			if (await BlitzMax.hasExample( cmd )){
+				
+				let exampleLink = vscode.Uri.parse(
+					`command:blitzmax.findHelp?${encodeURIComponent(JSON.stringify(cmd.searchName + '&false'))}`
+				)
+				contents.appendMarkdown( '\n\n[Example](' + exampleLink + ')')
 			}
 			contents.appendMarkdown( '\n\n*' + cmd.module + '*')
 			

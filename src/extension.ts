@@ -1,9 +1,7 @@
 'use strict'
 
 import * as vscode from 'vscode'
-import * as fs from 'fs'
-import * as path from 'path'
-import { setWorkspaceSourceFile, currentWord, currentBmx, bmxBuild, exists } from './common'
+import { setWorkspaceSourceFile, currentWord, currentBmx, bmxBuild, readFile } from './common'
 import { BmxFormatProvider } from './formatProvider'
 import { BmxActionProvider } from './actionProvider'
 import { BmxDefinitionProvider } from './definitionProvider'
@@ -12,12 +10,9 @@ import { BmxCompletionProvider } from './completionProvider'
 import { BmxSignatureHelpProvider } from './signatureHelpProvider'
 import { BmxHoverProvider } from './hoverProvider'
 import { BlitzMax } from './blitzmax'
+import { AnalyzeDoc } from './bmxModules';
 
-async function startup( context:vscode.ExtensionContext ) {	
-	
-	console.log( 'Start' )
-	
-	await BlitzMax.setup( context )
+async function registerProviders( context:vscode.ExtensionContext ) {	
 	
 	// Make BlitzMax reload if path is changed
 	context.subscriptions.push(
@@ -53,7 +48,8 @@ async function startup( context:vscode.ExtensionContext ) {
 		)
 	)
 	
-	// Text Document Content Providers
+	// Text document content providers
+	/*
 	context.subscriptions.push( vscode.workspace.registerTextDocumentContentProvider( 'bmx-external',
 		new class implements vscode.TextDocumentContentProvider {		
 			provideTextDocumentContent( uri: vscode.Uri ): string {
@@ -61,12 +57,12 @@ async function startup( context:vscode.ExtensionContext ) {
 				return fs.readFileSync( uri.fsPath, 'utf8' ).toString()
 			}
 		}
-	))
+	))*/
 	
 	// Hover provider
 	context.subscriptions.push(
 		vscode.languages.registerHoverProvider( { scheme: 'file', language: 'blitzmax' },
-			new BmxHoverProvider()
+		new BmxHoverProvider()
 		)
 	)
 	
@@ -103,45 +99,40 @@ async function startup( context:vscode.ExtensionContext ) {
 	context.subscriptions.push(
 		vscode.tasks.registerTaskProvider( 'bmx', new BmxTaskProvider)
 	)
+}
+
+async function registerCommands( context:vscode.ExtensionContext ) {
 	
-	// Commands
 	context.subscriptions.push(
 		vscode.commands.registerCommand( 'blitzmax.findHelp', async ( word: string ) => {
 			
-			if (!BlitzMax.ready) return
+			let showAbout: boolean = true
+			// Okay this is a dirty hack, just sue me already!
+			// Or send a tip on how to pass a second param
+			// to a registered VSCode command
+			if (word && word.endsWith( '&false' )){
+				
+				word = word.slice( 0, -6 )
+				showAbout = false
+			}
 			
-			if (!word) word = currentWord()
-			if (!word) return
-			word = word.toLowerCase()
-			
-			let cmds = BlitzMax.getCommand( word )
-			if (!cmds || cmds.length <= 0) return
+			let cmds: AnalyzeDoc[]
+			if (word){
+				cmds = BlitzMax.getCommand( word )
+			}else{
+				cmds = BlitzMax.getCommand( currentWord() )
+			}
 			
 			// Find a command
 			for(var i=0; i<cmds.length; i++){
 				
 				const cmd = cmds[i]
-				if (!cmd || !cmd.info) continue
 				
-				let examplePath = path.join( BlitzMax.path,
-					path.dirname( cmd.regards.file ),
-					'doc',
-					cmd.searchName + '.bmx'
-				)
-				if (!exists( examplePath )){
-					examplePath = path.join( BlitzMax.path,
-						path.dirname( cmd.regards.file ),
-						'examples',
-						cmd.searchName + '.bmx'
-					)
-				}
-				
-				let uri = vscode.Uri.parse( 'bmx-external:' + examplePath )
-				let doc = await vscode.workspace.openTextDocument( uri )
-				vscode.window.showTextDocument( doc, { preview: true } )
-				
+				await BlitzMax.showExample( cmd, showAbout )
 				return
 			}
+			
+			return
 		})
 	)
 	
@@ -200,12 +191,16 @@ async function startup( context:vscode.ExtensionContext ) {
 			vscode.commands.executeCommand( 'workbench.action.tasks.build' )
 		})
 	)
-	
 }
 
 export function activate( context: vscode.ExtensionContext ): void {
 	
-	startup( context )
+	console.log( 'Start' )
+	
+	BlitzMax.setup( context )
+	
+	registerCommands( context )
+	registerProviders( context )
 }
 
 export function deactivate(): void {

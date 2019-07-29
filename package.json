@@ -35,12 +35,12 @@
 		"menus": {
 			"editor/title": [
 				{
-					"when": "resourceLangId == blitzmax",
+					"when": "editorLangId == blitzmax",
 					"command": "blitzmax.build",
 					"group": "navigation@1"
 				},
 				{
-					"when": "resourceLangId == blitzmax",
+					"when": "editorLangId == blitzmax",
 					"command": "blitzmax.quickBuild",
 					"group": "navigation@0"
 				}
@@ -82,12 +82,12 @@
 			{
 				"command": "blitzmax.quickBuild",
 				"key": "f5",
-				"when": "resourceLangId == blitzmax"
+				"when": "editorLangId == blitzmax"
 			},
 			{
 				"command": "blitzmax.findHelp",
 				"key": "f1",
-				"when": "resourceLangId == blitzmax"
+				"when": "editorLangId == blitzmax"
 			}
 		],
 		"commands": [
