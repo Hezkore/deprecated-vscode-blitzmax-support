@@ -55,25 +55,25 @@
 	
 	"Enum" : {
 		"prefix" : "Enum",
-		"body" : [ "Enum ${1:Identifier}", "\t", "\t$0", "EndEnum" ],
+		"body" : [ "Enum E${1:Identifier}", "\t", "\t$0", "EndEnum" ],
 		"description" : "Enumerator"
 	},
 	
 	"Type" : {
 		"prefix" : "Type",
-		"body" : [ "Type ${1:Identifier}", "\t", "\t$0", "EndType" ],
+		"body" : [ "Type T${1:Identifier}", "\t", "\t$0", "EndType" ],
 		"description" : "Type"
 	},
 	
 	"Interface" : {
 		"prefix" : "Interface",
-		"body" : [ "Interface ${1:Identifier}", "\t", "\t$0", "EndInterface" ],
+		"body" : [ "Interface I${1:Identifier}", "\t", "\t$0", "EndInterface" ],
 		"description" : "Interface"
 	},
 	
 	"Struct" : {
 		"prefix" : "Struct",
-		"body" : [ "Struct ${1:Identifier}", "\t", "\t$0", "EndStruct" ],
+		"body" : [ "Struct S${1:Identifier}", "\t", "\t$0", "EndStruct" ],
 		"description" : "Structure"
 	},
 	

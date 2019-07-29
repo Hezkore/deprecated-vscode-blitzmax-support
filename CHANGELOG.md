@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.7.1
+* Updated snippets.
+
 ## Version 1.7.0
 * New custom documentations scanner.
 * Hover tips.
