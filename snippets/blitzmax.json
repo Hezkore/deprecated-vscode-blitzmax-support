@@ -7,13 +7,13 @@
 	
 	"Function" : {
 		"prefix" : "Function",
-		"body" : [ "Function ${1:Identifier}:${2:ReturnType}( ${3:Parameters} )", "\t", "\t$0", "EndFunction" ],
+		"body" : [ "Function ${1:Identifier}( ${2:Parameters} )", "\t", "\t$0", "EndFunction" ],
 		"description" : "Function"
 	},
 	
 	"Method" : {
 		"prefix" : "Method",
-		"body" : [ "Method ${1:Identifier}:${2:ReturnType}( ${3:Parameters} )", "\t", "\t$0", "EndMethod" ],
+		"body" : [ "Method ${1:Identifier}( ${2:Parameters} )", "\t", "\t$0", "EndMethod" ],
 		"description" : "Method"
 	},
 	
