@@ -609,7 +609,8 @@ async function cleanAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
 				
 			case 'keyword:':
 				if (item.name){
-					item.prettyData = 'Keyword ' + item.name.slice( 1, -1 )
+					item.name = item.name.slice( 1, -1 )
+					item.prettyData = 'Keyword ' + item.name
 				}
 				break
 				

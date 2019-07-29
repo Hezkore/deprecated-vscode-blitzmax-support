@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+# Version 1.7.3
+* Keywords no longer include ".
+
 # Version 1.7.2
 * More snippets updates.
 
