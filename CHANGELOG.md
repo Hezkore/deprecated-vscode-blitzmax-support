@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.7.6
+* Function name detection now support Arrays.
+
 ## Version 1.7.5
 * Updated snippets.
 
@@ -7,7 +10,7 @@
 * Fixed a "Go to Definition" error.
 
 # Version 1.7.3
-* Keywords no longer include ".
+* Keywords no longer include quotation marks.
 
 # Version 1.7.2
 * More snippets updates.

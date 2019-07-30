@@ -182,7 +182,7 @@
 			"name" : "support.function.bmx"
 		},
 		{
-			"match" : "\\b(?i:(?<!\\:)((?!\\d)\\w+\\b)(?=\\:?\\w*\\())",
+			"match" : "\\b(?i:(?<!\\:)((?!\\d)\\w+\\b)(?=\\:?\\w*(?:\\<\\w*\\>)?(?:\\[\\])?\\())",
 			"name" : "entity.name.function.bmx"
 		},
 		{
