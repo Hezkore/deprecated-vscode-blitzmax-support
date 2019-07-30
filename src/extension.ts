@@ -12,6 +12,7 @@ import { BmxHoverProvider } from './hoverProvider'
 import { BlitzMax } from './blitzmax'
 import { AnalyzeDoc } from './bmxModules';
 
+
 async function registerProviders( context:vscode.ExtensionContext ) {	
 	
 	// Make BlitzMax reload if path is changed

@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.7.5
+* Updated snippets.
+
 # Version 1.7.4
 * Fixed a "Go to Definition" error.
 
