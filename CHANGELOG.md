@@ -1,5 +1,9 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.7.7
+* Updated snippets.
+* Better conditional compiling detection.
+
 ## Version 1.7.6
 * Function name detection now support Arrays.
 

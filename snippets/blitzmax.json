@@ -1,7 +1,7 @@
 {
 	"Rem Block" : {
-		"prefix" : "rem",
-		"body" : [ "rem $0", "endrem" ],
+		"prefix" : "Rem",
+		"body" : [ "Rem $0", "EndRem" ],
 		"description" : "Remember"
 	},
 	
@@ -25,13 +25,13 @@
 	
 	"For" : {
 		"prefix" : "For",
-		"body" : [ "For Local ${1:IndexVariable} = 0 Until ${2:LastValue}", "\t", "\tLocal ${3:Element} = ${2:LastValue}[${1:IndexVariable}]", "\t$0", "Next" ],
+		"body" : [ "For Local ${1:IndexVariable} = 0 Until ${2:LastValue}", "\t", "\t$0", "Next" ],
 		"description" : "For Loop"
 	},
 	
 	"For Step" : {
 		"prefix" : "For Step",
-		"body" : [ "For Local ${1:IndexVariable} = 0 Until ${2:LastValue} Step ${3:StepSize}", "\t", "\tLocal ${4:Element} = ${2:LastValue}[${1:IndexVariable}]", "\t$0", "Next" ],
+		"body" : [ "For Local ${1:IndexVariable} = 0 Until ${2:LastValue} Step ${3:StepSize}", "\t", "\t$0", "Next" ],
 		"description" : "For Step Loop"
 	},
 	
