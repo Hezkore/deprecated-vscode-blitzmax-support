@@ -13,7 +13,13 @@ export class BmxDefinitionProvider implements vscode.DefinitionProvider {
         const word = currentWord().toLowerCase()
 		if (!word) return null
 		
-		const cmds = BlitzMax.getCommand( word )
+		// Attempt to get functions and normal commands
+		let cmds = BlitzMax.getCommand( word, false )
+		
+		if (!cmds || cmds.length <= 0){
+			cmds = BlitzMax.getCommand( word, true )
+		}
+		
 		if (!cmds || cmds.length <= 0) return null
 		
 		const defs: vscode.Location[] = []

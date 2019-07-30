@@ -312,6 +312,7 @@ async function cleanAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
 		let insideString: boolean = false
 		let insideArgs: number = 0
 		let argCount: number = -1
+		let done: boolean = false
 		
 		for(var i=0; i<item.data.length; i++){
 			
@@ -379,6 +380,18 @@ async function cleanAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
 						
 						item.name += letter
 					}else{
+						
+						if (letter == ' '){
+							
+							switch (item.type) {
+								case 'type':
+								case 'interface':
+								case 'struct':
+									
+									done = true
+									break
+							}
+						}
 						
 						if (nextSymbol == ':'){
 							part = ItemProcessPart.returns
@@ -511,6 +524,8 @@ async function cleanAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
 					}
 					break
 			}
+			
+			if (done) break
 		}
 		
 		// Prettify arg returns

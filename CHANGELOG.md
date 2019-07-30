@@ -1,5 +1,9 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.7.8
+* Better Type, Struct and Interface documentation.
+* "Go to Definition" will now scan deeper if no result was initially found.
+
 ## Version 1.7.7
 * Updated snippets.
 * Better conditional compiling detection.
