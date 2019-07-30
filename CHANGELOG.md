@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+# Version 1.7.4
+* Fixed a "Go to Definition" error.
+
 # Version 1.7.3
 * Keywords no longer include ".
 

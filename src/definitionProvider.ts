@@ -23,7 +23,7 @@ export class BmxDefinitionProvider implements vscode.DefinitionProvider {
 			
 			defs.push(
 				new vscode.Location(
-					vscode.Uri.parse( 'bmx-external:' + path.join( BlitzMax.path, cmds[i].regards.file ) ),
+					vscode.Uri.parse( 'file:' + path.join( BlitzMax.path, cmds[i].regards.file ) ),
 					new vscode.Position( cmds[i].regards.line, 0 )
 				)
 			)
