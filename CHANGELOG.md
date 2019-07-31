@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.7.10
+* Fixed initial module building.
+
 ## Version 1.7.9
 * Better Type Tag Shortcut documentation.
 * Functions and Methods now show return type.
