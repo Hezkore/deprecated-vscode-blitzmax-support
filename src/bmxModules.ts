@@ -2,7 +2,7 @@
 
 import * as vscode from 'vscode'
 import * as path from 'path'
-import { readFile, readDir, readStats, writeFile, exists, capitalize } from './common'
+import { readFile, readDir, readStats, writeFile, exists, capitalize, convertTypeTagShortcut, makeReturnPretty } from './common'
 import { BlitzMax } from './blitzmax'
 
 export interface BmxModule{
@@ -367,6 +367,16 @@ async function cleanAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
 					
 					if (letter != ' '){
 						
+						if (letter == '%' ||
+						letter == '#' ||
+						letter == '!' ||
+						letter == '$'){
+							
+							item.returns = convertTypeTagShortcut( letter )
+							part = ItemProcessPart.returns
+							break
+						}
+						
 						if (letter == ':'){
 							part = ItemProcessPart.returns
 							break
@@ -381,16 +391,13 @@ async function cleanAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
 						item.name += letter
 					}else{
 						
-						if (letter == ' '){
-							
-							switch (item.type) {
-								case 'type':
-								case 'interface':
-								case 'struct':
-									
-									done = true
-									break
-							}
+						switch (item.type) {
+							case 'type':
+							case 'interface':
+							case 'struct':
+								
+								done = true
+								break
 						}
 						
 						if (nextSymbol == ':'){
@@ -487,6 +494,8 @@ async function cleanAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
 					if (item.args[argCount] && part != ItemProcessPart.argReturn){
 						item.args[argCount].returns = item.args[argCount].returns.trim()
 						
+						item.args[argCount].returns = convertTypeTagShortcut( item.args[argCount].returns )
+						/*
 						switch (item.args[argCount].returns) {
 							case '%':
 								item.args[argCount].returns = 'Int'
@@ -504,6 +513,7 @@ async function cleanAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
 								item.args[argCount].returns = 'String'
 								break
 						}
+						*/
 					}
 					break
 					
@@ -528,7 +538,8 @@ async function cleanAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
 			if (done) break
 		}
 		
-		// Prettify arg returns
+		// Prettify return & arg returns
+		item.returns =  makeReturnPretty( item.returns, false )
 		if (item.args && item.args.length > 0){
 			for(var i=0; i<item.args.length; i++){
 				
@@ -538,63 +549,7 @@ async function cleanAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
 					continue
 				}
 				
-				switch (item.args[i].returns.toLowerCase()) {
-					case 'byte':
-						item.args[i].returns = 'Byte'
-						break
-						
-					case 'short':
-						item.args[i].returns = 'Short'
-						break
-					
-					case 'int':
-						item.args[i].returns = 'Int'
-						break
-						
-					case 'uint':
-						item.args[i].returns = 'UInt'
-						break
-									
-					case 'long':
-						item.args[i].returns = 'Long'
-						break
-										
-					case 'ulong':
-						item.args[i].returns = 'ULong'
-						break
-						
-					case 'float':
-						item.args[i].returns = 'Float'
-						break
-						
-					case 'double':
-						item.args[i].returns = 'Double'
-						break
-						
-					case 'string':
-						item.args[i].returns = 'String'
-						break
-						
-					case 'size_t':
-						item.args[i].returns = 'Size_T'
-						break
-						
-					case 'float64':
-						item.args[i].returns = 'Float64'
-						break
-						
-					case 'int128':
-						item.args[i].returns = 'Int128'
-						break
-						
-					case 'float128':
-						item.args[i].returns = 'Float128'
-						break
-						
-					case 'double128':
-						item.args[i].returns = 'Double128'
-						break
-				}
+				item.args[i].returns = makeReturnPretty( item.args[i].returns )
 			}
 		}
 		
@@ -604,6 +559,7 @@ async function cleanAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
 			case 'method':
 				item.prettyData = capitalize( item.type ) + ' '
 				item.prettyData += item.name
+				if (item.returns) item.prettyData += ':' + item.returns
 				if (item.args){
 					item.prettyData += '( '
 					for(var i=0; i<item.args.length; i++){

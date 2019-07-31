@@ -1,5 +1,9 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.7.9
+* Better Type Tag Shortcut documentation.
+* Functions and Methods now show return type.
+
 ## Version 1.7.8
 * Better Type, Struct and Interface documentation.
 * "Go to Definition" will now scan deeper if no result was initially found.

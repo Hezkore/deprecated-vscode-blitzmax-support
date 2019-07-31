@@ -8,6 +8,68 @@ import * as os from 'os'
 import { BmxTaskDefinition } from './taskProvider'
 import { BlitzMax } from './blitzmax'
 
+export function makeReturnPretty( ret: string | undefined, nullToInt: boolean = true ): string{
+	
+	if (!ret){
+		if (nullToInt){
+			
+			return 'Int'
+		}else{
+			
+			return ''
+		}
+	}
+	
+	switch (ret.toLowerCase()) {
+		case 'byte':
+			return 'Byte'
+		case 'short':
+			return 'Short'
+		case 'int':
+			return 'Int'
+		case 'uint':
+			return 'UInt'		
+		case 'long':
+			return 'Long'							
+		case 'ulong':
+			return 'ULong'			
+		case 'float':
+			return 'Float'
+		case 'double':
+			return 'Double'
+		case 'string':
+			return 'String'
+		case 'size_t':
+			return 'Size_T'	
+		case 'float64':
+			return 'Float64'
+		case 'int128':
+			return 'Int128'
+		case 'float128':
+			return 'Float128'
+		case 'double128':
+			return 'Double128'
+	}
+	
+	return ret
+}
+
+export function convertTypeTagShortcut( tag: string ): string{
+	
+	switch (tag) {
+		case '%':
+			return 'Int'
+		case '#':
+			return 'Float'
+		case '!':
+			return 'Double'
+		case '$':
+			return 'String'
+	}
+	
+	return tag
+}
+
 export async function readDir( path:string ): Promise<string[]> {
 	
     return new Promise(function(resolve, reject) {
