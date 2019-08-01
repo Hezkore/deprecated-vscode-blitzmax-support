@@ -1,4 +1,4 @@
 package-lock.json
 out
 node_modules
-modules.json
+modules-*.json

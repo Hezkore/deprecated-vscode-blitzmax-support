@@ -5,6 +5,8 @@ import * as path from 'path'
 import { readFile, readDir, readStats, writeFile, exists, capitalize, convertTypeTagShortcut, makeReturnPretty } from './common'
 import { BlitzMax } from './blitzmax'
 
+let BmxModuleVersion: String = '1.0'
+
 export interface BmxModule{
 	name?: string,
 	parent: string,
@@ -34,7 +36,7 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 			let changedModules: number = 0
 			
 			// Load existing modules
-			let modJsonPath: string = path.join( context.extensionPath, 'modules.json' )
+			let modJsonPath: string = path.join( context.extensionPath, 'modules-' + BmxModuleVersion + '.json' )
 			if (await exists( modJsonPath )){
 				BlitzMax._modules = modulesFromJson( await readFile( modJsonPath ) )
 			}else{

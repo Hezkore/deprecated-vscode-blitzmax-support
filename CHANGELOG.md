@@ -1,5 +1,9 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.7.12
+* New 'Generate Documentations' command.
+* Better auto-update for modules.
+
 ## Version 1.7.11
 * Better auto-complete for Method and Function.
 

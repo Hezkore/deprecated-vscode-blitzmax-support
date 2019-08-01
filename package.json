@@ -1,6 +1,6 @@
 {
 	"name": "blitzmax",
-	"version": "1.7.11",
+	"version": "1.7.12",
 	"displayName": "BlitzMax Language Basics",
 	"description": "Provides snippets, syntax highlighting, bracket matching and folding in BlitzMax files.",
 	"repository": {
@@ -91,6 +91,11 @@
 			}
 		],
 		"commands": [
+			{
+				"command": "blitzmax.generateDocs",
+				"title": "Generate Documentations",
+				"category": "BlitzMax"
+			},
 			{
 				"command": "blitzmax.findHelp",
 				"title": "Find Help",

@@ -10,7 +10,7 @@ import { BmxCompletionProvider } from './completionProvider'
 import { BmxSignatureHelpProvider } from './signatureHelpProvider'
 import { BmxHoverProvider } from './hoverProvider'
 import { BlitzMax } from './blitzmax'
-import { AnalyzeDoc } from './bmxModules';
+import { AnalyzeDoc, scanModules } from './bmxModules';
 
 
 async function registerProviders( context:vscode.ExtensionContext ) {	
@@ -134,6 +134,13 @@ async function registerCommands( context:vscode.ExtensionContext ) {
 			}
 			
 			return
+		})
+	)
+	
+	context.subscriptions.push(
+		vscode.commands.registerCommand( 'blitzmax.generateDocs', () => {
+			
+			scanModules( context, true )
 		})
 	)
 	
