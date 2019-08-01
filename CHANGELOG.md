@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.7.11
+* Better auto-complete for Method and Function.
+
 ## Version 1.7.10
 * Fixed initial module building.
 

@@ -228,17 +228,23 @@ export class BlitzMaxHandler{
 			switch (cmd.regards.type) {
 				case 'function':
 				case 'method':
-					item.insertText.appendText( '( ' )
 					
 					let args = cmd.regards.args
 					if (args){
+						
+						item.insertText.appendText( '( ' )
+						
 						for(var i=0; i<args.length; i++){
 							item.insertText.appendPlaceholder( args[i].name + ':' + args[i].returns )
 							if (i < args.length - 1) item.insertText.appendText( ', ' )
 						}
+						
+						item.insertText.appendText( ' )' )
+					}else{
+						
+						item.insertText.appendText( '()' )
 					}
 					
-					item.insertText.appendText( ' )' )
 					break
 			}
 			
