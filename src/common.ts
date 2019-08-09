@@ -237,7 +237,9 @@ export async function bmxBuild( make:string, type:string = '', forceDebug:boolea
 	}
 	
 	// Build threaded
-	args.push( vscode.workspace.getConfiguration( 'blitzmax' ).get( 'threaded' ) ? '-h' : '' )
+	if (vscode.workspace.getConfiguration( 'blitzmax' ).get( 'threaded' )){
+		args.push( '-h' )
+	}
 	
 	// Build output
 	let output:string | undefined = vscode.workspace.getConfiguration( 'blitzmax' ).get( 'buildOut' )
@@ -248,7 +250,12 @@ export async function bmxBuild( make:string, type:string = '', forceDebug:boolea
 	
 	// Execute after build
 	let execute:string | undefined = vscode.workspace.getConfiguration( 'blitzmax' ).get( 'execute' )
-	args.push( execute ? '-x' : '' )
+	if (execute){
+		args.push( '-x' )
+	}else{
+		// A forced debug is always executed!
+		if (forceDebug) args.push( '-x' )
+	}
 	
 	// Debug or Release version
 	if (forceDebug){
@@ -259,6 +266,9 @@ export async function bmxBuild( make:string, type:string = '', forceDebug:boolea
 		let version = vscode.workspace.getConfiguration( 'blitzmax' ).get( 'version' )
 		if ( version == 'release' ){ args.push( '-r' ) }else{ args.push( '-d' ) }
 	}
+	
+	// Verbose build
+	if (vscode.workspace.getConfiguration( 'blitzmax' ).get( 'verbose' )) args.push( '-v' )
 	
 	// Actual file to build
 	let source:string | undefined = vscode.workspace.getConfiguration( 'blitzmax' ).get( 'sourceFile' )

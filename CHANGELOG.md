@@ -1,5 +1,11 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.7.13
+* Cleaner build command.
+* Snippets are no longer always at the top of suggestion list.
+* Debug builds will now always execute the app, while build tasks do not.
+* Option for verbose (noisy) build.
+
 ## Version 1.7.12
 * New 'Generate Documentations' command.
 * Better auto-update for modules.
