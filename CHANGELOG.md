@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.7.14
+* BMK absolute path is now used instead of PATH.
+
 ## Version 1.7.13
 * Cleaner build command.
 * Snippets are no longer always at the top of suggestion list.

@@ -301,7 +301,11 @@ export async function bmxBuild( make:string, type:string = '', forceDebug:boolea
 	console.log( args )
 	
 	// Create a tmp task to execute
-	let exec: vscode.ShellExecution = new vscode.ShellExecution( 'bmk', args, { env: { 'PATH': BlitzMax.binPath } } )
+	// Okay so this is a weird one...
+	// Ideally you'd add the Bmx Bin path to PATH and just call 'bmk'
+	// But that CLEARS PATH, so instead we just directly call 'bmk' via its absolute path
+	let bmkPath = path.join( BlitzMax.binPath, 'bmk' )
+	let exec: vscode.ShellExecution = new vscode.ShellExecution( bmkPath, args)//, { env: { 'PATH': BlitzMax.binPath } } )
 	let kind: BmxTaskDefinition = { type: 'bmx' }
 	let task: vscode.Task = new vscode.Task( kind, vscode.TaskScope.Workspace, 'BlitzMax', 'Internal BlitzMax', exec, '$blitzmax' )
 	
