@@ -4,9 +4,7 @@ import * as vscode from 'vscode'
 import * as path from 'path'
 import * as process from 'child_process'
 import * as fs from 'fs'
-import * as os from 'os'
 import { BmxTaskDefinition } from './taskProvider'
-import { BlitzMax } from './blitzmax'
 
 export function makeReturnPretty( ret: string | undefined, nullToInt: boolean = true ): string{
 	
@@ -84,14 +82,14 @@ export async function readDir( path:string ): Promise<string[]> {
 
 export async function readFile( filename:string ): Promise<string> {
 	
-    return new Promise(function(resolve, reject) {
-        fs.readFile(filename, function(err, data){
-            if (err) 
-                reject(err)
-            else 
-                resolve(data.toString())
-        })
-    })
+	return new Promise(function(resolve, reject) {
+		fs.readFile(filename, function(err, data){
+			if (err) 
+				reject(err)
+			else 
+				resolve(data.toString())
+		})
+	})
 }
 
 export async function writeFile( filename: string, data: any ): Promise<boolean> {
@@ -117,12 +115,42 @@ export async function readStats( filename:string ): Promise<fs.Stats> {
 		})
 	})
 }
-export async function setWorkspaceSourceFile( file:string ){
+export function setSourceFile( file: vscode.Uri | undefined ){
 	
-	if (!file){ return }
+	if (!file) return
 	
-	await vscode.workspace.getConfiguration( 'blitzmax' ).update( 'sourceFile', file, undefined )
-	vscode.window.showInformationMessage( file + ' has been set as the workspace source file' )
+	const workPath: vscode.WorkspaceFolder | undefined = vscode.workspace.getWorkspaceFolder( file )
+	if (!workPath) return
+	
+	const config = vscode.workspace.getConfiguration( 'tasks' )
+	if (!config) return
+	
+	const tasks: BmxTaskDefinition | undefined = config.get( 'tasks' )
+	if (!tasks){
+		
+		vscode.commands.executeCommand( 'workbench.action.tasks.configureDefaultBuildTask' )
+		return
+	}
+	
+	let updatedTasks: BmxTaskDefinition[] = []
+	let foundDefault: boolean = false
+	for (let i = 0; i < tasks.length; i++) {
+		const def: BmxTaskDefinition = tasks[i]
+		if (!def) continue
+		
+		if (def.group.isDefault){
+			
+			const filePath: string = path.relative( workPath.uri.fsPath, file.fsPath )
+			def.source = filePath
+			foundDefault = true
+			vscode.window.showInformationMessage( filePath + ' has been set as the default task source' )
+		}
+		updatedTasks.push( def )
+	}
+	
+	config.update( 'tasks', updatedTasks )
+	
+	if (!foundDefault) vscode.window.showErrorMessage( 'No default task configured' )
 }
 
 export function getWordAt( document:vscode.TextDocument, position:vscode.Position ): string{
@@ -161,168 +189,34 @@ export function capitalize( text:string ): string{
 	return result
 }
 
-export function currentBmx():string{
+export function currentBmx(): vscode.Uri | undefined {
 	
-	let fileType:string = '.bmx'
-	let noFileMsg:string = 'No ' + fileType + ' file open.'
-	let notFileMsg:string = 'This is not a ' + fileType + ' file'
+	const fileType:string = '.bmx'
+	const noFileMsg:string = 'No ' + fileType + ' file open.'
+	const notFileMsg:string = 'This is not a ' + fileType + ' file'
 	
-	let textEditor = vscode.window.activeTextEditor
+	const textEditor = vscode.window.activeTextEditor
 	if (!textEditor) {
 		
 		vscode.window.showErrorMessage( noFileMsg )
-		return ''
+		return
 	}
 	
-	let document = textEditor.document
+	const document = textEditor.document
 	if (!document) {
 		
 		vscode.window.showErrorMessage( noFileMsg )
-		return ''
+		return
 	}
 	
-	let filename = document.fileName
-	if ( !filename.toLowerCase().endsWith( fileType ) )  {
+	const file = document.uri
+	if ( !file.fsPath.toLowerCase().endsWith( fileType ) )  {
 		
 		vscode.window.showErrorMessage( notFileMsg )
-		return ''
+		return
 	}
 	
-	return filename
-}
-
-export async function bmxBuild( make:string, type:string = '', forceDebug:boolean = false, quick:boolean = false ){
-	
-	if (!BlitzMax.ready) return
-	
-	// make* type (makeapp, makemods, makelib)
-	make = make.toLowerCase()
-	let args:string[] = [ make ]
-	
-	// App type (makeapp only)
-	if (make == 'makeapp' && type){
-		args.push( '-t' )
-		args.push( type )
-	}
-	
-	if (!BlitzMax.legacy){
-		// Architecture
-		let arch:string | undefined = vscode.workspace.getConfiguration( 'blitzmax' ).get( 'architecture' )
-		if (!arch || arch.toLowerCase() == 'auto'){ arch = os.arch() }
-		args.push( '-g' )
-		args.push( arch )
-		
-		// Platform
-		let platform:string | undefined = vscode.workspace.getConfiguration( 'blitzmax' ).get( 'platform' )
-		if (!platform || platform.toLowerCase() == 'auto'){ 
-			switch (os.platform().toLowerCase()) {
-				case 'darwin':
-					platform = 'macos'
-					break
-					
-				default:
-					platform = os.platform().toLowerCase()
-					break
-			}
-		}
-		args.push( '-l' )
-		args.push( platform )
-		
-		// Warn about NG stuff
-		let funcArgCasting = vscode.workspace.getConfiguration( 'blitzmax' ).get( 'funcArgCasting' )
-		if ( funcArgCasting == 'warn' ){ args.push( '-w' ) }
-		
-		// Do a quick build
-		if (quick){ args.push( '-quick' ) }
-	}
-	
-	// Build threaded
-	if (vscode.workspace.getConfiguration( 'blitzmax' ).get( 'threaded' )){
-		args.push( '-h' )
-	}
-	
-	// Build output
-	let output:string | undefined = vscode.workspace.getConfiguration( 'blitzmax' ).get( 'buildOut' )
-	if (output){
-		args.push( '-o' )
-		args.push( output )
-	}
-	
-	// Execute after build
-	let execute:string | undefined = vscode.workspace.getConfiguration( 'blitzmax' ).get( 'execute' )
-	if (execute){
-		args.push( '-x' )
-	}else{
-		// A forced debug is always executed!
-		if (forceDebug) args.push( '-x' )
-	}
-	
-	// Debug or Release version
-	if (forceDebug){
-		
-		args.push( '-d' )
-	}else{
-		
-		let version = vscode.workspace.getConfiguration( 'blitzmax' ).get( 'version' )
-		if ( version == 'release' ){ args.push( '-r' ) }else{ args.push( '-d' ) }
-	}
-	
-	// Verbose build
-	if (vscode.workspace.getConfiguration( 'blitzmax' ).get( 'verbose' )) args.push( '-v' )
-	
-	// Actual file to build
-	let source:string | undefined = vscode.workspace.getConfiguration( 'blitzmax' ).get( 'sourceFile' )
-	if ( !source ){ // No source file set, figure one out!
-		
-		// Is a source file even open?
-		let filename:string = currentBmx()
-		if ( !filename ){ return }		
-		
-		// Do we automatically set the workspace source file?
-		if (vscode.workspace.getConfiguration( 'blitzmax' ).get( 'autoSetSourceFile' )){
-			
-			// Yep, set the current file as the workspace source file
-			await setWorkspaceSourceFile( filename )
-			//setWorkspaceSourceFile( filename )
-			
-			// Update our source
-			source = vscode.workspace.getConfiguration( 'blitzmax' ).get( 'sourceFile' )
-			//source = filename
-		}else{
-			
-			// Nope, use current file for now
-			source = filename
-		}
-	}
-	if ( !source ){ return }
-	args.push( source )
-	
-	//console.log( "NG: " + bmxNg )
-	console.log( args )
-	
-	// Create a tmp task to execute
-	// Okay so this is a weird one...
-	// Ideally you'd add the Bmx Bin path to PATH and just call 'bmk'
-	// But that CLEARS PATH, so instead we just directly call 'bmk' via its absolute path
-	let bmkPath = path.join( BlitzMax.binPath, 'bmk' )
-	let exec: vscode.ShellExecution = new vscode.ShellExecution( bmkPath, args)//, { env: { 'PATH': BlitzMax.binPath } } )
-	let kind: BmxTaskDefinition = { type: 'bmx' }
-	let task: vscode.Task = new vscode.Task( kind, vscode.TaskScope.Workspace, 'BlitzMax', 'Internal BlitzMax', exec, '$blitzmax' )
-	
-	// Setup the task to function a bit like MaxIDE
-	task.presentationOptions.echo = false
-	task.presentationOptions.reveal = vscode.TaskRevealKind.Always
-	task.presentationOptions.focus = false
-	task.presentationOptions.panel = vscode.TaskPanelKind.Shared
-	task.presentationOptions.showReuseMessage = false
-	task.presentationOptions.clear = true
-	
-	// Some cleanup
-	task.definition = kind
-	task.group = vscode.TaskGroup.Build
-	
-	// EXECUTE!
-	vscode.tasks.executeTask( task )
+	return file
 }
 
 export async function exec( command: string, options: process.ExecOptions ): Promise<{ stdout: string; stderr: string }> {

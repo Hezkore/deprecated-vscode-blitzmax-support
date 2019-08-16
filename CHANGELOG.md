@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.8.0
+* Build related options has been moved into tasks.json.
+
 ## Version 1.7.14
 * BMK absolute path is now used instead of PATH.
 

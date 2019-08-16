@@ -1,17 +1,29 @@
 'use strict'
 
 import * as vscode from 'vscode'
-import { setWorkspaceSourceFile, currentWord, currentBmx, bmxBuild, readFile } from './common'
+import { setSourceFile, currentWord, currentBmx } from './common'
 import { BmxFormatProvider } from './formatProvider'
 import { BmxActionProvider } from './actionProvider'
 import { BmxDefinitionProvider } from './definitionProvider'
-import { BmxTaskProvider } from './taskProvider'
+import { currentDefinition, BmxTaskProvider, makeTask } from './taskProvider'
 import { BmxCompletionProvider } from './completionProvider'
 import { BmxSignatureHelpProvider } from './signatureHelpProvider'
 import { BmxHoverProvider } from './hoverProvider'
 import { BlitzMax } from './blitzmax'
 import { AnalyzeDoc, scanModules } from './bmxModules';
 
+export function activate( context: vscode.ExtensionContext ) {
+	
+	console.log( 'Start' )
+	
+	BlitzMax.setup( context )
+	
+	registerCommands( context )
+	registerProviders( context )
+}
+
+export function deactivate(): void {
+}
 
 async function registerProviders( context:vscode.ExtensionContext ) {	
 	
@@ -49,17 +61,6 @@ async function registerProviders( context:vscode.ExtensionContext ) {
 		)
 	)
 	
-	// Text document content providers
-	/*
-	context.subscriptions.push( vscode.workspace.registerTextDocumentContentProvider( 'bmx-external',
-		new class implements vscode.TextDocumentContentProvider {		
-			provideTextDocumentContent( uri: vscode.Uri ): string {
-				
-				return fs.readFileSync( uri.fsPath, 'utf8' ).toString()
-			}
-		}
-	))*/
-	
 	// Hover provider
 	context.subscriptions.push(
 		vscode.languages.registerHoverProvider( { scheme: 'file', language: 'blitzmax' },
@@ -71,23 +72,6 @@ async function registerProviders( context:vscode.ExtensionContext ) {
 	/*context.subscriptions.push(
 		vscode.languages.registerDocumentFormattingEditProvider('blitzmax', new BmxFormatProvider )
 	)*/
-	
-	// Help document content provider
-	/*
-	context.subscriptions.push( vscode.workspace.registerTextDocumentContentProvider( 'bmx-help',
-		new class implements vscode.TextDocumentContentProvider {		
-			provideTextDocumentContent( uri: vscode.Uri ): string {
-				
-				let word: string =  uri.path.slice(
-					uri.path.split( '-' )[0].length + 2).toLowerCase()
-				let item:HelpObject | undefined = helpStack.get( word )
-				
-				if (item){ return item.docsExample }
-				
-				return 'No help for "' + word + '"'
-			}
-		}
-	))*/
 	
 	// Action provider
 	/*context.subscriptions.push(
@@ -145,71 +129,49 @@ async function registerCommands( context:vscode.ExtensionContext ) {
 	)
 	
 	context.subscriptions.push(
-		vscode.commands.registerCommand( 'blitzmax.buildConsole', () => {
+		vscode.commands.registerCommand( 'blitzmax.buildCustom', async ( def: string ) => {
 			
-			bmxBuild( 'makeapp', 'console' )
+			vscode.window.showInformationMessage( def )
+			
+			return
 		})
 	)
 	
 	context.subscriptions.push(
-		vscode.commands.registerCommand( 'blitzmax.buildGui', () => {
+		vscode.commands.registerCommand( 'blitzmax.setSourceFile', context => {
 			
-			bmxBuild( 'makeapp', 'gui' )
-		})
-	)
-	
-	context.subscriptions.push(
-		vscode.commands.registerCommand( 'blitzmax.buildMods', () => {
-			
-			bmxBuild( 'makemods' )
-		})
-	)
-	
-	context.subscriptions.push(
-		vscode.commands.registerCommand( 'blitzmax.buildLib', () => {
-			
-			bmxBuild( 'makelib' )
-		})
-	)
-	
-	context.subscriptions.push(
-		vscode.commands.registerCommand( 'blitzmax.setSourceFile', () => {
-			
-			setWorkspaceSourceFile( currentBmx() )
-		})
-	)
-	
-	context.subscriptions.push(
-		vscode.commands.registerCommand( 'blitzmax.setSourceFileMenu', context => {
-			
-			setWorkspaceSourceFile( context.fsPath )
+			if (context){
+				
+				setSourceFile( context )
+			}else{
+				
+				setSourceFile( currentBmx() )
+			}
 		})
 	)
 	
 	context.subscriptions.push(
 		vscode.commands.registerCommand( 'blitzmax.quickBuild', () => {
 			
-			bmxBuild( 'makeapp', 'console', true, true )
+			const def = currentDefinition()
+			if (!def){
+				
+				vscode.commands.executeCommand( 'workbench.action.tasks.configureDefaultBuildTask' )
+				return
+			}
+			def.execute = true
+			
+			const task = makeTask( def, 'Quick Build' )
+			if (!task) return
+			
+			vscode.tasks.executeTask( task )
 		})
 	)
 	
 	context.subscriptions.push(
 		vscode.commands.registerCommand( 'blitzmax.build', () => {
 			
-			vscode.commands.executeCommand( 'workbench.action.tasks.build' )
+			vscode.commands.executeCommand( 'workbench.action.tasks.configureDefaultBuildTask' )
 		})
 	)
-}
-
-export function activate( context: vscode.ExtensionContext ): void {
-	
-	console.log( 'Start' )
-	
-	BlitzMax.setup( context )
-	
-	registerCommands( context )
-	registerProviders( context )
-}
-
-export function deactivate(): void {
 }

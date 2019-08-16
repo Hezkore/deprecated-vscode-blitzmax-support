@@ -1,6 +1,6 @@
 {
 	"name": "blitzmax",
-	"version": "1.7.14",
+	"version": "1.8.0",
 	"displayName": "BlitzMax Language Basics",
 	"description": "Provides snippets, syntax highlighting, bracket matching and folding in BlitzMax files.",
 	"repository": {
@@ -48,14 +48,14 @@
 			"explorer/context": [
 				{
 					"when": "resourceLangId == blitzmax",
-					"command": "blitzmax.setSourceFileMenu",
+					"command": "blitzmax.setSourceFile",
 					"group": "1_modification"
 				}
 			],
 			"editor/title/context": [
 				{
 					"when": "resourceLangId == blitzmax",
-					"command": "blitzmax.setSourceFileMenu",
+					"command": "blitzmax.setSourceFile",
 					"group": "0"
 				}
 			]
@@ -64,16 +64,89 @@
 			{
 				"type": "bmx",
 				"properties": {
+					"source":{
+						"type": "string",
+						"default": "main.bmx",
+						"description": "Main source file."
+					},
+					"output":{
+						"type": "string",
+						"default": "output/main",
+						"description": "Specifies the output file. (makeapp only)\nBy default, the output file is placed into the same directory as the root source file."
+					},
 					"make": {
 						"type": "string",
 						"description": "What to build as.",
-						"default": "console",
+						"default": "makeapp",
+						"enum": [
+							"makeapp",
+							"makemods",
+							"makelib"
+						]
+					},
+					"app":{
+						"type": "string",
+						"description": "Specifies the application type. (makeapp only)",
 						"enum": [
 							"console",
-							"gui",
-							"mods",
-							"lib"
+							"gui"
 						]
+					},
+					"arch":{
+						"type": "string",
+						"description": "Compiles to the specified architecture. (the default is the native for the current binary - For example, it will be x86 for an x86-built bmk)\nOptions vary depending on the current OS/architecture/installed toolchain and version of bcc..",
+						"default": "auto",
+						"enum": [
+							"auto",
+							"x86",
+							"x64",
+							"arm",
+							"arm64",
+							"armv7",
+							"armeabi",
+							"armeabiv7a",
+							"arm64v8a"
+						]
+					},
+					"platform":{
+						"type": "string",
+						"description": "Cross-compiles to the specific target platform.",
+						"default": "auto",
+						"enum": [
+							"auto",
+							"win32",
+							"linux",
+							"macos",
+							"ios",
+							"android",
+							"raspberrypi",
+							"nx"
+						]
+					},
+					"threaded":{
+						"type": "boolean",
+						"description": "Builds multithreaded version.",
+						"default": true
+					},
+					"debug":{
+						"type": "boolean",
+						"description": "Build as Debug.",
+						"default": false
+					},
+					"quick":{
+						"type": "boolean",
+						"description": "Quick build.\nDoes not scan modules for changes. May result in quicker build times on some systems.\nThe default behaviour is to scan and build all requirements for the application, including modules.",
+						"default": false
+					},
+					"execute":{
+						"type": "boolean",
+						"description": "Executes built application. (makeapp only)",
+						"default": false
+					},
+					"verbose":{
+						"type": "boolean",
+						"description": "Verbose (noisy) build.",
+						"default": false
 					}
 				}
 			}
@@ -102,33 +175,8 @@
 				"category": "BlitzMax"
 			},
 			{
-				"command": "blitzmax.buildConsole",
-				"title": "Build Console Application",
-				"category": "BlitzMax"
-			},
-			{
-				"command": "blitzmax.buildGui",
-				"title": "Build Gui Application",
-				"category": "BlitzMax"
-			},
-			{
-				"command": "blitzmax.buildMods",
-				"title": "Build Module",
-				"category": "BlitzMax"
-			},
-			{
-				"command": "blitzmax.buildLib",
-				"title": "Build Shared Library",
-				"category": "BlitzMax"
-			},
-			{
 				"command": "blitzmax.setSourceFile",
-				"title": "Set current document as workspace source file",
-				"category": "BlitzMax"
-			},
-			{
-				"command": "blitzmax.setSourceFileMenu",
-				"title": "Set as workspace source file",
+				"title": "Set as default task source file",
 				"category": "BlitzMax"
 			},
 			{
@@ -181,29 +229,6 @@
 					"default": "",
 					"description": "Path to BlitzMax. (e.g: C:\\Program Files (x86)\\BlitzMax)"
 				},
-				"blitzmax.sourceFile": {
-					"type": "string",
-					"default": "",
-					"description": "The main source file. (change in your workspace settings)"
-				},
-				"blitzmax.buildOut": {
-					"type": "string",
-					"default": "",
-					"description": "Specifies the output file."
-				},
-				"blitzmax.version": {
-					"type": "string",
-					"description": "Build release or debug version. (change in your workspace settings)",
-					"enum": [
-						"debug",
-						"release"
-					]
-				},
-				"blitzmax.threaded": {
-					"type": "boolean",
-					"default": true,
-					"description": "Builds multithreaded version. (change in your workspace settings)"
-				},
 				"blitzmax.funcArgCasting": {
 					"type": "string",
 					"description": "How to handle function argument casting issues. (NG only)",
@@ -211,50 +236,6 @@
 						"warn",
 						"error"
 					]
-				},
-				"blitzmax.architecture": {
-					"type": "string",
-					"description": "Compiles to the specified architecture. (NG only)",
-					"enum": [
-						"auto",
-						"x86",
-						"x64",
-						"arm",
-						"arm64",
-						"armv7",
-						"armeabi",
-						"armeabiv7a",
-						"arm64v8a"
-					]
-				},
-				"blitzmax.platform": {
-					"type": "string",
-					"description": "Cross-compiles to the specific target platform. (NG only)",
-					"enum": [
-						"auto",
-						"win32",
-						"linux",
-						"macos",
-						"ios",
-						"android",
-						"raspberrypi",
-						"nx"
-					]
-				},
-				"blitzmax.execute": {
-					"type": "boolean",
-					"default": false,
-					"description": "Execute built application."
-				},
-				"blitzmax.verbose": {
-					"type": "boolean",
-					"default": false,
-					"description": "Verbose (noisy) build."
-				},
-				"blitzmax.autoSetSourceFile": {
-					"type": "boolean",
-					"default": false,
-					"description": "Set the current active document as source file if no source file is specified."
 				}
 			}
 		},
