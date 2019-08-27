@@ -1,5 +1,9 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.8.1
+* Better variable substitution (see: https://code.visualstudio.com/docs/editor/variables-reference )
+* Updated default tasks.
+
 ## Version 1.8.0
 * Build related options has been moved into tasks.json.
 
