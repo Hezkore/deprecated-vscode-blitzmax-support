@@ -66,12 +66,12 @@
 				"properties": {
 					"source":{
 						"type": "string",
-						"default": "main.bmx",
+						"default": "${relativeFile}",
 						"description": "Main source file."
 					},
 					"output":{
 						"type": "string",
-						"default": "output/main",
+						"default": "${fileBasenameNoExtension}",
 						"description": "Specifies the output file. (makeapp only)\nBy default, the output file is placed into the same directory as the root source file."
 					},
 					"make": {

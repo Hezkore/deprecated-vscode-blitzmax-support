@@ -42,31 +42,31 @@ export function currentDefinition(): BmxTaskDefinition | undefined {
 export class BmxTaskProvider implements vscode.TaskProvider {
 	provideTasks( token?: vscode.CancellationToken ): vscode.ProviderResult<vscode.Task[]> {
 		
-		const outputPath: string = path.join( 'output', '${file}' )
+		const outputPath: string = path.join( 'output', '${fileBasenameNoExtension}' )
 		
 		let tasks: vscode.Task[] = []
 		
 		// Console
 		let defConsole: BmxTaskDefinition = { type: 'bmx', make: 'makeapp', app: 'console',
-		arch: 'auto', platform: 'auto', threaded: true, output: outputPath, source: '${file}',
+		arch: 'auto', platform: 'auto', threaded: true, output: outputPath, source: '${relativeFile}',
 		debug: false, execute: false, quick: false, verbose: false }
 		let taskConsole: vscode.Task | undefined = makeTask( defConsole, 'Console Application' )
 		if (taskConsole) tasks.push( taskConsole )
 		
 		// Gui
 		let defGui: BmxTaskDefinition = { type: 'bmx', make: 'makeapp', app: 'gui',
-		arch: 'auto', platform: 'auto', threaded: true, output: outputPath, source: '${file}',
+		arch: 'auto', platform: 'auto', threaded: true, output: outputPath, source: '${relativeFile}',
 		debug: false, execute: false, quick: false, verbose: false }
 		let taskGui: vscode.Task | undefined = makeTask( defGui, 'Gui Application' )
 		if (taskGui) tasks.push( taskGui )
 		
 		// Module
-		let defMods: BmxTaskDefinition = { type: 'bmx', make: 'makemod', output: '', source: '${file}' }
+		let defMods: BmxTaskDefinition = { type: 'bmx', make: 'makemod', output: '', source: '${relativeFile}' }
 		let taskMods: vscode.Task | undefined = makeTask( defMods, 'Module' )
 		if (taskMods) tasks.push( taskMods )
 		
 		// Shared Library
-		let defLib: BmxTaskDefinition = { type: 'bmx', make: 'makelib', output: '', source: '${file}' }
+		let defLib: BmxTaskDefinition = { type: 'bmx', make: 'makelib', output: '', source: '${relativeFile}' }
 		let taskLib: vscode.Task | undefined = makeTask( defLib, 'Shared Library' )
 		if (taskLib) tasks.push( taskLib )
 		
@@ -78,22 +78,6 @@ export class BmxTaskProvider implements vscode.TaskProvider {
 		
 		return makeTask( definition, 'Custom' )
 	}
-}
-
-function variableSubstitution( text: string | undefined ): string {
-	
-	if (!text) return ''
-	
-	const file: vscode.Uri | undefined = currentBmx()
-	if (file){
-		const workPath: vscode.WorkspaceFolder | undefined = vscode.workspace.getWorkspaceFolder( file )
-		if (workPath){
-			
-			text = text.replace( '${file}', path.relative( workPath.uri.fsPath, file.fsPath ).slice( 0, -4 ) )
-			text = text.replace( '${workspaceFolder}', workPath.uri.fsPath )
-		}
-	}
-	return text
 }
 
 export function makeTask( definition: BmxTaskDefinition | undefined, name: string ): vscode.Task | undefined {
@@ -168,7 +152,7 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 	// Build output
 	if (definition.output){
 		args.push( '-o' )
-		args.push( variableSubstitution( definition.output ) )
+		args.push( definition.output )
 	}
 	
 	// Execute after build
@@ -181,7 +165,7 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 	if (definition.verbose == true) args.push( '-v' )
 	
 	// Actual file to build
-	let source:string | undefined = variableSubstitution( definition.source )
+	let source:string | undefined = definition.source
 	if ( !source || source.length <= 1 ){ // No source file set, figure one out!
 		
 		// Is a source file even open?
