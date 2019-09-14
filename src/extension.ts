@@ -10,7 +10,7 @@ import { BmxCompletionProvider } from './completionProvider'
 import { BmxSignatureHelpProvider } from './signatureHelpProvider'
 import { BmxHoverProvider } from './hoverProvider'
 import { BlitzMax } from './blitzmax'
-import { AnalyzeDoc, scanModules } from './bmxModules';
+import { AnalyzeDoc, scanModules } from './bmxModules'
 
 export function activate( context: vscode.ExtensionContext ) {
 	
@@ -82,7 +82,7 @@ async function registerProviders( context:vscode.ExtensionContext ) {
 	
 	// Task provider
 	context.subscriptions.push(
-		vscode.tasks.registerTaskProvider( 'bmx', new BmxTaskProvider)
+		vscode.tasks.registerTaskProvider( 'bmx', new BmxTaskProvider )
 	)
 }
 

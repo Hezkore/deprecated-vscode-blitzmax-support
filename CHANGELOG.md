@@ -2,6 +2,7 @@
 
 ## Version 1.8.2
 * Fixed quick builds not being console debug apps
+* Setting a source file will now also try to set output as well
 
 ## Version 1.8.1
 * Better variable substitution (see: https://code.visualstudio.com/docs/editor/variables-reference )

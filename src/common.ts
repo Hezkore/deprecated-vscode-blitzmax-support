@@ -140,8 +140,13 @@ export function setSourceFile( file: vscode.Uri | undefined ){
 		
 		if (def.group.isDefault){
 			
-			const filePath: string = path.relative( workPath.uri.fsPath, file.fsPath )
+			const filePath: string = path.relative( workPath.uri.path, file.path )
 			def.source = filePath
+			if (def.output){
+				
+				def.output = def.output.replace( "${fileBasenameNoExtension}",
+				path.basename( file.path ).split( '.' )[0] )
+			}
 			foundDefault = true
 			vscode.window.showInformationMessage( filePath + ' has been set as the default task source' )
 		}
