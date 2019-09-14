@@ -159,7 +159,12 @@ async function registerCommands( context:vscode.ExtensionContext ) {
 				vscode.commands.executeCommand( 'workbench.action.tasks.configureDefaultBuildTask' )
 				return
 			}
+			
+			// Make sure that quick builds are always debug and execute
+			// Set to console as well so print commands aren't stripped
 			def.execute = true
+			def.debug = true
+			def.app = 'console'
 			
 			const task = makeTask( def, 'Quick Build' )
 			if (!task) return

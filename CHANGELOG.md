@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.8.2
+* Fixed quick builds not being console debug apps
+
 ## Version 1.8.1
 * Better variable substitution (see: https://code.visualstudio.com/docs/editor/variables-reference )
 * Updated default tasks.
