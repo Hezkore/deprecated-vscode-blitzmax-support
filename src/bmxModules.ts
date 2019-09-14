@@ -195,7 +195,7 @@ export interface AnalyzeOptions{
 	module?: boolean,
 	forceModuleName?: AnalyzeItem,
 	imports?: boolean,
-	skipImports?: string[]
+	skipFiles?: string[]
 }
 export interface AnalyzeResult{
 	moduleName?: AnalyzeItem,
@@ -628,8 +628,12 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 			// Current line
 			if (lines[i].length <= 0) continue
 			if (lines[i].startsWith( `'` )) continue
+			
 			line = lines[i].trim()
+			
 			if (line.length <= 0) continue
+			if (line.startsWith( `'` )) continue
+			
 			lineLower = line.toLowerCase()
 			sliceLine = line
 			
@@ -890,39 +894,78 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 			}
 		}
 		
-		// Scan imports as well
-		if (result && result.import){
+		// Scan imports and includes as well
+		if (result){
 			
 			let filesToImport: string[] = []
 			
-			for(var i=0; i<result.import.length; i++){
+			// imports
+			if (result.import){
 				
-				let imp = result.import[i]
-				if (!imp) continue
-				
-				let importFile = imp.data.slice( 1, -1 )
-				if (importFile.length <= 1) continue
-				
-				let split = importFile.split( '.' )
-				if (split.length < 1) continue
-				if (!split[1]) continue
-				if (split[1].length < 1) continue
-				
-				// Is this even a .bmx file?
-				if (split[1].toLowerCase() != 'bmx') continue
-				
-				let importPath = path.join( path.dirname( imp.file ), importFile )
-				
-				// Do we skip this import?
-				if (options.skipImports && options.skipImports.includes( importPath ) || !options.skipImports){
+				for(var i=0; i<result.import.length; i++){
 					
-					filesToImport.push( importPath )
-					if (!options.skipImports) options.skipImports = []
-					options.skipImports.push( importPath )
-					//console.log( importPath )
-				}else{
+					let imp = result.import[i]
+					if (!imp) continue
 					
-					//console.log( 'Skipping import: ' + importPath )
+					let importFile = imp.data.slice( 1, -1 )
+					if (importFile.length <= 1) continue
+					
+					let split = importFile.split( '.' )
+					if (split.length < 1) continue
+					if (!split[1]) continue
+					if (split[1].length < 1) continue
+					
+					// Is this even a .bmx file?
+					if (split[1].toLowerCase() != 'bmx') continue
+					
+					let importPath = path.join( path.dirname( imp.file ), importFile )
+					
+					// Do we skip this import?
+					if (options.skipFiles && options.skipFiles.includes( importPath ) || !options.skipFiles){
+						
+						filesToImport.push( importPath )
+						if (!options.skipFiles) options.skipFiles = []
+						options.skipFiles.push( importPath )
+						//console.log( importPath )
+					}else{
+						
+						//console.log( 'Skipping import: ' + importPath )
+					}
+				}
+			}
+			
+			// includes
+			if (result.include){
+				
+				for(var i=0; i<result.include.length; i++){
+					
+					let inc = result.include[i]
+					if (!inc) continue
+					
+					let includeFile = inc.data.slice( 1, -1 )
+					if (includeFile.length <= 1) continue
+					
+					let split = includeFile.split( '.' )
+					if (split.length < 1) continue
+					if (!split[1]) continue
+					if (split[1].length < 1) continue
+					
+					// Is this even a .bmx file?
+					if (split[1].toLowerCase() != 'bmx') continue
+					
+					let includePath = path.join( path.dirname( inc.file ), includeFile )
+					
+					// Do we skip this include?
+					if (options.skipFiles && options.skipFiles.includes( includePath ) || !options.skipFiles){
+						
+						filesToImport.push( includePath )
+						if (!options.skipFiles) options.skipFiles = []
+						options.skipFiles.push( includePath )
+						//console.log( importPath )
+					}else{
+						
+						//console.log( 'Skipping import: ' + importPath )
+					}
 				}
 			}
 			
@@ -939,7 +982,7 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 					forceModuleName: result.moduleName,
 					module: options.module,
 					imports: true,
-					skipImports: options.skipImports
+					skipFiles: options.skipFiles
 				})
 				
 				if (importResult.bbdoc){
@@ -960,9 +1003,9 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 		}
 		
 		// DEBUG
-		if (result.moduleName && result.moduleName.data.endsWith( 'BRL.StandardIO' )){
+		if (result.moduleName && result.moduleName.data.endsWith( 'Openb3dmax.Openb3dstd' )){
 			
-			//console.log( result )
+			console.log( result )
 		}
 		
 		return resolve( result )

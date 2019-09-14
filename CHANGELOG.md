@@ -1,11 +1,14 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.8.4
+* Document scanner now scans 'includes'.
+
 ## Version 1.8.3
-* Added bbdoc snippets
+* Added bbdoc snippets.
 
 ## Version 1.8.2
-* Fixed quick builds not being console debug apps
-* Setting a source file will now also try to set output as well
+* Fixed quick builds not being console debug apps.
+* Setting a source file will now also try to set output as well.
 
 ## Version 1.8.1
 * Better variable substitution (see: https://code.visualstudio.com/docs/editor/variables-reference )
