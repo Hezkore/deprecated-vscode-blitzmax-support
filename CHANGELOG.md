@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.8.3
+* Added bbdoc snippets
+
 ## Version 1.8.2
 * Fixed quick builds not being console debug apps
 * Setting a source file will now also try to set output as well

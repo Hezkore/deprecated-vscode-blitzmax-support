@@ -135,5 +135,23 @@
 		"prefix" : "Try",
 		"body" : [ "Try", "\t${1:ExTest()}", "Catch ex:Object", "\t${0:Print ex.ToString()}", "EndTry" ],
 		"description" : "Try Catch Block"
+	},
+	
+	"BBDoc Basic" : {
+		"prefix" : "BBDoc Basic",
+		"body" : [ "Rem", "\tbbdoc: ${1:intro}", "\tabout: ${0:about}", "EndRem" ],
+		"description" : "BBDoc Block"
+	},
+	
+	"BBDoc Keyword" : {
+		"prefix" : "BBDoc Keyword",
+		"body" : [ "Rem", "\tbbdoc: ${1:intro}", "\tabout: ${2:about}", "\tkeyword: ${0:keyword}", "EndRem" ],
+		"description" : "BBDoc Keyword Block"
+	},
+	
+	"BBDoc Full" : {
+		"prefix" : "BBDoc Full",
+		"body" : [ "Rem", "\tbbdoc: ${1:intro}", "\tabout: ${2:about}", "\treturns: ${3:returns}", "\tparam: ${4:param}", "\tkeyword: ${0:keyword}", "EndRem" ],
+		"description" : "BBDoc Full Block"
 	}
 }
