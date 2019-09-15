@@ -1,6 +1,6 @@
 {
 	"name": "blitzmax",
-	"version": "1.8.4",
+	"version": "1.8.5",
 	"displayName": "BlitzMax Language Basics",
 	"description": "Provides snippets, syntax highlighting, bracket matching and folding in BlitzMax files.",
 	"repository": {
@@ -155,6 +155,11 @@
 			{
 				"command": "blitzmax.quickBuild",
 				"key": "f5",
+				"when": "editorLangId == blitzmax"
+			},
+			{
+				"command": "workbench.action.tasks.reRunTask",
+				"key": "f6",
 				"when": "editorLangId == blitzmax"
 			},
 			{

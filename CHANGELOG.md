@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.8.5
+* F6 will now rerun the last task.
+
 ## Version 1.8.4
 * Document scanner now scans 'includes'.
 
