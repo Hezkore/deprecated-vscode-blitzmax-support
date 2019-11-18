@@ -1,6 +1,6 @@
 # BlitzMax Language Basics CHANGELOG
 
-## Version 1.8.7
+## Version 1.8.62
 * Better problem highlighting.
 
 ## Version 1.8.61
