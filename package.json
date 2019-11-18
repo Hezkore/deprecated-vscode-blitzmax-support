@@ -266,7 +266,9 @@
 			{
 				"name": "blitzmax",
 				"owner": "blitzmax",
+				"source": "BlitzMax",
 				"fileLocation": "absolute",
+				"label": "The standard BlitzMax problem matcher",
 				"background": {
 					"beginsPattern": ".",
 					"endsPattern": "."
@@ -281,7 +283,7 @@
 						"regexp": "^\\[(.*.bmx);(\\d+);(\\d+)]",
 						"file": 1,
 						"line": 2,
-						"column": 3
+						"endColumn": 3
 					}
 				]
 			}
