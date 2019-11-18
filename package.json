@@ -1,6 +1,6 @@
 {
 	"name": "blitzmax",
-	"version": "1.8.6",
+	"version": "1.8.61",
 	"displayName": "BlitzMax Language Basics",
 	"description": "Provides snippets, syntax highlighting, bracket matching and folding in BlitzMax files.",
 	"repository": {
@@ -267,6 +267,10 @@
 				"name": "blitzmax",
 				"owner": "blitzmax",
 				"fileLocation": "absolute",
+				"background": {
+					"beginsPattern": ".",
+					"endsPattern": "."
+				},
 				"pattern": [
 					{
 						"regexp": "Compile (Error|Warning)?: (.*)",

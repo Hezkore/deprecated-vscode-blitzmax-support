@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.8.61
+* Simple workaround for background tasks.
+
 ## Version 1.8.6
 * Added GDB task flag.
 
