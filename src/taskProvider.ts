@@ -16,6 +16,7 @@ export interface BmxTaskDefinition extends vscode.TaskDefinition {
 	threaded?: boolean, // -h Threaded
 	output?: string, // -o Output
 	debug?: boolean, // -d Debug or Release
+	gdb?: boolean, // -gdb Mappings suitable for GDB
 	quick?: boolean, // -quick Do a quick build
 	execute?: boolean, // -x Execute after build
 	verbose?: boolean // -v Verbose (noisy) build 
@@ -121,6 +122,9 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 		if (!arch || arch.toLowerCase() == 'auto') arch = os.arch()
 		args.push( '-g' )
 		args.push( arch )
+		
+		// GDB
+		if (definition.gdb) args.push( '-gdb' )
 		
 		// Platform
 		let platform:string | undefined = definition.platform

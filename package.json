@@ -1,6 +1,6 @@
 {
 	"name": "blitzmax",
-	"version": "1.8.5",
+	"version": "1.8.6",
 	"displayName": "BlitzMax Language Basics",
 	"description": "Provides snippets, syntax highlighting, bracket matching and folding in BlitzMax files.",
 	"repository": {
@@ -131,6 +131,11 @@
 					"debug":{
 						"type": "boolean",
 						"description": "Build as Debug.",
+						"default": false
+					},
+					"gdb":{
+						"type": "boolean",
+						"description": "Generates line mappings suitable for GDB debugging.",
 						"default": false
 					},
 					"quick":{

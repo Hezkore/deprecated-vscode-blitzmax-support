@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.8.6
+* Added GDB task flag.
+
 ## Version 1.8.5
 * F6 will now rerun the last task.
 
