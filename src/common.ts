@@ -194,6 +194,18 @@ export function capitalize( text:string ): string{
 	return result
 }
 
+export function variableSub( text:string, arch:string, debug:boolean | undefined, platform:string ): string{
+	
+	if (platform.toLocaleLowerCase() == 'win32')
+		platform = 'windows'
+	
+	text = text.replace( '${arch}', arch )
+	text = text.replace( '${build}', debug ? 'debug' : 'release' )
+	text = text.replace( '${platform}', platform )
+	
+	return text
+}
+
 export function currentBmx(): vscode.Uri | undefined {
 	
 	const fileType:string = '.bmx'

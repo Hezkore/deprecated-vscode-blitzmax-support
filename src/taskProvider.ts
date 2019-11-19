@@ -4,7 +4,7 @@ import * as vscode from 'vscode'
 import { BlitzMax } from './blitzmax'
 import * as os from 'os'
 import * as path from 'path'
-import { currentBmx } from './common'
+import { currentBmx, variableSub } from './common'
 
 export interface BmxTaskDefinition extends vscode.TaskDefinition {
 	
@@ -43,7 +43,7 @@ export function currentDefinition(): BmxTaskDefinition | undefined {
 export class BmxTaskProvider implements vscode.TaskProvider {
 	provideTasks( token?: vscode.CancellationToken ): vscode.ProviderResult<vscode.Task[]> {
 		
-		const outputPath: string = path.join( 'output', '${fileBasenameNoExtension}' )
+		const outputPath: string = path.join( 'bin', '${platform}', '${arch}', '${build}', '${fileBasenameNoExtension}' )
 		
 		let tasks: vscode.Task[] = []
 		
@@ -115,10 +115,25 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 		}
 	}
 	
+	// Detect platform
+	let platform:string | undefined = definition.platform
+	if (!platform || platform.toLowerCase() == 'auto' || BlitzMax.legacy){ 
+		switch (os.platform().toLowerCase()) {
+			case 'darwin':
+				platform = 'macos'
+				break
+				
+			default:
+				platform = os.platform().toLowerCase()
+				break
+		}
+	}
+	
+	let arch:string | undefined = 'x86'
 	if (!BlitzMax.legacy){ // NG stuff only
 		
 		// Architecture
-		let arch:string | undefined = definition.arch
+		arch = definition.arch
 		if (!arch || arch.toLowerCase() == 'auto') arch = os.arch()
 		args.push( '-g' )
 		args.push( arch )
@@ -127,18 +142,6 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 		if (definition.gdb) args.push( '-gdb' )
 		
 		// Platform
-		let platform:string | undefined = definition.platform
-		if (!platform || platform.toLowerCase() == 'auto'){ 
-			switch (os.platform().toLowerCase()) {
-				case 'darwin':
-					platform = 'macos'
-					break
-					
-				default:
-					platform = os.platform().toLowerCase()
-					break
-			}
-		}
 		args.push( '-l' )
 		args.push( platform )
 		
@@ -146,7 +149,7 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 		let funcArgCasting = vscode.workspace.getConfiguration( 'blitzmax' ).get( 'funcArgCasting' )
 		if ( funcArgCasting == 'warn' ){ args.push( '-w' ) }
 	}
-
+	
 	// Do a quick build
 	if (definition.quick) args.push( '-quick' )
 	
@@ -156,7 +159,7 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 	// Build output
 	if (definition.output){
 		args.push( '-o' )
-		args.push( definition.output )
+		args.push( variableSub( definition.output, arch, definition.debug, platform ) )
 	}
 	
 	// Execute after build
