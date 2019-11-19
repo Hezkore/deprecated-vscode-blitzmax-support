@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.9.1
+* Updated extension description.
+
 ## Version 1.9.0
 * New 'bin' build path.
 * Added support for ${platform}, ${arch} and ${build} variable substitution.

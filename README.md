@@ -5,10 +5,13 @@ Provides snippets, syntax highlighting, bracket matching and folding in [BlitzMa
 ![Preview](https://github.com/Hezkore/vscode-blitzmax-support/raw/master/./media/demo.png)
 
 ## Features
-* Syntax highlighting for [BlitzMax](https://nitrologic.itch.io/blitzmax/) and [BlitzMax NG](https://blitzmax.org/).
+* Syntax highlighting for BlitzMax [NG](https://blitzmax.org/) and [Legacy](https://nitrologic.itch.io/blitzmax/).
 * Build Tasks for Console, Gui, Lib and Mods.
 * Problem Matcher.
 * Auto-Complete.
+* Examples.
+* View Module Definitions.
+* Quick Build Buttons.
 * Snippets.
 
 ## Changelog
