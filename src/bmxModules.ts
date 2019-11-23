@@ -883,15 +883,6 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 			}
 			
 			if (inside == undefined) inside = AnalyzeBlock.nothing
-			
-			// DEBUG
-			if (!regardsParent) {
-				
-				//console.log( inside + ': ' +  line )
-			}else{
-				
-				//console.log( 'REGARDS: ' + inside + ': ' +  line )
-			}
 		}
 		
 		// Scan imports and includes as well
@@ -1000,12 +991,6 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 					}
 				}
 			}
-		}
-		
-		// DEBUG
-		if (result.moduleName && result.moduleName.data.endsWith( 'Openb3dmax.Openb3dstd' )){
-			
-			console.log( result )
 		}
 		
 		return resolve( result )
