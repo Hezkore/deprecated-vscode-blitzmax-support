@@ -1,5 +1,8 @@
 # [BlitzMax](https://blitzmax.org/) Language Basics for [Visual Studio Code](https://code.visualstudio.com/)
 
+[![Version](https://vsmarketplacebadge.apphb.com/version/hezkore.BlitzMax.svg)](https://marketplace.visualstudio.com/items?itemName=hezkore.Blitzmax)
+[![Installs](https://vsmarketplacebadge.apphb.com/installs-short/hezkore.BlitzMax.svg)](https://marketplace.visualstudio.com/items?itemName=hezkore.BlitzMax)
+
 Provides snippets, syntax highlighting, bracket matching and folding in [BlitzMax](https://blitzmax.org/) files.
 
 ![Preview](https://github.com/Hezkore/vscode-blitzmax-support/raw/master/./media/demo.png)
