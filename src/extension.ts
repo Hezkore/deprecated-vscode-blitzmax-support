@@ -113,6 +113,20 @@ async function registerCommands( context:vscode.ExtensionContext ) {
 				return
 			}
 			
+			let template:string = "Strict"
+			let templateItems:string[] | undefined = vscode.workspace.getConfiguration( 'blitzmax' ).get( 'runSelectedTextTemplate' )
+			if (templateItems)
+			{
+				if (vscode.workspace.getConfiguration( 'blitzmax' ).get( 'runSelectedTextSuperStrict' ))
+					template = "SuperStrict"
+				
+				templateItems.forEach(s => {
+					template += "\n" + s
+				})
+				template += "\n"
+			}
+			let code:string = template + selectedText
+			
 			let tmpPath: string | undefined = context.storagePath
 			if (!tmpPath)
 			{
@@ -130,7 +144,7 @@ async function registerCommands( context:vscode.ExtensionContext ) {
 			
 			let tmpFilePath: string = path.join( tmpPath, Math.random().toString(36).replace('0.', '')  + ".bmx" )
 			
-			await writeFile( tmpFilePath, selectedText )
+			await writeFile( tmpFilePath, code )
 			
 			if (!await exists( tmpFilePath ) )
 			{
@@ -155,6 +169,7 @@ async function registerCommands( context:vscode.ExtensionContext ) {
 					vscode.window.showErrorMessage( "Unable to clean temporary folder" )
 			}))
 			
+			console.log("Running: " + code)
 			await vscode.tasks.executeTask( task )
 		})
 	)
