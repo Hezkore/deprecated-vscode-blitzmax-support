@@ -1,16 +1,18 @@
 'use strict'
 
 import * as vscode from 'vscode'
-import { setSourceFile, currentWord, currentBmx } from './common'
+import { setSourceFile, currentWord, currentBmx, writeFile, exists, createDir, removeDir } from './common'
 import { BmxFormatProvider } from './formatProvider'
 import { BmxActionProvider } from './actionProvider'
 import { BmxDefinitionProvider } from './definitionProvider'
-import { currentDefinition, BmxTaskProvider, makeTask } from './taskProvider'
+import { currentDefinition, BmxTaskProvider, makeTask, BmxTaskDefinition } from './taskProvider'
 import { BmxCompletionProvider } from './completionProvider'
 import { BmxSignatureHelpProvider } from './signatureHelpProvider'
 import { BmxHoverProvider } from './hoverProvider'
 import { BlitzMax } from './blitzmax'
 import { AnalyzeDoc, scanModules } from './bmxModules'
+import * as path from 'path'
+import * as fs from 'fs'
 
 export function activate( context: vscode.ExtensionContext ) {
 	
@@ -89,6 +91,75 @@ async function registerProviders( context:vscode.ExtensionContext ) {
 async function registerCommands( context:vscode.ExtensionContext ) {
 	
 	context.subscriptions.push(
+		vscode.commands.registerCommand( 'blitzmax.runSelected', async () => {
+			
+			if (!BlitzMax.ready)
+			{
+				vscode.window.showErrorMessage( "BlitzMax is not ready" )
+				return
+			}
+			
+			var editor = vscode.window.activeTextEditor
+			if (!editor)
+			{
+				vscode.window.showErrorMessage( "No text editor active" )
+				return
+			}
+			var selection = editor.selection
+			var selectedText = editor.document.getText(selection)
+			if (selectedText.length <= 0)
+			{
+				vscode.window.showErrorMessage( "No text selected" )
+				return
+			}
+			
+			let tmpPath: string | undefined = context.storagePath
+			if (!tmpPath)
+			{
+				vscode.window.showErrorMessage( "Storage path does not exist" )
+				return
+			}
+			
+			tmpPath = path.join( tmpPath, "tmp" )
+			
+			if (await createDir( tmpPath ) == false)
+			{
+				vscode.window.showErrorMessage( "Unable to create temporary folder" )
+				return
+			}
+			
+			let tmpFilePath: string = path.join( tmpPath, Math.random().toString(36).replace('0.', '')  + ".bmx" )
+			
+			await writeFile( tmpFilePath, selectedText )
+			
+			if (!await exists( tmpFilePath ) )
+			{
+				vscode.window.showErrorMessage( "Unable to create temporary code file" )
+				return
+			}
+			
+			const def: BmxTaskDefinition = { type: 'bmx', make: 'makeapp', app: 'console',
+			arch: 'auto', platform: 'auto', threaded: true, source: `${tmpFilePath}`,
+			debug: true, execute: true, quick: true, verbose: false }
+			
+			const task = makeTask( def, 'Build Selected Text' )
+			if (!task)
+			{
+				vscode.window.showErrorMessage( "Unable to create temporary task" )
+				return
+			}
+			
+			vscode.tasks.onDidEndTask(( async (e) => {
+				
+				if (e.execution.task == task && tmpPath && !await removeDir(tmpPath))
+					vscode.window.showErrorMessage( "Unable to clean temporary folder" )
+			}))
+			
+			await vscode.tasks.executeTask( task )
+		})
+	)
+	
+	context.subscriptions.push(
 		vscode.commands.registerCommand( 'blitzmax.findHelp', async ( word: string ) => {
 			
 			let showAbout: boolean = true
@@ -140,13 +211,10 @@ async function registerCommands( context:vscode.ExtensionContext ) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand( 'blitzmax.setSourceFile', context => {
 			
-			if (context){
-				
+			if (context)
 				setSourceFile( context )
-			}else{
-				
+			else
 				setSourceFile( currentBmx() )
-			}
 		})
 	)
 	
@@ -154,8 +222,8 @@ async function registerCommands( context:vscode.ExtensionContext ) {
 		vscode.commands.registerCommand( 'blitzmax.quickBuild', () => {
 			
 			const def = currentDefinition()
-			if (!def){
-				
+			if (!def)
+			{
 				vscode.commands.executeCommand( 'workbench.action.tasks.configureDefaultBuildTask' )
 				return
 			}

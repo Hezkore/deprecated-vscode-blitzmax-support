@@ -33,6 +33,13 @@
 	],
 	"contributes": {
 		"menus": {
+			"editor/context": [
+			{
+				"when": "editorLangId == blitzmax",
+				"command": "blitzmax.runSelected",
+				"group": "0"
+			}
+			],
 			"editor/title": [
 				{
 					"when": "editorLangId == blitzmax",
@@ -177,6 +184,11 @@
 			{
 				"command": "blitzmax.generateDocs",
 				"title": "Generate Documentations",
+				"category": "BlitzMax"
+			},
+			{
+				"command": "blitzmax.runSelected",
+				"title": "Run Selected Text",
 				"category": "BlitzMax"
 			},
 			{

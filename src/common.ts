@@ -72,9 +72,9 @@ export async function readDir( path:string ): Promise<string[]> {
 	
     return new Promise(function(resolve, reject) {
         fs.readdir(path, 'utf8', function(err, filenames){
-            if (err) 
+            if (err)
                 reject(err)
-            else 
+            else
                 resolve(filenames)
         })
     })
@@ -84,9 +84,9 @@ export async function readFile( filename:string ): Promise<string> {
 	
 	return new Promise(function(resolve, reject) {
 		fs.readFile(filename, function(err, data){
-			if (err) 
+			if (err)
 				reject(err)
-			else 
+			else
 				resolve(data.toString())
 		})
 	})
@@ -96,9 +96,9 @@ export async function writeFile( filename: string, data: any ): Promise<boolean>
 	
     return new Promise(function(resolve, reject) {
         fs.writeFile(filename, data, function(err){
-            if (err) 
+            if (err)
                 reject(false)
-            else 
+            else
                 resolve(true)
         })
     })
@@ -108,9 +108,9 @@ export async function readStats( filename:string ): Promise<fs.Stats> {
 	
 	return new Promise(function(resolve, reject) {
 		fs.stat( filename, ( err, stats )=>{
-            if (err) 
+            if (err)
                 reject(err)
-            else 
+            else
                 resolve(stats)
 		})
 	})
@@ -263,3 +263,45 @@ export async function exists( file: string ): Promise<boolean> {
 	})
 }
 
+export async function createDir( path: string ): Promise<boolean> {
+	
+	return new Promise<boolean>( ( resolve, _reject ) => {
+		
+		fs.mkdir(path, { recursive: true }, ( err ) => {
+			
+			return resolve( err == null )
+		})
+	})
+}
+
+export async function removeFile( file: string ): Promise<boolean> {
+	
+	return new Promise<boolean>( ( resolve, _reject ) => {
+		
+		fs.unlink(file, ( err ) => {
+			
+			return resolve( err == null )
+		})
+	})
+}
+
+export async function removeDir( path: string ): Promise<boolean> {
+	
+	if (fs.existsSync(path)) {
+		const files = fs.readdirSync(path)
+
+		if (files.length > 0) {
+		files.forEach(function(filename) {
+			if (fs.statSync(path + "/" + filename).isDirectory()) {
+				removeDir(path + "/" + filename)
+			} else
+				fs.unlinkSync(path + "/" + filename)
+		})
+		fs.rmdirSync(path)
+	  } else
+		fs.rmdirSync(path)
+	} else
+		return false
+	
+	return true
+}
