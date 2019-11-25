@@ -19,7 +19,7 @@ export interface BmxTaskDefinition extends vscode.TaskDefinition {
 	gdb?: boolean, // -gdb Mappings suitable for GDB
 	quick?: boolean, // -quick Do a quick build
 	execute?: boolean, // -x Execute after build
-	verbose?: boolean // -v Verbose (noisy) build 
+	verbose?: boolean // -v Verbose (noisy) build
 }
 
 export function currentDefinition(): BmxTaskDefinition | undefined {
@@ -117,7 +117,7 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 	
 	// Detect platform
 	let platform:string | undefined = definition.platform
-	if (!platform || platform.toLowerCase() == 'auto' || BlitzMax.legacy){ 
+	if (!platform || platform.toLowerCase() == 'auto' || BlitzMax.legacy){
 		switch (os.platform().toLowerCase()) {
 			case 'darwin':
 				platform = 'macos'
@@ -148,10 +148,10 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 		// Warn about NG stuff
 		let funcArgCasting = vscode.workspace.getConfiguration( 'blitzmax' ).get( 'funcArgCasting' )
 		if ( funcArgCasting == 'warn' ){ args.push( '-w' ) }
+		
+		// Do a quick build
+		if (definition.quick) args.push( '-quick' )
 	}
-	
-	// Do a quick build
-	if (definition.quick) args.push( '-quick' )
 	
 	// Build threaded
 	if (definition.threaded == true) args.push( '-h' )
