@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.10.0
+* New Run Selected Text feature.
+
 ## Version 1.9.1
 * Updated extension description.
 
