@@ -17,7 +17,7 @@ export function log( text:string, append: boolean = true ) {
 	else
 		outputChannel.append( text )
 	
-	outputChannel.show()
+	outputChannel.show( true )
 }
 
 export function makeReturnPretty( ret: string | undefined, nullToInt: boolean = true ): string{

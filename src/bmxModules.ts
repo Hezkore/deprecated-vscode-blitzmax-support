@@ -24,7 +24,7 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 	
 	if (BlitzMax.problem) return
 	
-	log( `Scanning modules` )
+	log( `Scanning Modules:` )
 	
 	await vscode.window.withProgress({
 		location: vscode.ProgressLocation.Notification,
@@ -136,7 +136,7 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 			if (modArray && modArray.length > 0){
 				for(var i3=0; i3<modArray.length; i3++){
 					
-					log( `${modArray[i3]} no longer exists` )
+					log( `\t${modArray[i3]} no longer exists` )
 					//console.log( 'Module', modArray[i3], 'was removed' )
 					
 					BlitzMax._modules.delete( modArray[i3] )
@@ -170,7 +170,7 @@ async function pause(timeout:number){
 
 async function updateModule( mod: BmxModule ){
 	
-	log( `Generating docs for ${mod.parent}/${mod.folderName}`, false )
+	log( `\t${mod.parent}/${mod.folderName} `, false )
 	
 	return new Promise(async function(resolve, reject) {
 		
@@ -193,7 +193,7 @@ async function updateModule( mod: BmxModule ){
 			mod.commands = result.bbdoc
 		}
 		
-		log( "done" )
+		log( ' done' )
 		return resolve()
 	})
 }

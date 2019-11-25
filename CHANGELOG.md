@@ -1,5 +1,9 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.10.2
+* Better indentation rules.
+* Output channel will not longer steal focus.
+
 ## Version 1.10.1
 * Extension will now use its own output channel.
 

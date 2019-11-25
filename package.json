@@ -1,6 +1,6 @@
 {
 	"name": "blitzmax",
-	"version": "1.10.1",
+	"version": "1.10.2",
 	"displayName": "BlitzMax Language Basics",
 	"description": "Provides snippets, syntax highlighting, bracket matching and folding in BlitzMax files.",
 	"repository": {
@@ -32,6 +32,13 @@
 		"onLanguage:blitzmax"
 	],
 	"contributes": {
+		"icons": [
+            {
+                "id": "blitzmax-icons",
+                "label": "BlitzMax Icons",
+                "path": "./icons.json"
+            }
+        ],
 		"menus": {
 			"editor/context": [
 			{
