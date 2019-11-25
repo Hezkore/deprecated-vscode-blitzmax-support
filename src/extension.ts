@@ -6,6 +6,7 @@ import { BmxFormatProvider } from './formatProvider'
 import { BmxActionProvider } from './actionProvider'
 import { BmxDefinitionProvider } from './definitionProvider'
 import { currentDefinition, BmxTaskProvider, makeTask } from './taskProvider'
+import { runSelectedText } from './runSelected'
 import { BmxCompletionProvider } from './completionProvider'
 import { BmxSignatureHelpProvider } from './signatureHelpProvider'
 import { BmxHoverProvider } from './hoverProvider'
@@ -31,10 +32,8 @@ async function registerProviders( context:vscode.ExtensionContext ) {
 	context.subscriptions.push(
 		vscode.workspace.onDidChangeConfiguration( event => {
 			
-			if ( event.affectsConfiguration( 'blitzmax.bmxPath' ) ){
-				
+			if ( event.affectsConfiguration( 'blitzmax.bmxPath' ) )
 				BlitzMax.setup( context )
-			}
 		})
 	)
 	
@@ -89,6 +88,19 @@ async function registerProviders( context:vscode.ExtensionContext ) {
 async function registerCommands( context:vscode.ExtensionContext ) {
 	
 	context.subscriptions.push(
+		vscode.commands.registerCommand( 'blitzmax.runSelected', async () => {
+			
+			if (!BlitzMax.ready)
+			{
+				vscode.window.showErrorMessage( "BlitzMax is not ready" )
+				return
+			}
+			
+			runSelectedText( context )
+		})
+	)
+	
+	context.subscriptions.push(
 		vscode.commands.registerCommand( 'blitzmax.findHelp', async ( word: string ) => {
 			
 			let showAbout: boolean = true
@@ -140,13 +152,10 @@ async function registerCommands( context:vscode.ExtensionContext ) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand( 'blitzmax.setSourceFile', context => {
 			
-			if (context){
-				
+			if (context)
 				setSourceFile( context )
-			}else{
-				
+			else
 				setSourceFile( currentBmx() )
-			}
 		})
 	)
 	
@@ -154,8 +163,8 @@ async function registerCommands( context:vscode.ExtensionContext ) {
 		vscode.commands.registerCommand( 'blitzmax.quickBuild', () => {
 			
 			const def = currentDefinition()
-			if (!def){
-				
+			if (!def)
+			{
 				vscode.commands.executeCommand( 'workbench.action.tasks.configureDefaultBuildTask' )
 				return
 			}
