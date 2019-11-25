@@ -3,7 +3,7 @@
 import * as vscode from 'vscode'
 import * as path from 'path'
 import { scanModules, BmxModule, AnalyzeDoc, AnalyzeItem } from './bmxModules'
-import { exec, exists, readFile } from './common'
+import { exec, exists, readFile, log } from './common'
 
 export class BlitzMaxHandler{
 	
@@ -41,9 +41,11 @@ export class BlitzMaxHandler{
 	
 	async setup( context: vscode.ExtensionContext ){
 		
+		log( 'Setting up BlitzMax' )
+		
 		return new Promise<boolean>( async ( resolve, reject ) => {
 			
-			console.log( 'Setting up BlitzMax' )
+			//console.log( 'Setting up BlitzMax' )
 			
 			this._askedForPath = false
 			this._problem = ''
@@ -63,7 +65,10 @@ export class BlitzMaxHandler{
 			await scanModules( context )
 			
 			this._ready = true
-			console.log( 'BlitzMax correctly setup!' )
+			if (this.legacy)
+				log( 'BlitzMax Legacy Ready!' )
+			else
+				log( 'BlitzMax NG Ready!' )
 			resolve()
 		})
 	}

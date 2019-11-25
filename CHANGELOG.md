@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.10.1
+* Extension will now use its own output channel.
+
 ## Version 1.10.0
 * New Run Selected Text feature.
 

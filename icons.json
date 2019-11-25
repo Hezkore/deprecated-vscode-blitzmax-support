@@ -1,0 +1,37 @@
+{
+	"hidesExplorerArrows": false,
+	"iconDefinitions": {
+		"_fd_blitzmax_dark": {
+			"iconPath": "./icons/bmx_fd_dark.svg"
+		},
+		"_fd_blitzmax_light": {
+			"iconPath": "./icons/bmx_fd_light.svg"
+		},
+		"_f_blitzmax_dark": {
+			"iconPath": "./icons/bmx_dark.svg"
+		},
+		"_f_blitzmax_light": {
+			"iconPath": "./icons/bmx_light.svg"
+		}
+	},
+	"folderNames": {
+		".bmx": "_fd_blitzmax_dark"
+	},
+	"fileExtensions": {
+		"bmx": "_f_blitzmax_dark"
+	},
+	"languageIds": {
+		"blitzmax": "_f_blitzmax_dark"
+	},
+	"light": {
+		"folderNames": {
+			".bmx": "_fd_blitzmax_light"
+		},
+		"fileExtensions": {
+			"bmx": "_f_blitzmax_light"
+		},
+		"languageIds": {
+			"blitzmax": "_f_blitzmax_light"
+		}
+	}
+}

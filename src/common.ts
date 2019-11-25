@@ -6,6 +6,20 @@ import * as process from 'child_process'
 import * as fs from 'fs'
 import { BmxTaskDefinition } from './taskProvider'
 
+let outputChannel: vscode.OutputChannel
+export function log( text:string, append: boolean = true ) {
+	
+	if (!outputChannel)
+		outputChannel = vscode.window.createOutputChannel( 'BlitzMax' )
+	
+	if (append)
+		outputChannel.appendLine( text )
+	else
+		outputChannel.append( text )
+	
+	outputChannel.show()
+}
+
 export function makeReturnPretty( ret: string | undefined, nullToInt: boolean = true ): string{
 	
 	if (!ret){

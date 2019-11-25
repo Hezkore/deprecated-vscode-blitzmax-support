@@ -4,6 +4,7 @@ import * as vscode from 'vscode'
 import * as path from 'path'
 import { readFile, readDir, readStats, writeFile, exists, capitalize, convertTypeTagShortcut, makeReturnPretty } from './common'
 import { BlitzMax } from './blitzmax'
+import { log } from './common'
 
 let BmxModuleVersion: String = '1.0'
 
@@ -23,6 +24,8 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 	
 	if (BlitzMax.problem) return
 	
+	log( `Scanning modules` )
+	
 	await vscode.window.withProgress({
 		location: vscode.ProgressLocation.Notification,
 		title: "Scanning BlitzMax modules",
@@ -37,11 +40,10 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 			
 			// Load existing modules
 			let modJsonPath: string = path.join( context.extensionPath, 'modules-' + BmxModuleVersion + '.json' )
-			if (await exists( modJsonPath )){
+			if (await exists( modJsonPath ))
 				BlitzMax._modules = modulesFromJson( await readFile( modJsonPath ) )
-			}else{
+			//else
 				//console.log( 'No cached modules' )
-			}
 			
 			// Create an array of existing modules
 			let modArray: string[] = []
@@ -53,7 +55,7 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 			const parentDir = await readDir( BlitzMax.modPath )
 			for(var i=0; i<parentDir.length; i++){
 				
-				await progress.report({ increment: 100.0 / parentDir.length })
+				progress.report({ increment: 100.0 / parentDir.length })
 				
 				// Skip unknown stuff
 				if (!parentDir[i].toLowerCase().endsWith( '.mod' )) continue
@@ -108,7 +110,7 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 						// Make sure module entry point exists..
 						if (await exists( path.join( BlitzMax.modPath, mod.file ) )){
 							
-							await progress.report( {message: keyName } )
+							progress.report( {message: keyName } )
 							
 							await updateModule( mod )
 							changedModules++
@@ -134,7 +136,8 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 			if (modArray && modArray.length > 0){
 				for(var i3=0; i3<modArray.length; i3++){
 					
-					console.log( 'Module', modArray[i3], 'was removed' )
+					log( `${modArray[i3]} no longer exists` )
+					//console.log( 'Module', modArray[i3], 'was removed' )
 					
 					BlitzMax._modules.delete( modArray[i3] )
 					changedModules++
@@ -142,7 +145,8 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 			}
 			
 			// Save updated modules
-			console.log( 'Module changes:', changedModules )
+			log( `${changedModules} modules were updated` )
+			//console.log( 'Module changes:', changedModules )
 			if (changedModules > 0) saveModules( modJsonPath )
 			console.log( 'Commands:', BlitzMax._commands.length )
 			return resolve()
@@ -166,17 +170,22 @@ async function pause(timeout:number){
 
 async function updateModule( mod: BmxModule ){
 	
-	//console.log( 'Updating:', mod.parent + "/" + mod.folderName )
+	log( `Generating docs for ${mod.parent}/${mod.folderName}`, false )
 	
 	return new Promise(async function(resolve, reject) {
 		
 		//console.log( "UPDATING: " + mod.parent + "/" + mod.folderName )
+		log( `.`, false )
 		
 		// Load the module source file
 		const data = await readFile( path.join( BlitzMax.modPath, mod.file ) )
 		
+		log( `.`, false )
+		
 		// Send the module source to our analyzer
 		let result = await analyzeBmx( { data: data, file: path.join( 'mod', mod.file ), module: true, imports: true } )
+		
+		log( `.`, false )
 		
 		// Read the analyzer result and apply to our module
 		if (result.moduleName){ mod.name = result.moduleName.data }
@@ -184,7 +193,7 @@ async function updateModule( mod: BmxModule ){
 			mod.commands = result.bbdoc
 		}
 		
-		//console.log( "done" )
+		log( "done" )
 		return resolve()
 	})
 }

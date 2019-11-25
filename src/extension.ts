@@ -15,8 +15,6 @@ import { AnalyzeDoc, scanModules } from './bmxModules'
 
 export function activate( context: vscode.ExtensionContext ) {
 	
-	console.log( 'Start' )
-	
 	BlitzMax.setup( context )
 	
 	registerCommands( context )
