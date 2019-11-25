@@ -58,7 +58,7 @@ export class BlitzMaxHandler{
 			}
 			
 			await this.checkLegacy()
-			if (this.problem) return reject() 
+			if (this.problem) return reject()
 			
 			await scanModules( context )
 			
@@ -178,11 +178,11 @@ export class BlitzMaxHandler{
 			
 			// Get the command
 			const cmd = cmds[ci]
-			if (!cmd) break 
+			if (!cmd) break
 			
 			// Get the label
 			const label = cmd.regards.name
-			if (!label || label.length <= 0) break 
+			if (!label || label.length <= 0) break
 			
 			// Generate the kind
 			let kind: vscode.CompletionItemKind = vscode.CompletionItemKind.Text
@@ -360,6 +360,12 @@ export class BlitzMaxHandler{
 			
 			return resolve()
 		})
+	}
+	
+	warnNotReady(): boolean{
+		if (this.ready) return false
+		vscode.window.showErrorMessage( "BlitzMax is not ready yet" )
+		return true
 	}
 }
 export let BlitzMax: BlitzMaxHandler = new BlitzMaxHandler()

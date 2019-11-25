@@ -63,7 +63,7 @@ async function registerProviders( context:vscode.ExtensionContext ) {
 	// Hover provider
 	context.subscriptions.push(
 		vscode.languages.registerHoverProvider( { scheme: 'file', language: 'blitzmax' },
-		new BmxHoverProvider()
+			new BmxHoverProvider()
 		)
 	)
 	
@@ -88,13 +88,9 @@ async function registerProviders( context:vscode.ExtensionContext ) {
 async function registerCommands( context:vscode.ExtensionContext ) {
 	
 	context.subscriptions.push(
-		vscode.commands.registerCommand( 'blitzmax.runSelected', async () => {
+		vscode.commands.registerCommand( 'blitzmax.runSelected', () => {
 			
-			if (!BlitzMax.ready)
-			{
-				vscode.window.showErrorMessage( "BlitzMax is not ready" )
-				return
-			}
+			if (BlitzMax.warnNotReady()) return
 			
 			runSelectedText( context )
 		})
@@ -102,6 +98,8 @@ async function registerCommands( context:vscode.ExtensionContext ) {
 	
 	context.subscriptions.push(
 		vscode.commands.registerCommand( 'blitzmax.findHelp', async ( word: string ) => {
+			
+			if (BlitzMax.warnNotReady()) return
 			
 			let showAbout: boolean = true
 			// Okay this is a dirty hack, just sue me already!
@@ -114,22 +112,18 @@ async function registerCommands( context:vscode.ExtensionContext ) {
 			}
 			
 			let cmds: AnalyzeDoc[]
-			if (word){
+			if (word)
 				cmds = BlitzMax.getCommand( word )
-			}else{
+			else
 				cmds = BlitzMax.getCommand( currentWord() )
-			}
 			
 			// Find a command
 			for(var i=0; i<cmds.length; i++){
-				
 				const cmd = cmds[i]
 				
 				await BlitzMax.showExample( cmd, showAbout )
 				return
 			}
-			
-			return
 		})
 	)
 	
@@ -137,15 +131,6 @@ async function registerCommands( context:vscode.ExtensionContext ) {
 		vscode.commands.registerCommand( 'blitzmax.generateDocs', () => {
 			
 			scanModules( context, true )
-		})
-	)
-	
-	context.subscriptions.push(
-		vscode.commands.registerCommand( 'blitzmax.buildCustom', async ( def: string ) => {
-			
-			vscode.window.showInformationMessage( def )
-			
-			return
 		})
 	)
 	
@@ -161,6 +146,8 @@ async function registerCommands( context:vscode.ExtensionContext ) {
 	
 	context.subscriptions.push(
 		vscode.commands.registerCommand( 'blitzmax.quickBuild', () => {
+			
+			if (BlitzMax.warnNotReady()) return
 			
 			const def = currentDefinition()
 			if (!def)
@@ -184,6 +171,8 @@ async function registerCommands( context:vscode.ExtensionContext ) {
 	
 	context.subscriptions.push(
 		vscode.commands.registerCommand( 'blitzmax.build', () => {
+			
+			if (BlitzMax.warnNotReady()) return
 			
 			vscode.commands.executeCommand( 'workbench.action.tasks.configureDefaultBuildTask' )
 		})
