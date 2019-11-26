@@ -1,5 +1,10 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.10.3
+* Older BlitzMax versions will no longer produce errors when output path is set.
+* Fixed typos.
+* Better help for setting up extension.
+
 ## Version 1.10.2
 * Better indentation rules.
 * Output channel will not longer steal focus.

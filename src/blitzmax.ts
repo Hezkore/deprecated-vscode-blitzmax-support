@@ -34,8 +34,8 @@ export class BlitzMaxHandler{
 	get problem(): string | undefined { return this._problem }
 	set problem( message:string | undefined ) {
 		
-		vscode.window.showErrorMessage( 'BlitzMax Error:' + message )
-		console.log( 'BlitzMax Error:', message )
+		vscode.window.showErrorMessage( 'BlitzMax Error: ' + message )
+		console.log( 'BlitzMax Error: ', message )
 	}
 	get legacy(): boolean { return this._legacy }
 	
@@ -44,8 +44,6 @@ export class BlitzMaxHandler{
 		log( 'Setting up BlitzMax' )
 		
 		return new Promise<boolean>( async ( resolve, reject ) => {
-			
-			//console.log( 'Setting up BlitzMax' )
 			
 			this._askedForPath = false
 			this._problem = ''
@@ -69,24 +67,22 @@ export class BlitzMaxHandler{
 				log( 'BlitzMax Legacy Ready!' )
 			else
 				log( 'BlitzMax NG Ready!' )
+			
 			resolve()
 		})
 	}
 	
 	private async findPath(){
+		this._path = ''
 		
 		let confPath: string | undefined = await vscode.workspace.getConfiguration( 'blitzmax' ).get( 'bmxPath' )
 		if (!confPath){
-			
 			if (!this._askedForPath){
-				
 				this._askedForPath = true
-				//this.AskForPath()
+				await this.askForPath()
 			}
-			
 			return
 		}
-		
 		this._path = confPath
 	}
 	
@@ -109,10 +105,8 @@ export class BlitzMaxHandler{
 					await vscode.workspace.getConfiguration( 'blitzmax' ).update( 'bmxPath', fileUri[0].fsPath, true )
 					this.findPath()
 					
-					if (this.path){
-							
+					if (this.path)
 						vscode.window.showInformationMessage( 'BlitzMax Path Set' )
-					}
 				}
 			})
 		}
@@ -287,7 +281,7 @@ export class BlitzMaxHandler{
 			if ( err.stderr ) { msg = err.stderr }
 			if ( err.stdout ) { msg = err.stdout }
 			
-			this._problem = 'Unable to determin BlitzMax version'
+			this._problem = 'Unable to determine BlitzMax version'
 			this.askForPath( 'Make sure your BlitzMax path is correct. (' + msg + ')' )
 		}
 	}
@@ -369,7 +363,11 @@ export class BlitzMaxHandler{
 	
 	warnNotReady(): boolean{
 		if (this.ready) return false
-		vscode.window.showErrorMessage( "BlitzMax is not ready yet" )
+		
+		if (this.problem)
+			vscode.window.showErrorMessage( 'BlitzMax is not ready yet: ' + this.problem )
+		else
+			vscode.window.showErrorMessage( "BlitzMax is not ready yet" )
 		return true
 	}
 }

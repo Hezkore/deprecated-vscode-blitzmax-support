@@ -4,7 +4,8 @@ import * as vscode from 'vscode'
 import { BlitzMax } from './blitzmax'
 import * as os from 'os'
 import * as path from 'path'
-import { currentBmx, variableSub } from './common'
+import { currentBmx, variableSub, log } from './common'
+import { mkdirSync, existsSync } from 'fs'
 
 export interface BmxTaskDefinition extends vscode.TaskDefinition {
 	
@@ -158,8 +159,16 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 	
 	// Build output
 	if (definition.output){
-		args.push( '-o' )
-		args.push( variableSub( definition.output, arch, definition.debug, platform ) )
+		let outPath: string = variableSub( definition.output, arch, definition.debug, platform )
+		
+		// Create the path since some Bmx versions don't
+		mkdirSync(outPath, { recursive: true })
+		if (existsSync( outPath )){
+			args.push( '-o' )
+			args.push( outPath )
+		}
+		else
+			log( 'Unable to create output path, using default' )
 	}
 	
 	// Execute after build
@@ -185,14 +194,11 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 	}
 	args.push( source )
 	
-	//console.log( "NG: " + bmxNg )
-	//console.log( args )
-	
 	// Setup the task already!
 
 	// Okay so this is a weird one...
-	// Ideally you'd add the BMX Bin path to PATH and just call 'bmk'
-	// But that CLEARS PATH!
+	// Ideally you'd add the Bmx Bin path to PATH and just call 'bmk'
+	// But that CLEARS PATH !
 	// So instead we just directly call 'bmk' via its absolute path
 	let bmkPath = path.join( BlitzMax.binPath, 'bmk' )
 	let exec: vscode.ShellExecution = new vscode.ShellExecution( bmkPath, args)//, { env: { 'PATH': BlitzMax.binPath } } )
