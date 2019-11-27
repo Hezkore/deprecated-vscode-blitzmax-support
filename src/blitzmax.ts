@@ -269,6 +269,7 @@ export class BlitzMaxHandler{
 	
 	private async checkVersion(){
 		
+		this._version = 'Unknown'
 		this._bccVersion = '0.0'
 		this._bmkVersion = '0.0'
 		
@@ -289,10 +290,10 @@ export class BlitzMaxHandler{
 				if (stdout.toLowerCase().startsWith('blitzmax release version'))
 				{
 					this._legacy = true
-					this._version = `Legacy v${this._bccVersion}`
+					this._version = `Legacy`
 				}else{
 					this._legacy = false
-					this._version = `NG v${this._bccVersion}`
+					this._version = `NG`
 				}
 				
 				log(`\tBCC Version: ${this._bccVersion}`)
@@ -311,7 +312,8 @@ export class BlitzMaxHandler{
 		if (!this._legacy)
 		{
 			try {
-				let {stdout, stderr} = await exec('bmk -v', {env: {'PATH': this.binPath}})
+				console.log(this.binPath + '/bmk -v')
+				let {stdout, stderr} = await exec(path.join(this.binPath, '/bmk -v'), {})
 				
 				if (stderr && stderr.length > 0)
 				{
@@ -326,9 +328,7 @@ export class BlitzMaxHandler{
 					{
 						this._bmkVersion = spaceSplit[1]
 						log(`\tBMK Version: ${this._bmkVersion}`)
-					}
-					else
-					{
+					}else{
 						this.problem = 'Unable to determine bmk version'
 						return
 					}
