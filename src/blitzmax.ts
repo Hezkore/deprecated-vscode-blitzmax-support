@@ -269,9 +269,12 @@ export class BlitzMaxHandler{
 	
 	private async checkLegacy(){
 		
+		this._bccVersion = '0.0'
+		this._bmkVersion = '0.0'
+		
 		// First we check the bcc version
 		try {
-			let { stdout, stderr } = await exec( 'bcc', { env: { 'PATH': this.binPath } } )
+			let {stdout, stderr} = await exec('bcc', {env: {'PATH': this.binPath}})
 			
 			if (stderr && stderr.length > 0)
 			{
@@ -299,12 +302,14 @@ export class BlitzMaxHandler{
 			this.askForPath( 'Make sure your BlitzMax path is correct. (' + msg + ')' )
 		}
 		
+		this._version = `NG v${this._bccVersion}`
+		
 		// Secondly we check the bmk version
 		// Notice that Legacy bmk doesn't even provide a bmk version ¯\_(ツ)_/¯
 		if (!this._legacy)
 		{
 			try {
-				let { stdout, stderr } = await exec( 'bmk -v', {env: { 'PATH': this.binPath } } )
+				let {stdout, stderr} = await exec('bmk -v', {env: {'PATH': this.binPath}})
 				
 				if (stderr && stderr.length > 0)
 				{
@@ -334,8 +339,6 @@ export class BlitzMaxHandler{
 				this._problem = 'Unable to determine bmk version'
 				this.askForPath( 'Make sure your BlitzMax path is correct. (' + msg + ')' )
 			}
-			
-			this._version = `NG v${this._bccVersion}`
 		}else
 			this._version = `Legacy v${this._bccVersion}`
 	}
