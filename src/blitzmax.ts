@@ -72,7 +72,7 @@ export class BlitzMaxHandler{
 				return reject()
 			}
 			
-			await this.checkLegacy()
+			await this.checkVersion()
 			if (this.problem) return reject()
 			
 			await scanModules( context )
@@ -267,7 +267,7 @@ export class BlitzMaxHandler{
 		}
 	}
 	
-	private async checkLegacy(){
+	private async checkVersion(){
 		
 		this._bccVersion = '0.0'
 		this._bmkVersion = '0.0'
@@ -284,13 +284,17 @@ export class BlitzMaxHandler{
 			
 			if (stdout) {
 				let spaceSplit: string[] = stdout.trim().split(' ')
+				this._bccVersion = spaceSplit[spaceSplit.length - 1]
 				
 				if (stdout.toLowerCase().startsWith('blitzmax release version'))
+				{
 					this._legacy = true
-				else
+					this._version = `Legacy v${this._bccVersion}`
+				}else{
 					this._legacy = false
+					this._version = `NG v${this._bccVersion}`
+				}
 				
-				this._bccVersion = spaceSplit[spaceSplit.length - 1]
 				log(`\tBCC Version: ${this._bccVersion}`)
 			}
 		}catch(err){
@@ -301,8 +305,6 @@ export class BlitzMaxHandler{
 			this._problem = 'Unable to determine BlitzMax version'
 			this.askForPath( 'Make sure your BlitzMax path is correct. (' + msg + ')' )
 		}
-		
-		this._version = `NG v${this._bccVersion}`
 		
 		// Secondly we check the bmk version
 		// Notice that Legacy bmk doesn't even provide a bmk version ¯\_(ツ)_/¯
@@ -339,8 +341,7 @@ export class BlitzMaxHandler{
 				this._problem = 'Unable to determine bmk version'
 				this.askForPath( 'Make sure your BlitzMax path is correct. (' + msg + ')' )
 			}
-		}else
-			this._version = `Legacy v${this._bccVersion}`
+		}
 	}
 	
 	async hasExample( cmd: AnalyzeDoc ): Promise<string>{
