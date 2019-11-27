@@ -103,7 +103,7 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 						
 						mod = BlitzMax._modules.get( keyName )
 						if (!mod){
-							vscode.window.showErrorMessage( "Unable to update module!" )
+							log( "\tUnable to update module: " + keyName )
 							return reject()
 						}
 						
@@ -114,10 +114,8 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 							
 							await updateModule( mod )
 							changedModules++
-						}else{
-							
-							//console.log( "NO ENTRY POINT FOR: " + mod.file )
-						}
+						}else
+							log( "\tNo module entry point for: " + mod.file )
 					}
 					
 					// Turn docs into commands
@@ -145,10 +143,12 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 			}
 			
 			// Save updated modules
-			log( `${changedModules} modules were updated` )
-			//console.log( 'Module changes:', changedModules )
-			if (changedModules > 0) saveModules( modJsonPath )
-			console.log( 'Commands:', BlitzMax._commands.length )
+			if (changedModules > 0)
+			{
+				log( `${BlitzMax._modules.size} Modules (${changedModules} Changes) ${BlitzMax._commands.length} Commands` )
+				await saveModules( modJsonPath )
+			} else
+				log( `${BlitzMax._modules.size} Modules ${BlitzMax._commands.length} Commands` )
 			return resolve()
 		})
 	})
@@ -156,16 +156,9 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 
 async function saveModules( path: string ){
 	
-	console.log( 'Saving modules' )
+	log( 'Saving Module Database ... ', false )
 	await writeFile( path, modulesToJson( BlitzMax._modules ) )
-}
-
-async function pause(timeout:number){
-	
-	return new Promise((fulfill) => {
-		
-	  setTimeout(fulfill, timeout)
-	})
+	log( 'done' )
 }
 
 async function updateModule( mod: BmxModule ){
@@ -188,10 +181,10 @@ async function updateModule( mod: BmxModule ){
 		log( `.`, false )
 		
 		// Read the analyzer result and apply to our module
-		if (result.moduleName){ mod.name = result.moduleName.data }
-		if (result.bbdoc){
+		if (result.moduleName)
+			mod.name = result.moduleName.data
+		if (result.bbdoc)
 			mod.commands = result.bbdoc
-		}
 		
 		log( ' done' )
 		return resolve()

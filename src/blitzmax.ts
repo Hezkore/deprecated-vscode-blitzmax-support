@@ -15,6 +15,7 @@ export class BlitzMaxHandler{
 	private _path: string = ''
 	private _problem: string | undefined
 	private _legacy: boolean = false
+	private _version: string = 'Unknown'
 	private _askedForPath: boolean = false
 	
 	get path(): string {
@@ -38,6 +39,7 @@ export class BlitzMaxHandler{
 		console.log( 'BlitzMax Error: ', message )
 	}
 	get legacy(): boolean { return this._legacy }
+	get version(): string { return this._version }
 	
 	async setup( context: vscode.ExtensionContext ){
 		
@@ -63,10 +65,7 @@ export class BlitzMaxHandler{
 			await scanModules( context )
 			
 			this._ready = true
-			if (this.legacy)
-				log( 'BlitzMax Legacy Ready!' )
-			else
-				log( 'BlitzMax NG Ready!' )
+			log( `BlitzMax ${this.version} Ready!` )
 			
 			resolve()
 		})
@@ -257,29 +256,30 @@ export class BlitzMaxHandler{
 		try {
 			let { stdout, stderr } = await exec( 'bcc', { env: { 'PATH': this.binPath } } )
 			
-			if ( stderr && stderr.length > 0 ) {
-				
+			if (stderr && stderr.length > 0)
+			{
 				this.problem = stderr
-				//vscode.window.showErrorMessage( 'BCC error: ' + stderr )
+				return
 			}
 			
-			if ( stdout ) {
+			if (stdout) {
+				let spaceSplit: string[] = stdout.trim().split(' ', stdout.lastIndexOf(' '))
 				
 				if ( stdout.toLowerCase().startsWith( 'blitzmax release version' ) ) {
 					
-					console.log( "is Legacy" )
 					this._legacy = true
+					this._version = 'Legacy v' + spaceSplit[spaceSplit.length - 1]
 				}else{
 					
-					console.log( "is NG" )
 					this._legacy = false
+					this._version = 'NG v' + spaceSplit[spaceSplit.length - 1]
 				}
 			}
 		} catch ( err ) {
 			
 			let msg:string = err
-			if ( err.stderr ) { msg = err.stderr }
-			if ( err.stdout ) { msg = err.stdout }
+			if (err.stderr) msg = err.stderr
+			if (err.stdout) msg = err.stdout
 			
 			this._problem = 'Unable to determine BlitzMax version'
 			this.askForPath( 'Make sure your BlitzMax path is correct. (' + msg + ')' )
