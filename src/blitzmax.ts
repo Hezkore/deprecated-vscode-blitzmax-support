@@ -3,7 +3,7 @@
 import * as vscode from 'vscode'
 import * as path from 'path'
 import { scanModules, BmxModule, AnalyzeDoc, AnalyzeItem } from './bmxModules'
-import { exec, exists, readFile, log } from './common'
+import { exec, exists, readFile, log, clearLog } from './common'
 
 export class BlitzMaxHandler{
 	
@@ -15,7 +15,9 @@ export class BlitzMaxHandler{
 	private _path: string = ''
 	private _problem: string | undefined
 	private _legacy: boolean = false
-	private _version: string = 'Unknown'
+	private _version:string = 'Unknown'
+	private _bccVersion: string = '0.0'
+	private _bmkVersion: string = '0.0'
 	private _askedForPath: boolean = false
 	
 	get path(): string {
@@ -39,11 +41,22 @@ export class BlitzMaxHandler{
 		console.log( 'BlitzMax Error: ', message )
 	}
 	get legacy(): boolean { return this._legacy }
+	get bccVersion(): string { return this._bccVersion }
+	get bmkVersion(): string { return this._bmkVersion }
 	get version(): string { return this._version }
+	get supportsVarSubOutput(): boolean{
+		
+		// Minimum NG version is 3.39
+		if (this._legacy || BlitzMax.bmkVersion < '3.39' )
+			return false
+		
+		return true
+	}
 	
 	async setup( context: vscode.ExtensionContext ){
 		
-		log( 'Setting up BlitzMax' )
+		clearLog()
+		log( 'Initializing BlitzMax' )
 		
 		return new Promise<boolean>( async ( resolve, reject ) => {
 			
@@ -66,6 +79,9 @@ export class BlitzMaxHandler{
 			
 			this._ready = true
 			log( `BlitzMax ${this.version} Ready!` )
+			
+			if (!this.supportsVarSubOutput)
+				log( '*Notice* task.json output is NOT supported on this version of BlitzMax' )
 			
 			resolve()
 		})
@@ -253,6 +269,7 @@ export class BlitzMaxHandler{
 	
 	private async checkLegacy(){
 		
+		// First we check the bcc version
 		try {
 			let { stdout, stderr } = await exec( 'bcc', { env: { 'PATH': this.binPath } } )
 			
@@ -263,20 +280,17 @@ export class BlitzMaxHandler{
 			}
 			
 			if (stdout) {
-				let spaceSplit: string[] = stdout.trim().split(' ', stdout.lastIndexOf(' '))
+				let spaceSplit: string[] = stdout.trim().split(' ')
 				
-				if ( stdout.toLowerCase().startsWith( 'blitzmax release version' ) ) {
-					
+				if (stdout.toLowerCase().startsWith('blitzmax release version'))
 					this._legacy = true
-					this._version = 'Legacy v' + spaceSplit[spaceSplit.length - 1]
-				}else{
-					
+				else
 					this._legacy = false
-					this._version = 'NG v' + spaceSplit[spaceSplit.length - 1]
-				}
+				
+				this._bccVersion = spaceSplit[spaceSplit.length - 1]
+				log(`\tBCC Version: ${this._bccVersion}`)
 			}
-		} catch ( err ) {
-			
+		}catch(err){
 			let msg:string = err
 			if (err.stderr) msg = err.stderr
 			if (err.stdout) msg = err.stdout
@@ -284,6 +298,46 @@ export class BlitzMaxHandler{
 			this._problem = 'Unable to determine BlitzMax version'
 			this.askForPath( 'Make sure your BlitzMax path is correct. (' + msg + ')' )
 		}
+		
+		// Secondly we check the bmk version
+		// Notice that Legacy bmk doesn't even provide a bmk version ¯\_(ツ)_/¯
+		if (!this._legacy)
+		{
+			try {
+				let { stdout, stderr } = await exec( 'bmk -v', {env: { 'PATH': this.binPath } } )
+				
+				if (stderr && stderr.length > 0)
+				{
+					this.problem = stderr
+					return
+				}
+				
+				if (stdout) {
+					let spaceSplit: string[] = stdout.trim().split(' ')
+					
+					if (spaceSplit.length > 1)
+					{
+						this._bmkVersion = spaceSplit[1]
+						log(`\tBMK Version: ${this._bmkVersion}`)
+					}
+					else
+					{
+						this.problem = 'Unable to determine bmk version'
+						return
+					}
+				}
+			}catch(err){
+				let msg:string = err
+				if (err.stderr) msg = err.stderr
+				if (err.stdout) msg = err.stdout
+				
+				this._problem = 'Unable to determine bmk version'
+				this.askForPath( 'Make sure your BlitzMax path is correct. (' + msg + ')' )
+			}
+			
+			this._version = `NG v${this._bccVersion}`
+		}else
+			this._version = `Legacy v${this._bccVersion}`
 	}
 	
 	async hasExample( cmd: AnalyzeDoc ): Promise<string>{

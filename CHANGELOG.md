@@ -1,7 +1,11 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.10.5
+* Extension now detects BlitzMax bmk version.
+* Fixed task issues on older BlitzMax versions.
+
 ## Version 1.10.4
-* Extension now detects BlitzMax version.
+* Extension now detects BlitzMax bcc version.
 
 ## Version 1.10.3
 * Older BlitzMax versions will no longer produce errors when output path is set.

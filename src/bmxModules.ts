@@ -24,11 +24,12 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 	
 	if (BlitzMax.problem) return
 	
-	log( `Scanning Modules:` )
+	log('')
+	log('Updating Modules:')
 	
 	await vscode.window.withProgress({
 		location: vscode.ProgressLocation.Notification,
-		title: "Scanning BlitzMax modules",
+		title: "Updating BlitzMax modules",
 		cancellable: false
 	}, (progress, token) => { return new Promise(async function(resolve, reject) {
 			
@@ -145,10 +146,14 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 			// Save updated modules
 			if (changedModules > 0)
 			{
-				log( `${BlitzMax._modules.size} Modules (${changedModules} Changes) ${BlitzMax._commands.length} Commands` )
+				log(`${changedModules} module update`, false)
+				log(changedModules == 1 ? `d` : `s`)
 				await saveModules( modJsonPath )
-			} else
-				log( `${BlitzMax._modules.size} Modules ${BlitzMax._commands.length} Commands` )
+			}else
+				log('\tNo module updates')
+			
+			log('')
+			log(`${BlitzMax._modules.size} Modules ${BlitzMax._commands.length} Commands`)
 			return resolve()
 		})
 	})
@@ -156,14 +161,14 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 
 async function saveModules( path: string ){
 	
-	log( 'Saving Module Database ... ', false )
-	await writeFile( path, modulesToJson( BlitzMax._modules ) )
-	log( 'done' )
+	log('Saving Module Database ... ', false)
+	await writeFile(path, modulesToJson( BlitzMax._modules ))
+	log('done')
 }
 
 async function updateModule( mod: BmxModule ){
 	
-	log( `\t${mod.parent}/${mod.folderName} `, false )
+	log(`\t${mod.parent}/${mod.folderName} `, false)
 	
 	return new Promise(async function(resolve, reject) {
 		

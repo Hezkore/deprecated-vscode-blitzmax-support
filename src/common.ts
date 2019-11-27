@@ -20,6 +20,12 @@ export function log( text:string, append: boolean = true ) {
 	outputChannel.show( true )
 }
 
+export function clearLog() {
+	
+	if (outputChannel)
+		outputChannel.clear()
+}
+
 export function makeReturnPretty( ret: string | undefined, nullToInt: boolean = true ): string{
 	
 	if (!ret){
@@ -208,14 +214,14 @@ export function capitalize( text:string ): string{
 	return result
 }
 
-export function variableSub( text:string, arch:string, debug:boolean | undefined, platform:string ): string{
+export function variableSub(text: string, arch: string, debug: boolean | undefined, platform: string): string{
 	
 	if (platform.toLocaleLowerCase() == 'win32')
 		platform = 'windows'
 	
-	text = text.replace( '${arch}', arch )
-	text = text.replace( '${build}', debug ? 'debug' : 'release' )
-	text = text.replace( '${platform}', platform )
+	text = text.replace('${arch}', arch)
+	text = text.replace('${build}', debug ? 'debug' : 'release')
+	text = text.replace('${platform}', platform)
 	
 	return text
 }
@@ -256,10 +262,8 @@ export async function exec( command: string, options: process.ExecOptions ): Pro
 		
 		process.exec(command, options, ( error, stdout, stderr ) => {
 			
-			if ( error ) {
-				
-				return reject( { error, stdout, stderr } )
-			}
+			if (error)
+				return reject({ error, stdout, stderr })
 			
 			return resolve( { stdout, stderr } )
 		})
@@ -270,9 +274,8 @@ export async function exists( file: string ): Promise<boolean> {
 	
 	return new Promise<boolean>( ( resolve, _reject ) => {
 		
-		fs.exists( file, ( value ) => {
-			
-			return resolve( value )
+		fs.exists(file, (value) => {
+			return resolve(value)
 		})
 	})
 }

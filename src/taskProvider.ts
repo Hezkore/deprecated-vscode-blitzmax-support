@@ -4,9 +4,7 @@ import * as vscode from 'vscode'
 import { BlitzMax } from './blitzmax'
 import * as os from 'os'
 import * as path from 'path'
-import { currentBmx, variableSub, log, createDir } from './common'
-import { mkdirSync, existsSync } from 'fs'
-import { create } from 'domain'
+import { currentBmx, variableSub } from './common'
 
 export interface BmxTaskDefinition extends vscode.TaskDefinition {
 	
@@ -131,8 +129,9 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 		}
 	}
 	
+	// NG stuff only
 	let arch:string | undefined = 'x86'
-	if (!BlitzMax.legacy){ // NG stuff only
+	if (!BlitzMax.legacy){
 		
 		// Architecture
 		arch = definition.arch
@@ -162,9 +161,15 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 	if (definition.threaded)
 		args.push( '-h' )
 	
-	// Build output
-	if (definition.output && definition.output.length > 0){
-		let outPath: string = variableSub( definition.output, arch, definition.debug, platform )
+		// Build output
+	// Okay here's something!
+	// All Legacy versions and NG versions lower than 3.39 do NOT create the output for you
+	// And since VScode doesn't provide us with finished var subs;
+	// so we just ignore output completely
+	if (BlitzMax.supportsVarSubOutput && definition.output && definition.output.length > 0)
+	{
+		let outPath: string =
+			variableSub( definition.output, arch, definition.debug, platform )
 		
 		args.push( '-o' )
 		args.push( outPath )
@@ -196,7 +201,7 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 	args.push( source )
 	
 	// Setup the task already!
-
+	
 	// Okay so this is a weird one...
 	// Ideally you'd add the Bmx Bin path to PATH and just call 'bmk'
 	// But that CLEARS PATH !
@@ -204,7 +209,6 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 	let bmkPath = path.join( BlitzMax.binPath, 'bmk' )
 	let exec: vscode.ShellExecution = new vscode.ShellExecution( bmkPath, args)//, { env: { 'PATH': BlitzMax.binPath } } )
 	
-	//let kind: BmxTaskDefinition = { type: 'bmx' }
 	let task: vscode.Task = new vscode.Task( definition, vscode.TaskScope.Workspace, name, 'BlitzMax', exec, '$blitzmax' )
 	
 	// Setup the task to function a bit like MaxIDE
