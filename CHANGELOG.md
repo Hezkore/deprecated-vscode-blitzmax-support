@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.10.6
+* Better Linux support.
+
 ## Version 1.10.5
 * Extension now detects BlitzMax bmk version.
 * Fixed task issues on older BlitzMax versions.

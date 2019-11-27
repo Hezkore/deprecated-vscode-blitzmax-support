@@ -312,7 +312,6 @@ export class BlitzMaxHandler{
 		if (!this._legacy)
 		{
 			try {
-				console.log(this.binPath + '/bmk -v')
 				let {stdout, stderr} = await exec(path.join(this.binPath, '/bmk -v'), {})
 				
 				if (stderr && stderr.length > 0)
