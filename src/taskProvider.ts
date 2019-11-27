@@ -4,8 +4,9 @@ import * as vscode from 'vscode'
 import { BlitzMax } from './blitzmax'
 import * as os from 'os'
 import * as path from 'path'
-import { currentBmx, variableSub, log } from './common'
+import { currentBmx, variableSub, log, createDir } from './common'
 import { mkdirSync, existsSync } from 'fs'
+import { create } from 'domain'
 
 export interface BmxTaskDefinition extends vscode.TaskDefinition {
 	
@@ -140,7 +141,8 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 		args.push( arch )
 		
 		// GDB
-		if (definition.gdb) args.push( '-gdb' )
+		if (definition.gdb)
+			args.push( '-gdb' )
 		
 		// Platform
 		args.push( '-l' )
@@ -148,37 +150,36 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 		
 		// Warn about NG stuff
 		let funcArgCasting = vscode.workspace.getConfiguration( 'blitzmax' ).get( 'funcArgCasting' )
-		if ( funcArgCasting == 'warn' ){ args.push( '-w' ) }
+		if (funcArgCasting == 'warn')
+			args.push( '-w' )
 		
 		// Do a quick build
-		if (definition.quick) args.push( '-quick' )
+		if (definition.quick)
+			args.push( '-quick' )
 	}
 	
 	// Build threaded
-	if (definition.threaded == true) args.push( '-h' )
+	if (definition.threaded)
+		args.push( '-h' )
 	
 	// Build output
-	if (definition.output){
+	if (definition.output && definition.output.length > 0){
 		let outPath: string = variableSub( definition.output, arch, definition.debug, platform )
 		
-		// Create the path since some Bmx versions don't
-		mkdirSync(outPath, { recursive: true })
-		if (existsSync( outPath )){
-			args.push( '-o' )
-			args.push( outPath )
-		}
-		else
-			log( 'Unable to create output path, using default' )
+		args.push( '-o' )
+		args.push( outPath )
 	}
 	
 	// Execute after build
-	if (definition.execute == true) args.push( '-x' )
+	if (definition.execute)
+		args.push( '-x' )
 	
 	// Debug or Release version
-	if (definition.debug == true){ args.push( '-d' ) }else{ args.push( '-r' ) }
+	args.push( definition.debug ? '-d' : '-r'  )
 	
 	// Verbose build
-	if (definition.verbose == true) args.push( '-v' )
+	if (definition.verbose)
+		args.push( '-v' )
 	
 	// Actual file to build
 	let source:string | undefined = definition.source
@@ -214,11 +215,5 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 	task.presentationOptions.showReuseMessage = false
 	task.presentationOptions.clear = true
 	
-	// Some cleanup
-	//task.definition = definition
-	//task.group = vscode.TaskGroup.Build
-	
-	// EXECUTE!
-	//vscode.tasks.executeTask( task )
 	return task
 }

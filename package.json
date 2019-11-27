@@ -33,19 +33,19 @@
 	],
 	"contributes": {
 		"icons": [
-            {
-                "id": "blitzmax-icons",
-                "label": "BlitzMax Icons",
-                "path": "./icons.json"
-            }
-        ],
+			{
+				"id": "blitzmax-icons",
+				"label": "BlitzMax Icons",
+				"path": "./icons.json"
+			}
+		],
 		"menus": {
 			"editor/context": [
-			{
-				"when": "editorLangId == blitzmax",
-				"command": "blitzmax.runSelected",
-				"group": "0"
-			}
+				{
+					"when": "editorLangId == blitzmax",
+					"command": "blitzmax.runSelected",
+					"group": "0"
+				}
 			],
 			"editor/title": [
 				{
@@ -78,12 +78,12 @@
 			{
 				"type": "bmx",
 				"properties": {
-					"source":{
+					"source": {
 						"type": "string",
 						"default": "${relativeFile}",
 						"description": "Main source file."
 					},
-					"output":{
+					"output": {
 						"type": "string",
 						"default": "${fileBasenameNoExtension}",
 						"description": "Specifies the output file. (makeapp only)\nBy default, the output file is placed into the same directory as the root source file."
@@ -98,7 +98,7 @@
 							"makelib"
 						]
 					},
-					"app":{
+					"app": {
 						"type": "string",
 						"description": "Specifies the application type. (makeapp only)",
 						"enum": [
@@ -106,7 +106,7 @@
 							"gui"
 						]
 					},
-					"arch":{
+					"arch": {
 						"type": "string",
 						"description": "Compiles to the specified architecture. (the default is the native for the current binary - For example, it will be x86 for an x86-built bmk)\nOptions vary depending on the current OS/architecture/installed toolchain and version of bcc..",
 						"default": "auto",
@@ -122,7 +122,7 @@
 							"arm64v8a"
 						]
 					},
-					"platform":{
+					"platform": {
 						"type": "string",
 						"description": "Cross-compiles to the specific target platform.",
 						"default": "auto",
@@ -137,32 +137,32 @@
 							"nx"
 						]
 					},
-					"threaded":{
+					"threaded": {
 						"type": "boolean",
 						"description": "Builds multithreaded version.",
 						"default": true
 					},
-					"debug":{
+					"debug": {
 						"type": "boolean",
 						"description": "Build as Debug.",
 						"default": false
 					},
-					"gdb":{
+					"gdb": {
 						"type": "boolean",
 						"description": "Generates line mappings suitable for GDB debugging.",
 						"default": false
 					},
-					"quick":{
+					"quick": {
 						"type": "boolean",
 						"description": "Quick build.\nDoes not scan modules for changes. May result in quicker build times on some systems.\nThe default behaviour is to scan and build all requirements for the application, including modules.",
 						"default": false
 					},
-					"execute":{
+					"execute": {
 						"type": "boolean",
 						"description": "Executes built application. (makeapp only)",
 						"default": false
 					},
-					"verbose":{
+					"verbose": {
 						"type": "boolean",
 						"description": "Verbose (noisy) build.",
 						"default": false
@@ -256,8 +256,8 @@
 				"blitzmax.runSelectedTextTemplate": {
 					"type": "array",
 					"description": "Default template for running selected text",
-                    "default": [
-                        "Framework BRL.StandardIO",
+					"default": [
+						"Framework BRL.StandardIO",
 						"Import BRL.Bank",
 						"Import BRL.BankStream",
 						"Import BRL.Blitz",
@@ -290,10 +290,10 @@
 						"Import BRL.Volumes",
 						"Import BRL.XML",
 						"?"
-                    ],
-                    "items": {
-                        "type": "string"
-                    }
+					],
+					"items": {
+						"type": "string"
+					}
 				},
 				"blitzmax.runSelectedTextSuperStrict": {
 					"type": "boolean",

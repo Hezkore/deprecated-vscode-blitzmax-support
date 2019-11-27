@@ -257,7 +257,7 @@ function cleanAboutInfo( item: AnalyzeDoc ): Promise<AnalyzeDoc>{
 		let linkWord: string = ''
 		
 		for (let i = 0; i < item.about.length; i++){
-			const letter = item.about[i]
+			const letter: string = item.about[i]
 			
 			if (letter == '\n'){
 				
