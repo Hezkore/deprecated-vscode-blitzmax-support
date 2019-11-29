@@ -1,5 +1,13 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.11.0
+* Added template snippets for application, module and MaxGUI.
+* Better indentation for Select cases.
+* $BLOCK_COMMENT_START / END in snippets is now supported.
+* New Move Selected Text To Own File feature.
+* Run Selected Text no longer uses templates and instead analyzes the current file.
+* Build Application button will now actually Build the application instead of configuring it.
+
 ## Version 1.10.6
 * Better Linux support.
 
