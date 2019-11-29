@@ -1,6 +1,7 @@
 {
 	"comments" : {
-		"lineComment" : "'"
+		"lineComment" : "'",
+		"blockComment": ["rem", "endrem"]
 	},
 	"brackets" : [
 		[ "{", "}" ],
@@ -22,11 +23,11 @@
 	],
 	"indentationRules" : {
 		"increaseIndentPattern" :  {
-			"pattern": "^\\s*(if +?(.*(then\\s*?)$|(?!.+?then).*)|function|method|type|struct|enum|for|case|else|else *?if|while|repeat|select|case)",
+			"pattern": "^\\s*(if +?(.*(then\\s*?)$|(?!.+?then).*)|function|method|type|struct|enum|for|case|default|else|else *?if|while|repeat|select|case)",
 			"flags": "i"
 		},
 		"decreaseIndentPattern" : {
-			"pattern": "^\\s*(end *?function|end *?method|else|else *?if|end *?type|case|end *?struct|end *?enum|next|end *?if|wend|until|end *?select)",
+			"pattern": "^\\s*(end *?function|end *?method|else|else *?if|end *?type|case|default|end *?struct|end *?enum|next|end *?if|wend|until|end *?select)",
 			"flags": "i"
 		}
 	}
