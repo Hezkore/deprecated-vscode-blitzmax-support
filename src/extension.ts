@@ -7,6 +7,7 @@ import { BmxActionProvider } from './actionProvider'
 import { BmxDefinitionProvider } from './definitionProvider'
 import { currentDefinition, BmxTaskProvider, makeTask } from './taskProvider'
 import { runSelectedText } from './runSelected'
+import { moveSelectedText } from './moveSelected'
 import { BmxCompletionProvider } from './completionProvider'
 import { BmxSignatureHelpProvider } from './signatureHelpProvider'
 import { BmxHoverProvider } from './hoverProvider'
@@ -84,6 +85,13 @@ async function registerProviders( context:vscode.ExtensionContext ) {
 }
 
 async function registerCommands( context:vscode.ExtensionContext ) {
+	
+	context.subscriptions.push(
+		vscode.commands.registerCommand( 'blitzmax.moveToOwnFile', async () => {
+			
+			moveSelectedText( context )
+		})
+	)
 	
 	context.subscriptions.push(
 		vscode.commands.registerCommand( 'blitzmax.runSelected', () => {

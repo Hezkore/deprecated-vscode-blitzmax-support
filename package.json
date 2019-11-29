@@ -42,8 +42,13 @@
 		"menus": {
 			"editor/context": [
 				{
-					"when": "editorLangId == blitzmax",
+					"when": "editorLangId == blitzmax && editorHasSelection",
 					"command": "blitzmax.runSelected",
+					"group": "0"
+				},
+				{
+					"when": "editorLangId == blitzmax && editorHasSelection",
+					"command": "blitzmax.moveToOwnFile",
 					"group": "0"
 				}
 			],
@@ -196,6 +201,11 @@
 			{
 				"command": "blitzmax.runSelected",
 				"title": "Run Selected Text",
+				"category": "BlitzMax"
+			},
+			{
+				"command": "blitzmax.moveToOwnFile",
+				"title": "Move Selected Text To Own File",
 				"category": "BlitzMax"
 			},
 			{
