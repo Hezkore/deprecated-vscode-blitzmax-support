@@ -59,7 +59,6 @@ export async function runSelectedText( context: vscode.ExtensionContext ) {
 	let tmpSourceFilePath: string = path.join( path.dirname( editor.document.uri.fsPath ), fileName + '.bmx' )
 	let tmpOutFilePath: string = path.join( tmpPath, fileName )
 	
-	console.log( code )
 	await writeFile( tmpSourceFilePath, code )
 	
 	if (!await exists( tmpSourceFilePath ) )
