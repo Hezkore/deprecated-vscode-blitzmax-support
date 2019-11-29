@@ -164,7 +164,7 @@ export function setSourceFile( file: vscode.Uri | undefined ){
 			def.source = filePath
 			if (def.output){
 				
-				def.output = def.output.replace( "${fileBasenameNoExtension}",
+				def.output = def.output.replace( '${fileBasenameNoExtension}',
 				path.basename( file.path ).split( '.' )[0] )
 			}
 			foundDefault = true
@@ -293,10 +293,11 @@ export async function createDir( path: string ): Promise<boolean> {
 
 export async function removeFile( file: string ): Promise<boolean> {
 	
-	return new Promise<boolean>( ( resolve, _reject ) => {
+	return new Promise<boolean>( ( resolve, reject ) => {
 		
 		fs.unlink(file, ( err ) => {
 			
+			if (err) reject()
 			return resolve( err == null )
 		})
 	})

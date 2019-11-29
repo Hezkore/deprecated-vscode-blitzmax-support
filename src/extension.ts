@@ -181,7 +181,7 @@ async function registerCommands( context:vscode.ExtensionContext ) {
 			
 			if (BlitzMax.warnNotReady()) return
 			
-			vscode.commands.executeCommand( 'workbench.action.tasks.configureDefaultBuildTask' )
+			vscode.commands.executeCommand( 'workbench.action.tasks.build' )
 		})
 	)
 }

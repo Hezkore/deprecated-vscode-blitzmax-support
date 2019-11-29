@@ -263,53 +263,6 @@
 			"type": "object",
 			"title": "BlitzMax",
 			"properties": {
-				"blitzmax.runSelectedTextTemplate": {
-					"type": "array",
-					"description": "Default template for running selected text",
-					"default": [
-						"Framework BRL.StandardIO",
-						"Import BRL.Bank",
-						"Import BRL.BankStream",
-						"Import BRL.Blitz",
-						"Import BRL.EndianStream",
-						"Import BRL.FileSystem",
-						"Import BRL.LinkedList",
-						"Import BRL.Map",
-						"Import BRL.Math",
-						"Import BRL.RamStream",
-						"Import BRL.Random",
-						"Import BRL.Reflection",
-						"Import BRL.Retro",
-						"Import BRL.Stream",
-						"Import BRL.System",
-						"Import BRL.TextStream",
-						"Import BRL.Threads",
-						"Import BRL.Timer",
-						"?bmxng",
-						"Import BRL.Base64",
-						"Import BRL.Clipboard",
-						"Import BRL.Collections",
-						"Import BRL.Json",
-						"Import BRL.Matrix",
-						"Import BRL.Quaternion",
-						"Import BRL.StringBuilder",
-						"Import BRL.SystemDefault",
-						"Import BRL.ThreadPool",
-						"Import BRL.TimerDefault",
-						"Import BRL.Vector",
-						"Import BRL.Volumes",
-						"Import BRL.XML",
-						"?"
-					],
-					"items": {
-						"type": "string"
-					}
-				},
-				"blitzmax.runSelectedTextSuperStrict": {
-					"type": "boolean",
-					"default": false,
-					"description": "Use SuperStrict when running selected text"
-				},
 				"blitzmax.bmxPath": {
 					"type": "string",
 					"default": "",
