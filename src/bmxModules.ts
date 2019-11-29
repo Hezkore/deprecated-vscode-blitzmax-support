@@ -104,7 +104,7 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 						
 						mod = BlitzMax._modules.get( keyName )
 						if (!mod){
-							log( "\tUnable to update module: " + keyName )
+							log( `\tUnable to update module: ${keyName}` )
 							return reject()
 						}
 						
@@ -116,7 +116,7 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 							await updateModule( mod )
 							changedModules++
 						}else
-							log( "\tNo module entry point for: " + mod.file )
+							log( `\tNo module entry point for: ${mod.file}` )
 					}
 					
 					// Turn docs into commands
@@ -475,7 +475,7 @@ async function cleanAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
 					}else if(letter == '$'){
 						if (item.args) item.args[argCount].returns = 'String'
 					}else{
-						console.log( 'Unkown part!' )
+						log( '\n\t-Unkown part - Report to Hezkore', false )
 					}
 					break
 					
@@ -608,6 +608,8 @@ async function cleanAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
 async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 	return new Promise( async function( resolve, reject ) {
 		
+		let nlOnEnd: boolean = false
+		
 		let lines = options.data.split( "\n" )
 		
 		if (lines.length <= 0) return resolve()
@@ -677,7 +679,7 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 				case AnalyzeBlock.nothing:
 				case undefined:
 					
-					// Read line data		
+					// Read line data
 					if (lineLower.startsWith( 'import ' )){
 						
 						if (!result.import){ result.import = [] }
@@ -791,7 +793,8 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 					
 					// Do we have a parent?
 					if (!regardsParent){
-						console.log( 'No bbdoc parent!' )
+						log( '\n\t-No bbdoc parent - Report to Hezkore', false )
+						nlOnEnd = true
 						inside = insideHistory.pop()
 						break
 					}
@@ -813,10 +816,11 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 									
 								default:
 									if (bbdocTag != 'about'){
-										console.log( 'Unknown bbdoc tag:',
-										line.slice( 0, -line.length + split[0].length + 1 ).trim(),
-										'(' + options.file + ':' + regardsParent.line + ')'
-										)
+										log( '\n\t- Unknown bbdoc tag: ' +
+										line.slice( 0, -line.length + split[0].length + 1 ).trim() +
+										' (' + options.file + ':' + regardsParent.line + ')'
+										, false)
+										nlOnEnd = true
 									}
 									break
 							}
@@ -1000,6 +1004,7 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 			}
 		}
 		
+		if (nlOnEnd) log('\n\t', false)
 		return resolve( result )
 	})
 }
