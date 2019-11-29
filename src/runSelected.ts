@@ -1,5 +1,6 @@
 import { writeFile, exists, createDir, removeDir } from './common'
 import { makeTask, BmxTaskDefinition } from './taskProvider'
+import { quickAnalyze } from './quickAnalyze'
 import * as vscode from 'vscode'
 import * as path from 'path'
 
@@ -19,19 +20,33 @@ export async function runSelectedText( context: vscode.ExtensionContext ) {
 		return
 	}
 	
-	let template:string = "Strict"
-	let templateItems:string[] | undefined = vscode.workspace.getConfiguration( 'blitzmax' ).get( 'runSelectedTextTemplate' )
-	if (templateItems)
-	{
+	// Generate template
+	var analyzeSelectedResult = await quickAnalyze( selectedText )
+	var analyzeFileResult = await quickAnalyze( editor.document.getText() )
+	
+	let template: string = ''
+	if (!analyzeSelectedResult.strict)
 		if (vscode.workspace.getConfiguration( 'blitzmax' ).get( 'runSelectedTextSuperStrict' ))
-			template = "SuperStrict"
-		
-		templateItems.forEach(s => {
-			template += "\n" + s
-		})
-		template += "\n"
-	}
-	let code:string = template + selectedText
+			template += 'SuperStrict\n'
+		else
+			template += 'Strict\n'
+	
+	analyzeFileResult.imports.forEach(name => {
+		if (!analyzeSelectedResult.imports.includes( name ))
+		{
+			if (name.includes( '"' ))
+			{
+				//if (!editor) return
+				//template += 'Import '
+				//template += path.join( path.dirname( editor.document.uri.fsPath ), name )
+			}
+			//else
+			//	template += `Import ${name}\n`
+		}
+	})
+	
+	let code: string = template + selectedText
+	
 	
 	let tmpPath: string | undefined = context.storagePath
 	if (!tmpPath)
@@ -50,6 +65,7 @@ export async function runSelectedText( context: vscode.ExtensionContext ) {
 	
 	let tmpFilePath: string = path.join( tmpPath, Math.random().toString(36).replace('0.', '')  + ".bmx" )
 	
+	console.log( code )
 	await writeFile( tmpFilePath, code )
 	
 	if (!await exists( tmpFilePath ) )
@@ -59,8 +75,8 @@ export async function runSelectedText( context: vscode.ExtensionContext ) {
 	}
 	
 	const def: BmxTaskDefinition = { type: 'bmx', make: 'makeapp', app: 'console',
-	arch: 'auto', platform: 'auto', threaded: true, source: `${tmpFilePath}`,
-	debug: true, execute: true, quick: true, verbose: false }
+		arch: 'auto', platform: 'auto', threaded: true, source: `${tmpFilePath}`,
+		debug: true, execute: true, quick: true, verbose: false }
 	
 	const task = makeTask( def, 'Build Selected Text' )
 	if (!task)
@@ -69,8 +85,8 @@ export async function runSelectedText( context: vscode.ExtensionContext ) {
 		return
 	}
 	
-	vscode.tasks.onDidEndTask(( async (e) => {
-		
+	vscode.tasks.onDidEndTask(( async (e) =>
+	{	
 		if (e.execution.task == task && tmpPath && !await removeDir(tmpPath))
 			vscode.window.showErrorMessage( "Unable to clean temporary folder" )
 	}))

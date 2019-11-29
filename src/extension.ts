@@ -13,6 +13,7 @@ import { BmxSignatureHelpProvider } from './signatureHelpProvider'
 import { BmxHoverProvider } from './hoverProvider'
 import { BlitzMax } from './blitzmax'
 import { AnalyzeDoc, scanModules } from './bmxModules'
+import { quickAnalyze } from './quickAnalyze'
 
 export function activate( context: vscode.ExtensionContext ) {
 	

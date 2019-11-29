@@ -44,12 +44,12 @@
 				{
 					"when": "editorLangId == blitzmax && editorHasSelection",
 					"command": "blitzmax.runSelected",
-					"group": "0"
+					"group": "refactor@1"
 				},
 				{
 					"when": "editorLangId == blitzmax && editorHasSelection",
 					"command": "blitzmax.moveToOwnFile",
-					"group": "0"
+					"group": "refactor@0"
 				}
 			],
 			"editor/title": [

@@ -23,10 +23,9 @@ export async function moveSelectedText( context: vscode.ExtensionContext ) {
 		selectedText = 'SuperStrict\n\n' + selectedText
 	
 	let doc: vscode.TextDocument = await vscode.workspace.openTextDocument(
-		{ content: selectedText, language: editor.document.languageId }
-	)
+		{ content: selectedText, language: editor.document.languageId } )
 	
 	vscode.window.showTextDocument( doc )
 	
-	editor.edit(builder => {builder.replace(selection, '')})
+	editor.edit(builder => { builder.replace( selection, '' ) })
 }
