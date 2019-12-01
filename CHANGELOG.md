@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.12.1
+* Fix for modules with no entry point.
+
 ## Version 1.12.0
 * More errors will be displayed while updating modules.
 * The application template will now use a framework instead of import.
