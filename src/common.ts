@@ -274,9 +274,7 @@ export async function exists( file: string ): Promise<boolean> {
 	
 	return new Promise<boolean>( ( resolve, _reject ) => {
 		
-		fs.exists(file, (value) => {
-			return resolve(value)
-		})
+		fs.exists( file, ( value ) => { return resolve( value ) })
 	})
 }
 
@@ -295,15 +293,11 @@ export async function removeFile( file: string ): Promise<boolean> {
 	
 	return new Promise<boolean>( ( resolve, reject ) => {
 		
-		fs.unlink(file, ( err ) => {
-			
-			if (err) reject()
-			return resolve( err == null )
-		})
+		fs.unlink(file, ( err ) => { return resolve( err == null ) })
 	})
 }
 
-export async function removeDir( path: string ): Promise<boolean> {
+export function removeDir( path: string ): boolean {
 	
 	if (fs.existsSync(path)) {
 		const files = fs.readdirSync(path)

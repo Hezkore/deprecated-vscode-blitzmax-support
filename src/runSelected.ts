@@ -84,9 +84,9 @@ export async function runSelectedText( context: vscode.ExtensionContext ) {
 	{	
 		if (e.execution.task == task && tmpPath)
 		{
-			if (!await removeDir( tmpPath ))
+			if (!removeDir( tmpPath ))
 				vscode.window.showErrorMessage( 'Unable to clean temporary output folder' )
-			if (!await removeFile( tmpSourceFilePath ))
+			if (!removeFile( tmpSourceFilePath ))
 				vscode.window.showErrorMessage( 'Unable to clean temporary files' )
 		}
 	}))
