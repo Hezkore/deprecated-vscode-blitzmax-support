@@ -67,6 +67,11 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 					
 					const keyName = parentDir[i] + "/" + modDir[i2]
 					const fileName = modDir[i2].split( '.mod' )[0] + '.bmx'
+					const entryFile = path.join( BlitzMax.modPath, parentDir[i], modDir[i2], fileName )
+					
+					// Make sure module entry point exists..
+					if (!await exists( entryFile ))
+						continue
 					
 					// Skip unknown stuff
 					if (!keyName.toLowerCase().endsWith( '.mod' )) continue
@@ -76,7 +81,7 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 					
 					// Check out these stats!
 					const stats = await readStats( path.join( BlitzMax.modPath, parentDir[i], modDir[i2] ) )
-					const bmxStats = await readStats( path.join( BlitzMax.modPath, parentDir[i], modDir[i2], fileName ) )
+					const bmxStats = await readStats( entryFile )
 					let newestTime = stats.mtimeMs
 					if (bmxStats.mtimeMs > newestTime) newestTime = bmxStats.mtimeMs
 					
@@ -108,15 +113,10 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 							return reject()
 						}
 						
-						// Make sure module entry point exists..
-						if (await exists( path.join( BlitzMax.modPath, mod.file ) )){
-							
-							progress.report( {message: keyName } )
-							
-							await updateModule( mod )
-							changedModules++
-						}else
-							log( `\tNo module entry point for: ${mod.file}` )
+						progress.report( {message: keyName } )
+						
+						await updateModule( mod )
+						changedModules++
 					}
 					
 					// Turn docs into commands

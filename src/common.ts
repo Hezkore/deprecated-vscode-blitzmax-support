@@ -103,11 +103,12 @@ export async function readDir( path:string ): Promise<string[]> {
 export async function readFile( filename:string ): Promise<string> {
 	
 	return new Promise(function(resolve, reject) {
-		fs.readFile(filename, function(err, data){
+		
+		fs.readFile( filename, function( err, data ) {
 			if (err)
-				reject(err)
+				reject( err )
 			else
-				resolve(data.toString())
+				resolve( data.toString() )
 		})
 	})
 }

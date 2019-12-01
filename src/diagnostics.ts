@@ -1,6 +1,5 @@
 import * as vscode from 'vscode'
 import { quickAnalyze } from './quickAnalyze'
-import { BlitzMax } from './blitzmax'
 import { getFirstEmptyLine } from './common'
 
 export const collection = vscode.languages.createDiagnosticCollection()
@@ -23,7 +22,7 @@ export async function refreshDiagnostics( doc: vscode.TextDocument ) {
 				new vscode.DiagnosticRelatedInformation(
 					new vscode.Location( doc.uri,
 						new vscode.Position(0, 0)),
-						'Strict or SuperStrict should appear at the top of your BlitzMax NG program')
+						'Use Strict or SuperStrict to make your code "safer"')
 			]
 		})
 	}
