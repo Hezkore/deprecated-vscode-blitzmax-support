@@ -1,5 +1,11 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.12.0
+* More errors will be displayed while updating modules.
+* The application template will now use a framework instead of import.
+* Fixed several code analyzer issues related to Move / Run Selected Text.
+* Some minor code diagnostics along with quick fix actions have been implemented.
+
 ## Version 1.11.0
 * Added template snippets for application, module and MaxGUI.
 * Better indentation for Select cases.
