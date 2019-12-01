@@ -214,7 +214,13 @@ export function capitalize( text:string ): string{
 	return result
 }
 
-export function variableSub(text: string, arch: string, debug: boolean | undefined, platform: string): string{
+export function variableSub( text: string | undefined, arch: string, debug: boolean | undefined, platform: string ): string{
+	
+	if (!text)
+		return ''
+	text = text.trim()
+	if (text.length <= 0)
+		return ''
 	
 	if (platform.toLocaleLowerCase() == 'win32')
 		platform = 'windows'

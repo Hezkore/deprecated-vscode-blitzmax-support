@@ -2,6 +2,7 @@
 
 import * as vscode from 'vscode'
 import * as path from 'path'
+import * as fs from 'fs'
 import { scanModules, BmxModule, AnalyzeDoc, AnalyzeItem } from './bmxModules'
 import { exec, exists, readFile, log, clearLog } from './common'
 
@@ -49,6 +50,22 @@ export class BlitzMaxHandler{
 		// Minimum NG version is 3.39
 		if (this._legacy || BlitzMax.bmkVersion < '3.39' )
 			return false
+		
+		return true
+	}
+	
+	public supportsOutputPath( outPath: string | undefined ): boolean {
+		
+		if (this.supportsVarSubOutput || !outPath || outPath.length <= 0)
+			return true
+		
+		if (outPath.includes( '${' ) && outPath.includes( '}' ))
+			return false
+		
+		if (!fs.existsSync( path.dirname( outPath ) ))
+			return false
+		else
+			console.log("Exists: " + path.dirname( outPath ))
 		
 		return true
 	}
