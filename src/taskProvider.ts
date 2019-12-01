@@ -166,7 +166,7 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 	// All Legacy versions and NG versions lower than 3.39 do NOT create the output for you
 	// And since VScode doesn't provide us with finished var subs;
 	// so we just ignore output completely
-	if (BlitzMax.supportsVarSubOutput && definition.output && definition.output.length > 0)
+	if (BlitzMax.supportsOutputPath( definition.output ) && definition.output && definition.output.length > 0)
 	{
 		let outPath: string =
 			variableSub( definition.output, arch, definition.debug, platform )
