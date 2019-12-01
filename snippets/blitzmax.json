@@ -164,7 +164,7 @@
 			"SuperStrict",
 			"",
 			"$LINE_COMMENT Modules",
-			"Import BRL.StandardIO",
+			"Framework BRL.StandardIO",
 			"",
 			"$LINE_COMMENT Imports",
 			"$LINE_COMMENT Import \"\"",

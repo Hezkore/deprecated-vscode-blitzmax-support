@@ -4,7 +4,15 @@ export async function quickAnalyze( code: string, stopAtStrict: boolean = false 
 	
 	return new Promise( async function( resolve ) {		
 		
-		let result: QuickAnalyzeResult = { strict: false, strictType: '', framework: '', imports: [], lastImportLine: 0 }
+		let result: QuickAnalyzeResult =
+		{
+			strict: false,
+			strictType: '',
+			framework: '',
+			imports: [],
+			firstImportLine: -1,
+			lastImportLine: 0
+		}
 		if (!code || code.length < 6)
 			return result
 		
@@ -16,11 +24,12 @@ export async function quickAnalyze( code: string, stopAtStrict: boolean = false 
 			if (line.length < 3  || line.startsWith( "'" )) continue
 			const lowerLine: string = line.toLowerCase()
 			
-			if (lowerLine.startsWith( 'rem ' ))
+			if (lowerLine == 'rem' || lowerLine.startsWith( 'rem ' ))
 				depth++
-			else if (lowerLine.startsWith( 'endrem' ) || lowerLine.startsWith( 'end rem' ))
+			else if (lowerLine == 'endrem' || lowerLine == 'end rem' )
 			{
-				if (depth > 0) depth--
+				if (depth > 0)
+					depth--
 			}
 			else if (depth > 0)
 				continue
@@ -38,11 +47,15 @@ export async function quickAnalyze( code: string, stopAtStrict: boolean = false 
 			{
 				result.imports.push( line.split( ' ' )[1] )
 				result.lastImportLine = i
+				if (result.firstImportLine < 0)
+					result.firstImportLine = i
 			}
 			else if (lowerLine.startsWith( 'framework ' ))
 			{
 				result.framework = line.split( ' ' )[1]
 				result.lastImportLine = i
+				if (result.firstImportLine < 0)
+					result.firstImportLine = i
 			}
 			
 			if (stopAtStrict && result.strict)
@@ -57,5 +70,6 @@ export interface QuickAnalyzeResult{
 	strictType: string,
 	framework: string,
 	imports: string[],
+	firstImportLine: number
 	lastImportLine: number
 }

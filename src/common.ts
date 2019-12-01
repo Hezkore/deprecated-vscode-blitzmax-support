@@ -178,7 +178,7 @@ export function setSourceFile( file: vscode.Uri | undefined ){
 	if (!foundDefault) vscode.window.showErrorMessage( 'No default task configured' )
 }
 
-export function getWordAt( document:vscode.TextDocument, position:vscode.Position ): string{
+export function getWordAt( document: vscode.TextDocument, position: vscode.Position ): string{
 	
 	let wordRange = document.getWordRangeAtPosition(position)
 	if (!wordRange) { return '' }
@@ -322,4 +322,33 @@ export async function removeDir( path: string ): Promise<boolean> {
 		return false
 	
 	return true
+}
+
+export async function getFirstEmptyLine( code: string ): Promise<vscode.Position> {
+	
+	return new Promise<vscode.Position>( ( resolve, reject ) => {
+		
+		let lines: string[] = code.trim().split( '\n' )
+		let depth: number = 0
+		
+		for (let i = 0; i < lines.length; i++) {
+			const line = lines[i].trimRight()
+			if (line.startsWith( "'" )) continue
+			const lowerLine: string = line.toLowerCase()
+			
+			if (lowerLine == 'rem' || lowerLine.startsWith( 'rem ' ))
+				depth++
+			else if (lowerLine == 'endrem' || lowerLine == 'end rem' )
+			{
+				if (depth > 0)
+					depth--
+			}
+			else if (depth > 0)
+				continue
+			else
+				return resolve( new vscode.Position( i, 0 ) )
+		}
+		
+		return resolve( new vscode.Position( lines.length, 0 ) )
+	})
 }

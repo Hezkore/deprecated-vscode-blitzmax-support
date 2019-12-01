@@ -13,12 +13,13 @@ import { BmxSignatureHelpProvider } from './signatureHelpProvider'
 import { BmxHoverProvider } from './hoverProvider'
 import { BlitzMax } from './blitzmax'
 import { AnalyzeDoc, scanModules } from './bmxModules'
-import { quickAnalyze } from './quickAnalyze'
+import * as bmxDiagnostics from './diagnostics'
 
 export function activate( context: vscode.ExtensionContext ) {
 	
 	BlitzMax.setup( context )
 	
+	registerEvents( context )
 	registerCommands( context )
 	registerProviders( context )
 }
@@ -26,7 +27,25 @@ export function activate( context: vscode.ExtensionContext ) {
 export function deactivate(): void {
 }
 
-async function registerProviders( context:vscode.ExtensionContext ) {	
+async function registerEvents( context:vscode.ExtensionContext ) {
+
+	context.subscriptions.push( bmxDiagnostics.collection )
+	bmxDiagnostics.register( context )
+	
+	context.subscriptions.push(
+		vscode.window.onDidChangeActiveTextEditor( async e => {
+			
+			if (!e) return
+			if (e.document.getText().length <= 1)
+			{
+				const pick = await vscode.window.showQuickPick( ['asd', 'blaf'])
+				vscode.window.showInformationMessage( "Picked: " + pick )
+			}
+		})
+	)
+}
+
+async function registerProviders( context:vscode.ExtensionContext ) {
 	
 	// Make BlitzMax reload if path is changed
 	context.subscriptions.push(
@@ -73,11 +92,11 @@ async function registerProviders( context:vscode.ExtensionContext ) {
 	)*/
 	
 	// Action provider
-	/*context.subscriptions.push(
+	context.subscriptions.push(
 		vscode.languages.registerCodeActionsProvider( 'blitzmax', new BmxActionProvider(), {
 			providedCodeActionKinds: BmxActionProvider.providedCodeActionKinds
 		})
-	)*/
+	)
 	
 	// Task provider
 	context.subscriptions.push(
