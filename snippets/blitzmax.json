@@ -155,7 +155,7 @@
 		"description" : "BBDoc Full Block"
 	},
 	
-	"Application Template" : {
+	"@0Application Template" : {
 		"prefix" : "Template App",
 		"body" : [ "$LINE_COMMENT ${WORKSPACE_NAME/(.*)/${1:/upcase}/} - $TM_FILENAME",
 			"$LINE_COMMENT $CURRENT_DATE/$CURRENT_MONTH/$CURRENT_YEAR $CURRENT_HOUR:$CURRENT_MINUTE",
@@ -184,7 +184,7 @@
 		"description" : "Basic application template"
 	},
 	
-	"Module Template" : {
+	"@0Module Template" : {
 		"prefix" : "Template Module",
 		"body" : [ "$LINE_COMMENT Module ${1:MY}.$TM_FILENAME_BASE",
 			"$LINE_COMMENT $CURRENT_DATE/$CURRENT_MONTH/$CURRENT_YEAR $CURRENT_HOUR:$CURRENT_MINUTE",
@@ -219,7 +219,7 @@
 		"description" : "Basic module template"
 	},
 	
-	"MaxGUI Canvas Template" : {
+	"@0MaxGUI Canvas Template" : {
 		"prefix" : "Template MaxGUI Canvas",
 		"body" : [ "$LINE_COMMENT ${WORKSPACE_NAME/(.*)/${1:/upcase}/} - $TM_FILENAME",
 			"$LINE_COMMENT $CURRENT_DATE/$CURRENT_MONTH/$CURRENT_YEAR $CURRENT_HOUR:$CURRENT_MINUTE",
@@ -276,7 +276,7 @@
 		"description" : "Basic MaxGUI canvas template"
 	},
 	
-	"MaxGUI Window Template" : {
+	"@0MaxGUI Window Template" : {
 		"prefix" : "Template MaxGUI Window",
 		"body" : [ "$LINE_COMMENT ${WORKSPACE_NAME/(.*)/${1:/upcase}/} - $TM_FILENAME",
 			"$LINE_COMMENT $CURRENT_DATE/$CURRENT_MONTH/$CURRENT_YEAR $CURRENT_HOUR:$CURRENT_MINUTE",

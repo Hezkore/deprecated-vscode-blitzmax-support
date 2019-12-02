@@ -9,7 +9,7 @@ import { currentBmx, variableSub } from './common'
 export interface BmxTaskDefinition extends vscode.TaskDefinition {
 	
 	source?: string, // Main source file for the project
-	make: string, // makeapp, makemod, makelib
+	make: string, // makeapp, makemods, makelib
 	app?: string, // -t console/gui (makeapp only)
 	arch?: string, // -g Architecture
 	platform?: string, // -l Platform
@@ -62,7 +62,7 @@ export class BmxTaskProvider implements vscode.TaskProvider {
 		if (taskGui) tasks.push( taskGui )
 		
 		// Module
-		let defMods: BmxTaskDefinition = { type: 'bmx', make: 'makemod', output: '', source: '${relativeFile}' }
+		let defMods: BmxTaskDefinition = { type: 'bmx', make: 'makemods', output: '', source: '${relativeFile}' }
 		let taskMods: vscode.Task | undefined = makeTask( defMods, 'Module' )
 		if (taskMods) tasks.push( taskMods )
 		
