@@ -16,6 +16,7 @@ export function generateProject( context: vscode.ExtensionContext ) {
 			if (!selection)
 				return
 			
+			let sourceFile: vscode.TextEditor
 			switch (selection.toLowerCase()) {
 				case 'application':
 					let srcPath = path.join( workspace.uri.fsPath, 'src' )
@@ -26,10 +27,16 @@ export function generateProject( context: vscode.ExtensionContext ) {
 						fs.writeFileSync( mainPath, '' )
 						
 						vscode.window.showTextDocument( vscode.Uri.parse( mainPath ) ).then( _ => {
+							if (!vscode.window.activeTextEditor)
+								return
 							
+							sourceFile = vscode.window.activeTextEditor
 							vscode.commands.executeCommand( 'editor.action.showSnippets' ).then( _ => {
 								
-								vscode.commands.executeCommand( 'workbench.action.tasks.configureDefaultTestTask' )
+								vscode.commands.executeCommand( 'workbench.action.tasks.configureDefaultTestTask' ).then( _ => {
+									
+									vscode.commands.executeCommand( 'blitzmax.setSourceFile', sourceFile.document.uri )
+								})
 							})
 						})
 					}
@@ -42,10 +49,16 @@ export function generateProject( context: vscode.ExtensionContext ) {
 						fs.writeFileSync( modPath, '' )
 						
 						vscode.window.showTextDocument( vscode.Uri.parse( modPath ) ).then( _ => {
+							if (!vscode.window.activeTextEditor)
+								return
 							
+							sourceFile = vscode.window.activeTextEditor
 							vscode.commands.executeCommand( 'editor.action.showSnippets' ).then( _ => {
 								
-								vscode.commands.executeCommand( 'workbench.action.tasks.configureDefaultTestTask' )
+								vscode.commands.executeCommand( 'workbench.action.tasks.configureDefaultTestTask' ).then( _ => {
+									
+									vscode.commands.executeCommand( 'blitzmax.setSourceFile', sourceFile.document.uri )
+								} )
 							})
 						})
 					}
