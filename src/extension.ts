@@ -1,6 +1,7 @@
 'use strict'
 
 import * as vscode from 'vscode'
+import * as bmxDiagnostics from './diagnostics'
 import { setSourceFile, currentWord, currentBmx } from './common'
 import { BmxFormatProvider } from './formatProvider'
 import { BmxActionProvider } from './actionProvider'
@@ -13,15 +14,15 @@ import { BmxSignatureHelpProvider } from './signatureHelpProvider'
 import { BmxHoverProvider } from './hoverProvider'
 import { BlitzMax } from './blitzmax'
 import { AnalyzeDoc, scanModules } from './bmxModules'
-import * as bmxDiagnostics from './diagnostics'
+import { generateProject } from './generateProject'
 
 export function activate( context: vscode.ExtensionContext ) {
-	
-	BlitzMax.setup( context )
 	
 	registerEvents( context )
 	registerCommands( context )
 	registerProviders( context )
+	
+	BlitzMax.setup( context )
 }
 
 export function deactivate(): void {
@@ -96,7 +97,14 @@ async function registerProviders( context:vscode.ExtensionContext ) {
 async function registerCommands( context:vscode.ExtensionContext ) {
 	
 	context.subscriptions.push(
-		vscode.commands.registerCommand( 'blitzmax.moveToOwnFile', async () => {
+		vscode.commands.registerCommand( 'blitzmax.generateProject', () => {
+			
+			generateProject( context )
+		})
+	)
+	
+	context.subscriptions.push(
+		vscode.commands.registerCommand( 'blitzmax.moveToOwnFile', () => {
 			
 			moveSelectedText( context )
 		})

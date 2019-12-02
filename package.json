@@ -29,6 +29,7 @@
 		"bmx"
 	],
 	"activationEvents": [
+		"onCommand:blitzmax.generateProject",
 		"onLanguage:blitzmax"
 	],
 	"contributes": {
@@ -193,6 +194,11 @@
 			}
 		],
 		"commands": [
+			{
+				"command": "blitzmax.generateProject",
+				"title": "Generate Project",
+				"category": "BlitzMax"
+			},
 			{
 				"command": "blitzmax.generateDocs",
 				"title": "Generate Documentations",
