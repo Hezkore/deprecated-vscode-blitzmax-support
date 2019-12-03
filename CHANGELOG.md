@@ -1,21 +1,24 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.13.0
+* New 'Generate Project' command.
+
 ## Version 1.12.1
 * Fix for modules with no entry point.
 
 ## Version 1.12.0
 * More errors will be displayed while updating modules.
 * The application template will now use a framework instead of import.
-* Fixed several code analyzer issues related to Move / Run Selected Text.
+* Fixed several code analyzer issues related to 'Move / Run Selected Text'.
 * Some minor code diagnostics along with quick fix actions have been implemented.
 
 ## Version 1.11.0
 * Added template snippets for application, module and MaxGUI.
 * Better indentation for Select cases.
 * $BLOCK_COMMENT_START / END in snippets is now supported.
-* New Move Selected Text To Own File feature.
-* Run Selected Text no longer uses templates and instead analyzes the current file.
-* Build Application button will now actually Build the application instead of configuring it.
+* New 'Move Selected Text To Own File' feature.
+* 'Run Selected Text' no longer uses templates and instead analyzes the current file.
+* 'Build Application' button will now actually Build the application instead of configuring it.
 
 ## Version 1.10.6
 * Better Linux support.
@@ -40,7 +43,7 @@
 * Extension will now use its own output channel.
 
 ## Version 1.10.0
-* New Run Selected Text feature.
+* New 'Run Selected Text' feature.
 
 ## Version 1.9.1
 * Updated extension description.
@@ -134,7 +137,7 @@
 * Lots of other small improvments.
 
 ## Version 1.6.4
-* Fixed a BCC typo.
+* Fixed a bcc typo.
 
 ## Version 1.6.3
 * Better help for setting BlitzMax path.
@@ -159,7 +162,7 @@
 * Fixed a 'path' typo.
 
 ## Version 1.4.6
-* Env 'path' is now used for BCC and BMK. Should fix some path issues.
+* Env 'path' is now used for bcc and BMK. Should fix some path issues.
 
 ## Version 1.4.5
 * Made snippets even less annyoing.
