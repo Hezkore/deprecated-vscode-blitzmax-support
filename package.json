@@ -281,6 +281,11 @@
 						"warn",
 						"error"
 					]
+				},
+				"blitzmax.autoSetTaskOutput": {
+					"type": "boolean",
+					"description": "Set the Output path by default when creating new tasks",
+					"default": false
 				}
 			}
 		},

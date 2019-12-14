@@ -43,7 +43,9 @@ export function currentDefinition(): BmxTaskDefinition | undefined {
 export class BmxTaskProvider implements vscode.TaskProvider {
 	provideTasks( token?: vscode.CancellationToken ): vscode.ProviderResult<vscode.Task[]> {
 		
-		const outputPath: string = path.join( 'bin', '${platform}', '${arch}', '${build}', '${fileBasenameNoExtension}' )
+		const outputPath: string = ''
+		if (vscode.workspace.getConfiguration( 'blitzmax' ).get( 'autoSetTaskOutput' ))
+			path.join( 'bin', '${platform}', '${arch}', '${build}', '${fileBasenameNoExtension}' )
 		
 		let tasks: vscode.Task[] = []
 		
