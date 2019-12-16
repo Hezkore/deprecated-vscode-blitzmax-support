@@ -75,6 +75,7 @@ export class BmxTaskProvider implements vscode.TaskProvider {
 		
 		return tasks
 	}
+	
 	resolveTask( _task: vscode.Task ): vscode.Task | undefined {
 		
 		const definition: BmxTaskDefinition = <any>_task.definition

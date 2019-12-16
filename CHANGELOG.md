@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.14.0
+* Task output is no longer automatically set, unless selected in options.
+
 ## Version 1.13.0
 * New 'Generate Project' command.
 
