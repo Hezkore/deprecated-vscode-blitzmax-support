@@ -48,14 +48,14 @@ async function registerProviders( context:vscode.ExtensionContext ) {
 	
 	// Completion item provider
 	context.subscriptions.push(
-		vscode.languages.registerCompletionItemProvider( { scheme: 'file', language: 'blitzmax' },
+		vscode.languages.registerCompletionItemProvider({ scheme: 'file', language: 'blitzmax' },
 			new BmxCompletionProvider()
 		)
 	)
 	
 	// Signature help provider
 	context.subscriptions.push(
-		vscode.languages.registerSignatureHelpProvider( { scheme: 'file', language: 'blitzmax' },
+		vscode.languages.registerSignatureHelpProvider({ scheme: 'file', language: 'blitzmax' },
 			new BmxSignatureHelpProvider()
 			,{triggerCharacters: ['('],
 			retriggerCharacters: [',']}
@@ -64,33 +64,36 @@ async function registerProviders( context:vscode.ExtensionContext ) {
 	
 	// Definition provider
 	context.subscriptions.push(
-		vscode.languages.registerDefinitionProvider( { scheme: 'file', language: 'blitzmax' },
+		vscode.languages.registerDefinitionProvider({ scheme: 'file', language: 'blitzmax' },
 			new BmxDefinitionProvider()
 		)
 	)
 	
 	// Hover provider
 	context.subscriptions.push(
-		vscode.languages.registerHoverProvider( { scheme: 'file', language: 'blitzmax' },
+		vscode.languages.registerHoverProvider({ scheme: 'file', language: 'blitzmax' },
 			new BmxHoverProvider()
 		)
 	)
 	
 	// Format provider
-	/*context.subscriptions.push(
-		vscode.languages.registerDocumentFormattingEditProvider('blitzmax', new BmxFormatProvider )
-	)*/
+	context.subscriptions.push(
+		vscode.languages.registerDocumentFormattingEditProvider({ scheme: 'file', language: 'blitzmax' },
+			new BmxFormatProvider()
+		)
+	)
 	
 	// Action provider
 	context.subscriptions.push(
-		vscode.languages.registerCodeActionsProvider( 'blitzmax', new BmxActionProvider(), {
-			providedCodeActionKinds: BmxActionProvider.providedCodeActionKinds
-		})
+		vscode.languages.registerCodeActionsProvider({ scheme: 'file', language: 'blitzmax' },
+			new BmxActionProvider(), {
+				providedCodeActionKinds: BmxActionProvider.providedCodeActionKinds
+			})
 	)
 	
 	// Task provider
 	context.subscriptions.push(
-		vscode.tasks.registerTaskProvider( 'bmx', new BmxTaskProvider )
+		vscode.tasks.registerTaskProvider('bmx', new BmxTaskProvider)
 	)
 }
 
