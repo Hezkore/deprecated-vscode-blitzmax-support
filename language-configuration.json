@@ -23,11 +23,11 @@
 	],
 	"indentationRules" : {
 		"increaseIndentPattern" :  {
-			"pattern": "^\\s*(if +?(.*(then\\s*?)$|(?!.+?then).*)|function|method|type|struct|enum|for|case|default|else|else *?if|while|repeat|select|case)",
+			"pattern": "^\\s*(if +?(.*(then\\s*?)$|(?!.+?then).*)|function |method |type |struct |enum |interface |for |case |default$|else|else *?if|while |repeat$|select |try$|catch )",
 			"flags": "i"
 		},
 		"decreaseIndentPattern" : {
-			"pattern": "^\\s*(end *?function|end *?method|else|else *?if|end *?type|case|default|end *?struct|end *?enum|next|end *?if|wend|until|end *?select)",
+			"pattern": "^\\s*(end *?function$|end *?method$|else$|else *?if |end *?type$|case |default$|end *?struct$|end *?enum$|end *?interface$|next$|end *?if$|wend$|until$|forever$|end *?select$|end *?try$)",
 			"flags": "i"
 		}
 	}

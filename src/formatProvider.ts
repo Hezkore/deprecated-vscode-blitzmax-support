@@ -24,13 +24,18 @@ export class BmxFormatProvider implements vscode.DocumentFormattingEditProvider 
 						case 'function':
 						case 'method':
 						case 'type':
+						case 'enum':
+						case 'interface':
+						case 'struct':
 						case 'while':
+						case 'repeat':
+						case 'try':
+						case 'catch':
 						case 'for':
 						case 'if':
 						case 'else if':
 						case 'elseif':
 						case 'else':
-							console.log( '"' + firstWord + '" - "' + lowerTrimmedText +  '"')
 							edits.push(
 								vscode.TextEdit.insert(
 								new vscode.Position(line.lineNumber, 0),
