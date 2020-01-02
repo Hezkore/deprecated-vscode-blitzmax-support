@@ -43,9 +43,9 @@ export function currentDefinition(): BmxTaskDefinition | undefined {
 export class BmxTaskProvider implements vscode.TaskProvider {
 	provideTasks( token?: vscode.CancellationToken ): vscode.ProviderResult<vscode.Task[]> {
 		
-		const outputPath: string = ''
+		let outputPath: string = ''
 		if (vscode.workspace.getConfiguration( 'blitzmax' ).get( 'autoSetTaskOutput' ))
-			path.join( 'bin', '${platform}', '${arch}', '${build}', '${fileBasenameNoExtension}' )
+			outputPath = path.join( 'bin', '${platform}', '${arch}', '${build}', '${fileBasenameNoExtension}' )
 		
 		let tasks: vscode.Task[] = []
 		
@@ -164,7 +164,7 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 	if (definition.threaded)
 		args.push( '-h' )
 	
-		// Build output
+	// Build output
 	// Okay here's something!
 	// All Legacy versions and NG versions lower than 3.39 do NOT create the output for you
 	// And since VScode doesn't provide us with finished var subs;
