@@ -362,7 +362,7 @@ async function cleanAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
 					
 					if (insideString) break
 					if (item.type == undefined){item.type = ''}
-					if (letter != ' '){
+					if (letter != ' ' && letter != ':'){
 						item.type += letter.toLowerCase()
 					}else{
 						part = ItemProcessPart.name
@@ -587,7 +587,7 @@ async function cleanAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
 				
 				break
 				
-			case 'keyword:':
+			case 'keyword':
 				if (item.name){
 					item.name = item.name.slice( 1, -1 )
 					item.prettyData = 'Keyword ' + item.name

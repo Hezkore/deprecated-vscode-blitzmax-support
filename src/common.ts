@@ -209,10 +209,7 @@ export function currentWord(): string{
 
 export function capitalize( text:string ): string{
 	
-	let result = text[0].toUpperCase()
-	result += text.slice( 1 )
-	
-	return result
+	return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase()
 }
 
 export function variableSub( text: string | undefined, arch: string, debug: boolean | undefined, platform: string ): string{

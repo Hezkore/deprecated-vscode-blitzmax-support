@@ -8,181 +8,101 @@ export class BmxFormatProvider implements vscode.DocumentFormattingEditProvider 
 		
 		let edits:vscode.TextEdit[] = []
 		let inRemBlock:boolean = false
-		let firstWord:string = ''
+		let wordSeparators:string[] = [' ', '[', '(', ':', ')', ']', ';', '"',
+		'=', '-', '+', '~', '/', '*']
+		let includeWordSeparators:string[] = []
 		
-		for (let i = 0; i < document.lineCount; i++) {
-			const line:vscode.TextLine = document.lineAt(i)
-			const lowerTrimmedText:string = line.text.trimLeft().toLowerCase()
+		for (let lineNr = 0; lineNr < document.lineCount; lineNr++) {
+			const line:vscode.TextLine = document.lineAt(lineNr)
+			let word:string = ''
+			let wordStart:number = 0
+			let previousWordRange:vscode.Range | undefined
+			let previousWord:string | undefined
+			let wordCount:number = 0
+			let inString:boolean = false
+			let stringLength:number = 0
+			let wordSplitter:string | undefined
 			
-			if (firstWord){
-				if (!line.isEmptyOrWhitespace){
-					let tabs:string = ''
-					for (let t = 0; t < line.firstNonWhitespaceCharacterIndex; t++)
-						tabs += '\t'
-					
-					switch (firstWord.trimLeft().toLowerCase()) {
-						case 'function':
-						case 'method':
-						case 'type':
-						case 'enum':
-						case 'interface':
-						case 'struct':
-						case 'while':
-						case 'repeat':
-						case 'try':
-						case 'catch':
-						case 'for':
-						case 'if':
-						case 'else if':
-						case 'elseif':
-						case 'else':
-							edits.push(
-								vscode.TextEdit.insert(
-								new vscode.Position(line.lineNumber, 0),
-								`${tabs}\n` )
-							)
-							break
-					}
-				}
-				firstWord = ''
-			}
-			
-			if (line.isEmptyOrWhitespace) continue
-			
+			// Check for rem blocks
 			if (inRemBlock){
-				if (lowerTrimmedText == 'endrem' ||
-				lowerTrimmedText == 'end rem' ||
-				lowerTrimmedText.startsWith('endrem ') ||
-				lowerTrimmedText.startsWith('end rem '))
+				
+				if (line.text.trim().toLowerCase().replace( ' ', '' ).startsWith( 'endrem' ))
 					inRemBlock = false
+				
 				continue
 			}else{
-				if (lowerTrimmedText == 'rem' ||
-				lowerTrimmedText.startsWith('rem ')){
+				
+				if (line.text.trim().toLowerCase() == 'rem')
+				{
 					inRemBlock = true
 					continue
 				}
 			}
 			
-			let depth:number = 0
-			let inString:boolean = false
-			let inComment:boolean = false
-			let word:string = ''
-			let wordStart:number = 0
-			let fix:vscode.TextEdit | undefined
-			
-			for (let i2 = 0; i2 < line.text.length; i2++) {
-				if (inComment) break
-				const chr:string = line.text[i2]
-				if (chr == '\t') continue
-				
-				let nextChr:string = ''
-				if (i2 < line.text.length)
-					nextChr = line.text[i2+1]
-				
-				if (!word) wordStart = i2
-				
-				switch (chr) {					
-					case '"':
-						fix = this.format( word, new vscode.Range(
-							new vscode.Position(line.lineNumber, wordStart),
-							new vscode.Position(line.lineNumber, i2)
-						))
-						if (fix) edits.push( fix )
-						if (!firstWord) firstWord = word
-						word = ''
-						inString = !inString
-						break
+			// Process words
+			for (let chrNr = line.firstNonWhitespaceCharacterIndex; chrNr < line.text.length; chrNr++) {
+				const chr:string = line.text[chrNr]
+				if (chr == '\t' || chr == '\r' || chr == '\n') continue
+				if (word == "'"){ // Skip comments
+					word = ''
+					break
 				}
-				
-				if (!inString){
-					switch (chr) {
-						case "'":
-							fix = this.format( word, new vscode.Range(
-								new vscode.Position(line.lineNumber, wordStart),
-								new vscode.Position(line.lineNumber, i2)
-							))
-							if (fix) edits.push( fix )
-							if (!firstWord) firstWord = word
-							word = ''
-							inComment = true
-							if (nextChr != ' ')
-								edits.push(
-									vscode.TextEdit.insert(
-									new vscode.Position(line.lineNumber, wordStart + 1),
-									' ' )
-								)
-							continue
-						
-						case '(':
-							if (nextChr != ' ' && nextChr != ')')
-							edits.push(
-								vscode.TextEdit.insert(
-								new vscode.Position(line.lineNumber, i2 + 1),
-								' ' )
-							)
-							
-						case '[':
-							fix = this.format( word, new vscode.Range(
-								new vscode.Position(line.lineNumber, wordStart),
-								new vscode.Position(line.lineNumber, i2)
-							))
-							if (fix) edits.push( fix )
-							if (!firstWord) firstWord = word
-							word = ''
-							depth++
-							continue
-							
-						case ')':
-						case ']':
-							depth--
-							break
-					}
+				if (chr == '"') // Check for strings
+					inString = !inString
 					
-					if (depth){
-						
-						switch (nextChr) {
-							case ')':
-								if (chr != ' ' && chr != '(')
-								edits.push(
-									vscode.TextEdit.insert(
-									new vscode.Position(line.lineNumber, i2 + 1),
-									' ' )
-								)
-								break
-						}
-					}else{
-						
-						switch (chr) {
-							case ' ':
-								if (word.toLowerCase() == 'end') {
-									word += chr
-									break
-								}
-								fix = this.format( word, new vscode.Range(
-									new vscode.Position(line.lineNumber, wordStart),
-									new vscode.Position(line.lineNumber, i2)
-								))
-								if (fix) edits.push( fix )
-								if (!firstWord) firstWord = word
-								word = ''
-								break
-							
-							default:
-								word += chr
-								if (i2 == line.text.length - 1)
-								{
-									fix = this.format( word, new vscode.Range(
-										new vscode.Position(line.lineNumber, wordStart),
-										new vscode.Position(line.lineNumber, i2+1)
-									))
-									if (fix) edits.push( fix )
-									if (!firstWord) firstWord = word
-								}
-								break
-						}
-					}
+				// Continue looking for string end
+				if (inString){
+					stringLength++
+					if (stringLength > 0) continue
 				}
+				
+				let isEndOfWord:boolean = wordSeparators.includes( chr )
+				
+				if (!isEndOfWord){
+					if (word.length <= 0) wordStart = chrNr
+					word += chr
+					isEndOfWord = includeWordSeparators.includes( chr )
+				}
+				
+				if (word && isEndOfWord) {
+					
+					let wordRange = new vscode.Range(
+						new vscode.Position(line.lineNumber, wordStart),
+						new vscode.Position(line.lineNumber, chrNr)
+					)
+					
+					this.formatWord( word, previousWord, wordRange, previousWordRange, wordSplitter )
+					?.forEach(edit => edits.push( edit ))
+					
+					wordSplitter = chr
+					previousWord = word.toLowerCase()
+					previousWordRange = new vscode.Range( wordRange.start, wordRange.end )
+					word = ''
+					wordCount++
+				}
+				
+				// Threat ; as a new line!
+				if (chr == ';'){
+					word = ''
+					wordStart = 0
+					previousWordRange = undefined
+					previousWord = undefined
+					wordCount = 0
+					inString = false
+					stringLength = 0
+					wordSplitter = undefined
+				}
+			}
+			
+			if (word){
+				
+				let wordRange = new vscode.Range(
+					new vscode.Position(line.lineNumber, wordStart),
+					new vscode.Position(line.lineNumber, line.range.end.character)
+				)
+				
+				this.formatWord( word, previousWord, wordRange, previousWordRange, wordSplitter )
+				?.forEach(edit => edits.push( edit ))
 			}
 		}
 		
@@ -190,13 +110,100 @@ export class BmxFormatProvider implements vscode.DocumentFormattingEditProvider 
 		return edits
 	}
 	
-	format( word:string, range:vscode.Range ) : vscode.TextEdit | undefined {
+	formatWord( word:string, previousWord:string | undefined, range:vscode.Range, previousRange:vscode.Range | undefined, splitter:string | undefined ) : vscode.TextEdit[] | undefined {
 		
-		if (!word) return undefined
+		console.log( "Format Word: " + word )
+		console.log( "Splitter: '" + splitter + "'" )
+		//console.log( "Range: line " + (range.start.line+1) + " char " + (range.start.character+1) + "-" + (range.end.character+1) )
 		
-		let correction:string = ''
+		let newWord:string = ''
 		
-		let cmds = BlitzMax.getCommand(word.replace(' ', ''))
+		// Translate type tag shortcuts
+		if (splitter && splitter == ':'){
+			switch (word) {
+				case '%': return [vscode.TextEdit.replace( range, 'Int')]
+				case '#': return [vscode.TextEdit.replace( range, 'Float')]
+				case '!': return [vscode.TextEdit.replace( range, 'Double')]
+				case '$': return [vscode.TextEdit.replace( range, 'String')]
+			}
+		}
+		
+		// Join some words together, like Else If and End Function
+		if (previousWord && previousRange){
+			const elseJoins:string[] = [ 'if' ]
+			const endJoins:string[] = [
+				'if', 'function', 'method', 'interface', 'struct', 'enum', 'type', 'try', 'select'
+			]
+			
+			const wordLowercase:string = word.toLowerCase()
+			
+			if (previousWord == 'else'){
+				if (elseJoins.includes( wordLowercase ))
+					newWord = word
+			}
+			
+			if (previousWord == 'end'){
+				if (endJoins.includes( wordLowercase ))
+					newWord = word
+			}
+			
+			if (newWord){
+				return [
+					vscode.TextEdit.delete( new vscode.Range(
+						new vscode.Position( range.end.line, previousRange.end.character ),
+						new vscode.Position( range.end.line, range.start.character )
+					)),
+					vscode.TextEdit.replace( range,
+						newWord.charAt(0).toUpperCase() + newWord.slice(1).toLowerCase()
+					)
+				]
+			}
+		}
+		
+		// Enforce correct names!
+		if (previousWord && previousRange){
+			switch (previousWord) {
+				case 'const':
+					newWord = word.toUpperCase()
+					break
+				
+				case 'global':
+					newWord = word.charAt(0).toUpperCase() + word.slice(1)
+					break
+				
+				case 'field':
+				case 'local':
+					newWord = word.charAt(0).toLowerCase() + word.slice(1)
+					break
+			}
+			
+			if (newWord)
+				return [vscode.TextEdit.replace( range, newWord )]
+		}
+		
+		// Figure out types
+		let onlyTypes:string[] = []
+		
+		switch (splitter) {
+			case ':':
+				onlyTypes.push('interface')
+				onlyTypes.push('keyword')
+				onlyTypes.push('struct')
+				onlyTypes.push('type')
+				onlyTypes.push('enum')
+				break
+			
+			case ' ':
+				if (previousWord == 'new'){
+					onlyTypes.push('interface')
+					onlyTypes.push('struct')
+					onlyTypes.push('type')
+				}
+				break
+		}
+	
+		// Look for a command straight from BlitzMax
+		let cmds = BlitzMax.getCommand( word )
 		if (!cmds || cmds.length <= 0) return undefined
 		
 		// Find a command
@@ -205,10 +212,13 @@ export class BmxFormatProvider implements vscode.DocumentFormattingEditProvider 
 			const cmd = cmds[i]
 			if (!cmd || !cmd.info || !cmd.regards.name) continue
 			
-			correction = cmd.regards.name
-			if (correction == word) continue
+			if (onlyTypes.length > 0 && (!cmd.regards.type || !onlyTypes.includes( cmd.regards.type )))
+				continue
 			
-			return vscode.TextEdit.replace( range, correction )
+			newWord = cmd.regards.name
+			if (newWord == word) continue
+			
+			return [vscode.TextEdit.replace( range, newWord )]
 		}
 		
 		return undefined
