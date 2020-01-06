@@ -90,7 +90,7 @@ async function registerProviders( context:vscode.ExtensionContext ) {
 	context.subscriptions.push(
 		vscode.languages.registerOnTypeFormattingEditProvider({ scheme: 'file', language: 'blitzmax' },
 			new BmxOnTypeFormatProvider()
-		, '(', ')', '[', ']', ':', ' ', '"')
+		, '(', ')', '[', ']', ':', ' ', '"', ',', '%', '#', '!', '$', '=')
 	)
 	
 	// Action provider

@@ -4,7 +4,46 @@ import * as vscode from 'vscode'
 import { BlitzMax } from './blitzmax'
 
 export class BmxOnTypeFormatProvider implements vscode.OnTypeFormattingEditProvider {
-	provideOnTypeFormattingEdits(document: vscode.TextDocument, position: vscode.Position, ch: string, options: vscode.FormattingOptions, token: vscode.CancellationToken): vscode.TextEdit[] | undefined {
+	provideOnTypeFormattingEdits( document: vscode.TextDocument, position: vscode.Position, ch: string, options: vscode.FormattingOptions, token: vscode.CancellationToken ): vscode.TextEdit[] | undefined {
+		
+		const line = document.lineAt(position.line)
+		if (line.isEmptyOrWhitespace) return undefined
+		
+		// Test if we're inside a rem block
+		let inRemBlock:boolean = false
+		for (let lineNr = 0; lineNr < document.lineCount; lineNr++) {
+			const curLineText = document.lineAt(lineNr).text.trim().toLowerCase()
+			
+			if (inRemBlock) {
+				
+				if (lineNr >= position.line) return undefined
+			
+				if (curLineText.replace( ' ', '' ).startsWith( 'endrem' ))
+					inRemBlock = false
+				
+				continue
+			} else {
+				
+				if (lineNr > position.line) break
+				
+				if (curLineText == 'rem' || curLineText.startsWith( 'rem ' ))
+				{
+					inRemBlock = true
+					continue
+				}
+			}
+		}
+		
+		// Initial test to see if we're inside a string
+		let inString:boolean = false
+		for (let chrNr = line.firstNonWhitespaceCharacterIndex; chrNr < position.character; chrNr++) {
+			const chr = line.text[chrNr]
+			
+			if (chr == '"') inString = !inString
+			if (!inString && chr == "'") return undefined
+		}
+		
+		if (inString && ch != '"') return undefined
 		
 		return formatDocument( document, new vscode.Range( new vscode.Position( position.line, 0 ), new vscode.Position( position.line, position.character ) ) )
 	}
@@ -44,8 +83,9 @@ function formatDocument( document: vscode.TextDocument, range: vscode.Range | un
 	]
 	
 	for (let lineNr = range ? range.start.line : 0; range ? lineNr <= range.end.line : lineNr < document.lineCount; lineNr++) {
-		const line:vscode.TextLine = document.lineAt( lineNr )
-		let word:string = ''
+		const line: vscode.TextLine = document.lineAt(lineNr)
+		const lineTextTrimmedLowerCase = line.text.trim().toLowerCase()
+		let word: string = ''
 		let wordStart:number = 0
 		let previousWordRange:vscode.Range | undefined
 		let previousWord:string | undefined
@@ -58,13 +98,13 @@ function formatDocument( document: vscode.TextDocument, range: vscode.Range | un
 		// Check for rem blocks
 		if (inRemBlock){
 			
-			if (line.text.trim().toLowerCase().replace( ' ', '' ).startsWith( 'endrem' ))
+			if (lineTextTrimmedLowerCase.replace( ' ', '' ).startsWith( 'endrem' ))
 				inRemBlock = false
 			
 			continue
 		}else{
 			
-			if (line.text.trim().toLowerCase() == 'rem')
+			if (lineTextTrimmedLowerCase == 'rem' || lineTextTrimmedLowerCase.startsWith('rem '))
 			{
 				inRemBlock = true
 				continue
