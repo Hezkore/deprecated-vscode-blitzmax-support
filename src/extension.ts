@@ -3,7 +3,7 @@
 import * as vscode from 'vscode'
 import * as bmxDiagnostics from './diagnostics'
 import { setSourceFile, currentWord, currentBmx } from './common'
-import { BmxFormatProvider } from './formatProvider'
+import { BmxFormatProvider, BmxRangeFormatProvider, BmxOnTypeFormatProvider } from './formatProvider'
 import { BmxActionProvider } from './actionProvider'
 import { BmxDefinitionProvider } from './definitionProvider'
 import { currentDefinition, BmxTaskProvider, makeTask } from './taskProvider'
@@ -76,11 +76,21 @@ async function registerProviders( context:vscode.ExtensionContext ) {
 		)
 	)
 	
-	// Format provider
+	// Format providers
 	context.subscriptions.push(
 		vscode.languages.registerDocumentFormattingEditProvider({ scheme: 'file', language: 'blitzmax' },
 			new BmxFormatProvider()
 		)
+	)
+	context.subscriptions.push(
+		vscode.languages.registerDocumentRangeFormattingEditProvider({ scheme: 'file', language: 'blitzmax' },
+			new BmxRangeFormatProvider()
+		)
+	)
+	context.subscriptions.push(
+		vscode.languages.registerOnTypeFormattingEditProvider({ scheme: 'file', language: 'blitzmax' },
+			new BmxOnTypeFormatProvider()
+		, '(', ')', '[', ']', ':', ' ', '"')
 	)
 	
 	// Action provider
