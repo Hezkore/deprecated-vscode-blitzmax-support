@@ -57,8 +57,8 @@ async function registerProviders( context:vscode.ExtensionContext ) {
 	context.subscriptions.push(
 		vscode.languages.registerSignatureHelpProvider({ scheme: 'file', language: 'blitzmax' },
 			new BmxSignatureHelpProvider()
-			,{triggerCharacters: ['(', ',', ' '],
-			retriggerCharacters: [',']}
+			,{triggerCharacters: ['(', '[', ']', '.', ' ', '"', ','],
+			retriggerCharacters: []}
 		)
 	)
 	
