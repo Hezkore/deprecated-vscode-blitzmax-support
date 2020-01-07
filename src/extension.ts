@@ -57,7 +57,7 @@ async function registerProviders( context:vscode.ExtensionContext ) {
 	context.subscriptions.push(
 		vscode.languages.registerSignatureHelpProvider({ scheme: 'file', language: 'blitzmax' },
 			new BmxSignatureHelpProvider()
-			,{triggerCharacters: ['('],
+			,{triggerCharacters: ['(', ',', ' '],
 			retriggerCharacters: [',']}
 		)
 	)
@@ -166,7 +166,7 @@ async function registerCommands( context:vscode.ExtensionContext ) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand( 'blitzmax.generateDocs', () => {
 			
-			log( 'Scanning BlitzMax modules', false, true )
+			log( '\nUpdating all modules', false, true )
 			scanModules( context, true )
 		})
 	)

@@ -40,6 +40,7 @@ export class BlitzMaxHandler{
 		
 		vscode.window.showErrorMessage( 'BlitzMax Error: ' + message )
 		console.log( 'BlitzMax Error: ', message )
+		log( 'Error: ' + message, true, true )
 	}
 	get legacy(): boolean { return this._legacy }
 	get bccVersion(): string { return this._bccVersion }

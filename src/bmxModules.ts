@@ -110,7 +110,7 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 						
 						mod = BlitzMax._modules.get( keyName )
 						if (!mod){
-							log( `\tUnable to update module: ${keyName}` )
+							log( `\tUnable to update module: ${keyName}`, true, true )
 							continue
 							//return //reject()
 						}
@@ -477,7 +477,7 @@ async function cleanAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
 					}else if(letter == '$'){
 						if (item.args) item.args[argCount].returns = 'String'
 					}else{
-						log( '\n\t-Unkown part - Report to Hezkore', false )
+						log( '\n\t-Unkown part - Report to Hezkore', true, true )
 					}
 					break
 					
@@ -795,7 +795,7 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 					
 					// Do we have a parent?
 					if (!regardsParent){
-						log( '\n\t-No bbdoc parent - Report to Hezkore', false )
+						log( '\n\t-No bbdoc parent - Report to Hezkore', true, true )
 						nlOnEnd = true
 						inside = insideHistory.pop()
 						break
