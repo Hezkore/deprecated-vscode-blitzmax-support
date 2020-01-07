@@ -1,5 +1,9 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.16.1
+* Better error notifications.
+* More signature help triggers.
+
 ## Version 1.16.0
 * Output view is no longer shown at extension startup.
 * New progress information at the bottom of the window.
