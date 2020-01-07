@@ -1,5 +1,9 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.16.0
+* Output view is no longer shown at extension startup.
+* New progress information at the bottom of the window.
+
 ## Version 1.15.0
 * Fix for task output not setting correctly.
 * < and > are no longer considered to be "brackets".
