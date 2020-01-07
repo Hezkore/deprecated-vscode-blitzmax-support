@@ -2,7 +2,7 @@
 
 import * as vscode from 'vscode'
 import * as bmxDiagnostics from './diagnostics'
-import { setSourceFile, currentWord, currentBmx } from './common'
+import { setSourceFile, currentWord, currentBmx, log } from './common'
 import { BmxFormatProvider, BmxRangeFormatProvider, BmxOnTypeFormatProvider } from './formatProvider'
 import { BmxActionProvider } from './actionProvider'
 import { BmxDefinitionProvider } from './definitionProvider'
@@ -166,6 +166,7 @@ async function registerCommands( context:vscode.ExtensionContext ) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand( 'blitzmax.generateDocs', () => {
 			
+			log( 'Scanning BlitzMax modules', false, true )
 			scanModules( context, true )
 		})
 	)

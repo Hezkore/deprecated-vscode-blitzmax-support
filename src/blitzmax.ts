@@ -75,7 +75,11 @@ export class BlitzMaxHandler{
 		clearLog()
 		log( 'Initializing BlitzMax' )
 		
-		return new Promise<boolean>( async ( resolve, reject ) => {
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Window,
+			title: "Initializing BlitzMax",
+			cancellable: false
+		}, (progress, token) => { return new Promise<boolean>( async ( resolve, reject ) => {
 			
 			this._askedForPath = false
 			this._problem = ''
@@ -92,15 +96,20 @@ export class BlitzMaxHandler{
 			await this.checkVersion()
 			if (this.problem) return reject()
 			
+			progress.report( {message: 'scanning modules'} )
+			
 			await scanModules( context )
+			
+			progress.report( {message: 'ready'} )
 			
 			this._ready = true
 			log( `BlitzMax ${this.version} Ready!` )
 			
 			if (!this.supportsVarSubOutput)
-				log( '*Notice* task.json output is NOT supported on this version of BlitzMax' )
+				log( '*Notice* task.json output is NOT supported on this version of BlitzMax', false, true )
 			
 			resolve()
+			})
 		})
 	}
 	

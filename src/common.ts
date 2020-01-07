@@ -7,7 +7,7 @@ import * as fs from 'fs'
 import { BmxTaskDefinition } from './taskProvider'
 
 let outputChannel: vscode.OutputChannel
-export function log( text:string, append: boolean = true ) {
+export function log( text:string, append: boolean = true, show: boolean = false ) {
 	
 	if (!outputChannel)
 		outputChannel = vscode.window.createOutputChannel( 'BlitzMax' )
@@ -17,7 +17,7 @@ export function log( text:string, append: boolean = true ) {
 	else
 		outputChannel.append( text )
 	
-	outputChannel.show( true )
+	if (show) outputChannel.show( true )
 }
 
 export function clearLog() {

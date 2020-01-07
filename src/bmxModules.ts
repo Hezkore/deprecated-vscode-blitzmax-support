@@ -27,12 +27,13 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 	log('')
 	log('Updating Modules:')
 	
+	/*
 	await vscode.window.withProgress({
 		location: vscode.ProgressLocation.Notification,
 		title: "Updating BlitzMax modules",
 		cancellable: false
 	}, (progress, token) => { return new Promise(async function(resolve, reject) {
-			
+	*/
 			BlitzMax._modules.clear()
 			BlitzMax._commands = []
 			BlitzMax._autoCompletes = []
@@ -56,7 +57,7 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 			const parentDir = await readDir( BlitzMax.modPath )
 			for(var i=0; i<parentDir.length; i++){
 				
-				progress.report({ increment: 100.0 / parentDir.length })
+				//progress.report({ increment: 100.0 / parentDir.length })
 				
 				// Skip unknown stuff
 				if (!parentDir[i].toLowerCase().endsWith( '.mod' )) continue
@@ -110,10 +111,11 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 						mod = BlitzMax._modules.get( keyName )
 						if (!mod){
 							log( `\tUnable to update module: ${keyName}` )
-							return reject()
+							continue
+							//return //reject()
 						}
 						
-						progress.report( {message: keyName } )
+						//progress.report( {message: keyName } )
 						
 						await updateModule( mod )
 						changedModules++
@@ -154,9 +156,9 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 			
 			log('')
 			log(`${BlitzMax._modules.size} Modules ${BlitzMax._commands.length} Commands`)
-			return resolve()
-		})
-	})
+			//return resolve()
+		//})
+	//})
 }
 
 async function saveModules( path: string ){
