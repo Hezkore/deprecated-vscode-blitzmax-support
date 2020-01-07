@@ -1,5 +1,10 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.15.0
+* Fix for task output not setting correctly.
+* < and > are no longer considered to be "brackets".
+* Document formatting implemented.
+
 ## Version 1.14.0
 * Task output is no longer automatically set, unless selected in options.
 
