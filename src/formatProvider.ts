@@ -11,7 +11,7 @@ export class BmxOnTypeFormatProvider implements vscode.OnTypeFormattingEditProvi
 		
 		// Test if we're inside a rem block
 		let inRemBlock:boolean = false
-		for (let lineNr = 0; lineNr < document.lineCount; lineNr++) {
+		for (let lineNr = 0; lineNr <= position.line; lineNr++) {
 			const curLineText = document.lineAt(lineNr).text.trim().toLowerCase()
 			
 			if (inRemBlock) {
@@ -23,8 +23,6 @@ export class BmxOnTypeFormatProvider implements vscode.OnTypeFormattingEditProvi
 				
 				continue
 			} else {
-				
-				if (lineNr > position.line) break
 				
 				if (curLineText == 'rem' || curLineText.startsWith( 'rem ' ))
 				{
