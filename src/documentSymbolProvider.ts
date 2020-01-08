@@ -22,7 +22,7 @@ export class BmxDocumentSymbolProvider implements vscode.DocumentSymbolProvider 
 				)
 			})
 			
-			if (line.isEmptyOrWhitespace || line.text.length < 4) continue
+			if (line.isEmptyOrWhitespace || line.text.length < 2) continue
 			if (line.text.startsWith( "'" )) continue
 			
 			// Get a clean line to compare against
@@ -31,6 +31,8 @@ export class BmxDocumentSymbolProvider implements vscode.DocumentSymbolProvider 
 			.replace( '\t', '' )
 			//.trimRight()
 			//.toLowerCase()
+			
+			if (lineCleanText.length < 2) continue
 			
 			const words:string[] = lineCleanText.split( ' ' )
 			if (words.length < 0) continue
@@ -59,7 +61,6 @@ export class BmxDocumentSymbolProvider implements vscode.DocumentSymbolProvider 
 				continue
 			}else{
 				
-				console.log(firstWord)
 				if (firstWord == 'rem')
 				{
 					inRemBlock = !inRemBlock
@@ -67,49 +68,53 @@ export class BmxDocumentSymbolProvider implements vscode.DocumentSymbolProvider 
 				}
 			}
 			
-			let wasSymbolKind:vscode.SymbolKind | undefined = undefined
-			let wasContainer:boolean = false
+			let isSymbolKind:vscode.SymbolKind | undefined = undefined
+			let isContainer:boolean = false
 			let splitters:string[] = [ '(', ' ', ':', "'", '%', '#', '!', '$' ]
 			let detail:string = ''
+			let supportsMultiDefine:boolean = false
 			
 			// Define symbols
 			switch (firstWord) {
 				case 'function':
-					wasSymbolKind = vscode.SymbolKind.Function
-					wasContainer = true
+					isSymbolKind = vscode.SymbolKind.Function
+					isContainer = true
 					break
 				
 				case 'method':
-					wasSymbolKind = vscode.SymbolKind.Method
-					wasContainer = true
+					isSymbolKind = vscode.SymbolKind.Method
+					isContainer = true
 					break
 				
 				case 'interface':
-					wasSymbolKind = vscode.SymbolKind.Interface
-					wasContainer = true
+					isSymbolKind = vscode.SymbolKind.Interface
+					isContainer = true
 					break
 				
 				case 'enum':
-					wasSymbolKind = vscode.SymbolKind.Enum
-					wasContainer = true
+					isSymbolKind = vscode.SymbolKind.Enum
+					isContainer = true
 					break
 				
 				case 'type':
-					wasSymbolKind = vscode.SymbolKind.Class
-					wasContainer = true
+					isSymbolKind = vscode.SymbolKind.Class
+					isContainer = true
 					break
 				
 				case 'const':
-					wasSymbolKind = vscode.SymbolKind.Constant
+					isSymbolKind = vscode.SymbolKind.Constant
+					supportsMultiDefine = true
 					break
 				
 				case 'global':
 				case 'local':
-					wasSymbolKind = vscode.SymbolKind.Variable
+					isSymbolKind = vscode.SymbolKind.Variable
+					supportsMultiDefine = true
 					break
 				
 				case 'field':
-					wasSymbolKind = vscode.SymbolKind.Field
+					isSymbolKind = vscode.SymbolKind.Field
+					supportsMultiDefine = true
 					break
 				
 				case 'endtype':
@@ -122,34 +127,97 @@ export class BmxDocumentSymbolProvider implements vscode.DocumentSymbolProvider 
 					break
 			}
 			
-			if (wasSymbolKind){
+			if (isSymbolKind){
 				
-				// Apply name splitters
-				let name:string = words[1]
-				splitters.forEach( splitter => {
-					
-					if (name.includes( splitter ))
-						name = name.split( splitter )[0]
-				})
+				let names:string[] = []
 				
-				if (name.length > 0){
-					// Create the symbol
-					const symbol = new vscode.DocumentSymbol(
-						name,
-						detail,
-						wasSymbolKind,
-						line.range, line.range
-					)
+				// Detect same line multi define
+				if (supportsMultiDefine) {
+					let multiName:string = ''
+					let inString:boolean = false
+					let depth:number = 0
 					
-					// Where do we push the symbol?
-					if (containers.length > 0)
-						containers[containers.length - 1].children.push( symbol )
-					else
-						symbols.push( symbol )
+					for (let chrNr = line.firstNonWhitespaceCharacterIndex + firstWord.length + 1;
+						chrNr < line.text.length; chrNr++) {
+						const chr = line.text[chrNr]
+						
+						if (chrNr == line.text.length - 1 ||
+						((chr == ',' || chr == "'") && ( depth == 0 && !inString && multiName.length > 0))){
+							
+							if (multiName.includes( ':' ))
+								multiName = multiName.split( ':' )[0]
+							else if (multiName.includes( '%' ))
+								multiName = multiName.split( '%' )[0]
+							else if (multiName.includes( '#' ))
+								multiName = multiName.split( '#' )[0]
+							else if (multiName.includes( '!' ))
+								multiName = multiName.split( '!' )[0]
+							else if (multiName.includes( '$' ))
+								multiName = multiName.split( '$' )[0]
+							else if (multiName.includes( '=' ))
+								multiName = multiName.split( '=' )[0]
+							
+							names.push( multiName )
+							if (chr == "'") break
+							multiName = ''
+						}else{
+						
+							switch (chr) {
+								case '"':
+									inString = !inString
+									break
+								
+								case '[':
+								case '(':
+									if (!inString) depth++
+									break
+								
+								case ']':
+								case ')':
+									if (!inString) depth--
+									break
+								
+								default:
+									if (depth == 0 && !inString && chr != ' ' && chr != '\t')
+									{
+										multiName += chr
+									}
+									break
+							}
+						}
+					}
+				}else names.push( words[1] )
+				
+				for (let nameNr = 0; nameNr < names.length; nameNr++) {
+					let name = names[nameNr]
+					console.log('name: ' + name)
+				
+					// Apply name splitters
+					splitters.forEach( splitter => {
+						
+						if (name.includes( splitter ))
+							name = name.split( splitter )[0]
+					})
 					
-					// Store this symbol as a container
-					if (wasContainer)
-						containers.push( symbol )
+					if (name.length > 0){
+						// Create the symbol
+						const symbol = new vscode.DocumentSymbol(
+							name,
+							detail,
+							isSymbolKind,
+							line.range, line.range
+						)
+						
+						// Where do we push the symbol?
+						if (containers.length > 0)
+							containers[containers.length - 1].children.push( symbol )
+						else
+							symbols.push( symbol )
+						
+						// Store this symbol as a container
+						if (isContainer)
+							containers.push( symbol )
+					}
 				}
 			}
 		}
