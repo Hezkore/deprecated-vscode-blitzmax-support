@@ -3,6 +3,7 @@
 import * as vscode from 'vscode'
 import * as bmxDiagnostics from './diagnostics'
 import { setSourceFile, currentWord, currentBmx, log } from './common'
+import { BmxDocumentSymbolProvider } from './documentSymbolProvider'
 import { BmxFormatProvider, BmxRangeFormatProvider, BmxOnTypeFormatProvider } from './formatProvider'
 import { BmxActionProvider } from './actionProvider'
 import { BmxDefinitionProvider } from './definitionProvider'
@@ -45,6 +46,13 @@ async function registerEvents( context:vscode.ExtensionContext ) {
 }
 
 async function registerProviders( context:vscode.ExtensionContext ) {
+	
+	// document symbol provider
+    context.subscriptions.push(
+        vscode.languages.registerDocumentSymbolProvider({ scheme: 'file', language: 'blitzmax' },
+            new BmxDocumentSymbolProvider()
+        )
+	)
 	
 	// Completion item provider
 	context.subscriptions.push(
