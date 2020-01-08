@@ -194,7 +194,6 @@ export class BmxDocumentSymbolProvider implements vscode.DocumentSymbolProvider 
 				
 				for (let nameNr = 0; nameNr < names.length; nameNr++) {
 					let name = names[nameNr]
-					console.log('name: ' + name)
 				
 					// Apply name splitters
 					splitters.forEach( splitter => {
