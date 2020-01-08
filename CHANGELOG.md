@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.17.0
+* Basic outline support implemented.
+
 ## Version 1.16.1
 * Better error notifications.
 * More signature help triggers.
