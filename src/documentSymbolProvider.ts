@@ -101,6 +101,11 @@ export class BmxDocumentSymbolProvider implements vscode.DocumentSymbolProvider 
 					isContainer = true
 					break
 				
+				case 'struct':
+					isSymbolKind = vscode.SymbolKind.Struct
+					isContainer = true
+					break
+				
 				case 'const':
 					isSymbolKind = vscode.SymbolKind.Constant
 					supportsMultiDefine = true
