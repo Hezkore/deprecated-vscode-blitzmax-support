@@ -47,7 +47,7 @@ async function registerEvents( context:vscode.ExtensionContext ) {
 
 async function registerProviders( context:vscode.ExtensionContext ) {
 	
-	// document symbol provider
+	// Document symbol provider
     context.subscriptions.push(
         vscode.languages.registerDocumentSymbolProvider({ scheme: 'file', language: 'blitzmax' },
             new BmxDocumentSymbolProvider()

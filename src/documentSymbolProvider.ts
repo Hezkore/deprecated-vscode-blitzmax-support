@@ -1,7 +1,6 @@
 'use strict'
 
 import * as vscode from 'vscode'
-import { BlitzMax } from './blitzmax'
 
 export class BmxDocumentSymbolProvider implements vscode.DocumentSymbolProvider {
     public provideDocumentSymbols( document: vscode.TextDocument, token: vscode.CancellationToken ): vscode.DocumentSymbol[] {
