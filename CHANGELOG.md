@@ -1,5 +1,9 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.18.0
+* 'Generate BlitzMax Project' is now reached from the Explorer view.
+* Debug with no 'output' will create a '.debug' binary.
+
 ## Version 1.17.0
 * Basic outline support implemented.
 
