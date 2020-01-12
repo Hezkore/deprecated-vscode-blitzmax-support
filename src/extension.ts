@@ -15,7 +15,7 @@ import { BmxSignatureHelpProvider } from './signatureHelpProvider'
 import { BmxHoverProvider } from './hoverProvider'
 import { BlitzMax } from './blitzmax'
 import { AnalyzeDoc, scanModules } from './bmxModules'
-import { generateProject } from './generateProject'
+import { askToGenerateProject } from './generateProject'
 
 export function activate( context: vscode.ExtensionContext ) {
 	
@@ -120,7 +120,7 @@ async function registerCommands( context:vscode.ExtensionContext ) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand( 'blitzmax.generateProject', () => {
 			
-			generateProject( context )
+			askToGenerateProject( context )
 		})
 	)
 	

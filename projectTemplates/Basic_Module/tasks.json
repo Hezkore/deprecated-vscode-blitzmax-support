@@ -1,0 +1,51 @@
+{
+	// See https://go.microsoft.com/fwlink/?LinkId=733558
+	// for the documentation about the tasks.json format
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Copy Module to BlitzMax & Build Example 1",
+			"dependsOrder": "sequence",
+			"dependsOn": [
+				"Copy Module to BlitzMax",
+				"Build Example 1"
+			],
+			"group": "build",
+			"problemMatcher": []
+		},
+		{
+			"label": "Copy Module to BlitzMax",
+			"type": "shell",
+			"command": "",
+			"windows": {
+				"command": "robocopy",
+				"args": [
+					"/e",
+					"/xo",
+					"${workspaceFolder}\\src",
+					"${config:blitzmax.bmxPath}\\mod\\example.mod\\${workspaceFolderBasename}"
+				]
+			},
+			"group": "none"
+		},
+		{
+			"label": "Build Example 1",
+			"type": "bmx",
+			"source": "src\\examples\\example1.bmx",
+			"output": "",
+			"make": "makeapp",
+			"app": "console",
+			"arch": "auto",
+			"platform": "auto",
+			"threaded": true,
+			"debug": false,
+			"quick": false,
+			"execute": true,
+			"verbose": false,
+			"problemMatcher": [
+				"$blitzmax"
+			],
+			"group": "build"
+		}
+	]
+}

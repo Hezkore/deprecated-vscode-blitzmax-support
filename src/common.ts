@@ -322,6 +322,30 @@ export function removeDir( path: string ): boolean {
 	return true
 }
 
+export function copyFolderSync( from: string, to: string, onlyExt: string | undefined = undefined ): string[] {
+	
+	let result:string [] = []
+	
+	if (!fs.existsSync( to ))
+		fs.mkdirSync( to )
+	
+    fs.readdirSync( from ).forEach( element => {
+		
+		if (fs.lstatSync( path.join( from, element ) ).isFile()){
+			if (!onlyExt || path.extname( element ).toLowerCase() == onlyExt){
+				fs.copyFileSync( path.join( from, element ), path.join( to, element ) )
+				result.push( path.join( to, element ) )
+			}
+		}else{
+			copyFolderSync( path.join( from, element ), path.join( to, element ), onlyExt ).forEach( resultFile => {
+				result.push( resultFile )
+			})
+		}
+	})
+	
+	return result
+}
+
 export async function getFirstEmptyLine( code: string ): Promise<vscode.Position> {
 	
 	return new Promise<vscode.Position>( ( resolve, reject ) => {

@@ -164,18 +164,33 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 	if (definition.threaded)
 		args.push( '-h' )
 	
+	// Actual file to build
+	let source:string | undefined = definition.source
+	if ( !source || source.length <= 1 ){ // No source file set, figure one out!
+		
+		// Is a source file even open?
+		let file: vscode.Uri | undefined = currentBmx()
+		if (!file){
+			vscode.window.showErrorMessage( "No .bmx file open!" )
+			return
+		}
+		source = file.fsPath
+	}
+	
 	// Build output
 	// Okay here's something!
 	// All Legacy versions and NG versions lower than 3.39 do NOT create the output for you
 	// And since VScode doesn't provide us with finished var subs;
-	// so we just ignore output completely
-	if (BlitzMax.supportsOutputPath( definition.output ) && definition.output && definition.output.length > 0)
-	{
+	// we just ignore output completely
+	if (BlitzMax.supportsOutputPath( definition.output ) && definition.output && definition.output.length > 0) {
 		let outPath: string =
 			variableSub( definition.output, arch, definition.debug, platform )
 		
 		args.push( '-o' )
 		args.push( outPath )
+	} else if (definition.debug) {
+		args.push( '-o' )
+		args.push( source.split( path.extname( source ) )[0] + '.debug' )
 	}
 	
 	// Execute after build
@@ -189,18 +204,7 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 	if (definition.verbose)
 		args.push( '-v' )
 	
-	// Actual file to build
-	let source:string | undefined = definition.source
-	if ( !source || source.length <= 1 ){ // No source file set, figure one out!
-		
-		// Is a source file even open?
-		let file: vscode.Uri | undefined = currentBmx()
-		if (!file){
-			vscode.window.showErrorMessage( "No .bmx file open!" )
-			return
-		}
-		source = file.fsPath
-	}
+
 	args.push( source )
 	
 	// Setup the task already!

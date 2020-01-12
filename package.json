@@ -12,10 +12,12 @@
 		"url": "https://github.com/Hezkore/vscode-blitzmax-support/issues"
 	},
 	"icon": "media/icon.png",
+	"author": "Hezkore",
 	"publisher": "Hezkore",
 	"main": "./out/extension",
 	"categories": [
 		"Programming Languages",
+		"Formatters",
 		"Snippets",
 		"Other"
 	],
@@ -70,6 +72,9 @@
 					"when": "resourceLangId == blitzmax",
 					"command": "blitzmax.setSourceFile",
 					"group": "1_modification"
+				},
+				{
+					"command": "blitzmax.generateProject"
 				}
 			],
 			"editor/title/context": [
@@ -196,7 +201,7 @@
 		"commands": [
 			{
 				"command": "blitzmax.generateProject",
-				"title": "Generate Project",
+				"title": "Generate BlitzMax Project",
 				"category": "BlitzMax"
 			},
 			{
