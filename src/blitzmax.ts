@@ -41,6 +41,7 @@ export class BlitzMaxHandler{
 		vscode.window.showErrorMessage( 'BlitzMax Error: ' + message )
 		console.log( 'BlitzMax Error: ', message )
 		log( 'Error: ' + message, true, true )
+		log( 'More info at: https://github.com/Hezkore/vscode-blitzmax-support#troubleshooting' )
 	}
 	get legacy(): boolean { return this._legacy }
 	get bccVersion(): string { return this._bccVersion }
@@ -48,7 +49,7 @@ export class BlitzMaxHandler{
 	get version(): string { return this._version }
 	get supportsVarSubOutput(): boolean{
 		
-		// Minimum NG version is 3.39
+		// Minimum bmk NG version is 3.39
 		if (this._legacy || BlitzMax.bmkVersion < '3.39' )
 			return false
 		
@@ -106,8 +107,11 @@ export class BlitzMaxHandler{
 			this._ready = true
 			log( `BlitzMax ${this.version} Ready!` )
 			
-			if (!this.supportsVarSubOutput)
-				log( '*Notice* task.json output is NOT supported on this version of BlitzMax', false, true )
+			if (!this.supportsVarSubOutput) {
+				log( '' )
+				log( '*Notice* task.json output is NOT supported on this version of BlitzMax', true, true )
+				log( 'More info at: https://github.com/Hezkore/vscode-blitzmax-support#troubleshooting' )
+			}
 			
 			resolve()
 			})
@@ -368,6 +372,8 @@ export class BlitzMaxHandler{
 				this.askForPath( 'Make sure your BlitzMax path is correct. (' + msg + ')' )
 			}
 		}
+		
+		log(`\tBlitzMax Version: ${this._bccVersion}.${this._bmkVersion}`)
 	}
 	
 	async hasExample( cmd: AnalyzeDoc ): Promise<string>{

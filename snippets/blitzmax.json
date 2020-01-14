@@ -67,7 +67,7 @@
 	
 	"Type" : {
 		"prefix" : "Type",
-		"body" : [ "Type T${1:Identifier}", "\t", "\t$0", "EndType" ],
+		"body" : [ "Type T${1:Identifier}", "\t", "\tMethod New( $3 )", "\t\t", "\t\t$2", "\tEndMethod$0", "EndType" ],
 		"description" : "Type"
 	},
 	
