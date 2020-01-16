@@ -12,6 +12,7 @@ export class BlitzMaxHandler{
 	_commands: AnalyzeDoc[] = []
 	_autoCompletes: vscode.CompletionItem[] = []
 	
+	private _troubleshootString: string = 'More info at: https://marketplace.visualstudio.com/items?itemName=Hezkore.blitzmax#troubleshooting'
 	private _ready: boolean = false
 	private _path: string = ''
 	private _problem: string | undefined
@@ -41,7 +42,7 @@ export class BlitzMaxHandler{
 		vscode.window.showErrorMessage( 'BlitzMax Error: ' + message )
 		console.log( 'BlitzMax Error: ', message )
 		log( 'Error: ' + message, true, true )
-		log( 'More info at: https://github.com/Hezkore/vscode-blitzmax-support#troubleshooting' )
+		log( this._troubleshootString )
 	}
 	get legacy(): boolean { return this._legacy }
 	get bccVersion(): string { return this._bccVersion }
@@ -110,7 +111,7 @@ export class BlitzMaxHandler{
 			if (!this.supportsVarSubOutput) {
 				log( '' )
 				log( '*Notice* task.json output is NOT supported on this version of BlitzMax', true, true )
-				log( 'More info at: https://github.com/Hezkore/vscode-blitzmax-support#troubleshooting' )
+				log( this._troubleshootString )
 			}
 			
 			resolve()
