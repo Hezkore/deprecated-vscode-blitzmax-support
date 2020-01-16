@@ -14,6 +14,7 @@ export class BlitzMaxHandler{
 	
 	private _troubleshootString: string = 'More info at: https://marketplace.visualstudio.com/items?itemName=Hezkore.blitzmax#troubleshooting'
 	private _ready: boolean = false
+	private _busy: boolean = false
 	private _path: string = ''
 	private _problem: string | undefined
 	private _legacy: boolean = false
@@ -36,9 +37,11 @@ export class BlitzMaxHandler{
 		return path.join( this.path, 'mod' )
 	}
 	get ready(): boolean { return this._ready }
+	get busy(): boolean { return this._busy }
 	get problem(): string | undefined { return this._problem }
 	set problem( message:string | undefined ) {
 		
+		this._busy = false
 		vscode.window.showErrorMessage( 'BlitzMax Error: ' + message )
 		console.log( 'BlitzMax Error: ', message )
 		log( 'Error: ' + message, true, true )
@@ -68,12 +71,21 @@ export class BlitzMaxHandler{
 		if (!fs.existsSync( path.dirname( outPath ) ))
 			return false
 		else
-			console.log("Exists: " + path.dirname( outPath ))
+			console.log( 'Exists: ' + path.dirname( outPath ))
 		
 		return true
 	}
 	
 	async setup( context: vscode.ExtensionContext ){
+		
+		if (this.busy) return
+		
+		this._busy = true
+		this._askedForPath = false
+		this._problem = ''
+		this._ready = false
+		this._legacy = false
+		this._path = ''
 		
 		clearLog()
 		log( 'Initializing BlitzMax' )
@@ -83,12 +95,6 @@ export class BlitzMaxHandler{
 			title: 'Initializing BlitzMax',
 			cancellable: false
 		}, (progress, token) => { return new Promise<boolean>( async ( resolve, reject ) => {
-			
-			this._askedForPath = false
-			this._problem = ''
-			this._ready = false
-			this._legacy = false
-			this._path = ''
 			
 			await this.findPath()
 			if (this.path.length <= 1){
@@ -106,6 +112,7 @@ export class BlitzMaxHandler{
 			progress.report( {message: 'ready'} )
 			
 			this._ready = true
+			this._busy = false
 			log( `BlitzMax ${this.version} Ready!` )
 			
 			if (!this.supportsVarSubOutput) {
