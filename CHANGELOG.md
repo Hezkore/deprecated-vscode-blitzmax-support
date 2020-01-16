@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.19.2
+* Stricter rules while initializing BlitzMax.
+
 ## Version 1.19.1
 * Better BlitzMax path detection.
 
