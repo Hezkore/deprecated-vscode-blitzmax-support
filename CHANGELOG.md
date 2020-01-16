@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.19.1
+* Better BlitzMax path detection.
+
 ## Version 1.19.0
 * Better troubleshooting.
 * Updated snippet for Type.

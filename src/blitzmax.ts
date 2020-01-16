@@ -79,7 +79,7 @@ export class BlitzMaxHandler{
 		
 		await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Window,
-			title: "Initializing BlitzMax",
+			title: 'Initializing BlitzMax',
 			cancellable: false
 		}, (progress, token) => { return new Promise<boolean>( async ( resolve, reject ) => {
 			
@@ -90,7 +90,7 @@ export class BlitzMaxHandler{
 			this._path = ''
 			
 			await this.findPath()
-			if (this.path.length <= 3){
+			if (this.path.length <= 1){
 				this.problem = 'No BlitzMax path set'
 				return reject()
 			}
@@ -306,7 +306,7 @@ export class BlitzMaxHandler{
 		
 		// First we check the bcc version
 		try {
-			let {stdout, stderr} = await exec('bcc', {env: {'PATH': this.binPath}})
+			let {stdout, stderr} = await exec( 'bcc', {cwd: this.binPath} )
 			
 			if (stderr && stderr.length > 0)
 			{
@@ -343,7 +343,7 @@ export class BlitzMaxHandler{
 		if (!this._legacy)
 		{
 			try {
-				let {stdout, stderr} = await exec(path.join(this.binPath, '/bmk -v'), {})
+				let {stdout, stderr} = await exec('bmk -v', {cwd: this.binPath})
 				
 				if (stderr && stderr.length > 0)
 				{

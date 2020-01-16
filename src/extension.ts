@@ -35,7 +35,7 @@ async function registerEvents( context:vscode.ExtensionContext ) {
 	context.subscriptions.push(
 		vscode.workspace.onDidChangeConfiguration( event => {
 			
-			if ( event.affectsConfiguration( 'blitzmax.bmxPath' ) )
+			if (event.affectsConfiguration( 'blitzmax.bmxPath' ))
 				BlitzMax.setup( context )
 		})
 	)

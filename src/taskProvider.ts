@@ -214,7 +214,7 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 	// But that CLEARS PATH !
 	// So instead we just directly call 'bmk' via its absolute path
 	let bmkPath = path.join( BlitzMax.binPath, 'bmk' )
-	let exec: vscode.ShellExecution = new vscode.ShellExecution( bmkPath, args)//, { env: { 'PATH': BlitzMax.binPath } } )
+	let exec: vscode.ShellExecution = new vscode.ShellExecution( bmkPath, args )//, { env: { 'PATH': BlitzMax.binPath } } )
 	
 	let task: vscode.Task = new vscode.Task( definition, vscode.TaskScope.Workspace, name, 'BlitzMax', exec, '$blitzmax' )
 	

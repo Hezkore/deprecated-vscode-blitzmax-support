@@ -262,9 +262,9 @@ export function currentBmx(): vscode.Uri | undefined {
 
 export async function exec( command: string, options: process.ExecOptions ): Promise<{ stdout: string; stderr: string }> {
 	
-	return new Promise<{ stdout: string; stderr: string }>( ( resolve, reject ) => {
+	return new Promise<{stdout:string; stderr:string}>( (resolve, reject) => {
 		
-		process.exec(command, options, ( error, stdout, stderr ) => {
+		process.exec( command, options, (error, stdout, stderr) => {
 			
 			if (error)
 				return reject({ error, stdout, stderr })
