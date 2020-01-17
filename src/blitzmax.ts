@@ -41,7 +41,6 @@ export class BlitzMaxHandler{
 	get problem(): string | undefined { return this._problem }
 	set problem( message:string | undefined ) {
 		
-		this._busy = false
 		vscode.window.showErrorMessage( 'BlitzMax Error: ' + message )
 		console.log( 'BlitzMax Error: ', message )
 		log( 'Error: ' + message, true, true )
@@ -90,20 +89,25 @@ export class BlitzMaxHandler{
 		clearLog()
 		log( 'Initializing BlitzMax' )
 		
-		await vscode.window.withProgress({
+		await vscode.window.withProgress( {
 			location: vscode.ProgressLocation.Window,
 			title: 'Initializing BlitzMax',
 			cancellable: false
 		}, (progress, token) => { return new Promise<boolean>( async ( resolve, reject ) => {
 			
 			await this.findPath()
-			if (this.path.length <= 1){
+			if (this.path.length <= 1) {
+				this._busy = false
 				this.problem = 'No BlitzMax path set'
 				return reject()
 			}
 			
 			await this.checkVersion()
-			if (this.problem) return reject()
+			if (this.problem) {
+				this._busy = false
+				log( 'Unable to determine BlitzMax version', true, true )
+				return reject()
+			}
 			
 			progress.report( {message: 'scanning modules'} )
 			
@@ -337,13 +341,10 @@ export class BlitzMaxHandler{
 				
 				log(`\tBCC Version: ${this._bccVersion}`)
 			}
-		}catch(err){
-			let msg:string = err
-			if (err.stderr) msg = err.stderr
-			if (err.stdout) msg = err.stdout
-			
+		} catch(err) {
 			this._problem = 'Unable to determine BlitzMax version'
-			this.askForPath( 'Make sure your BlitzMax path is correct. (' + msg + ')' )
+			this.askForPath( 'Make sure your BlitzMax path is correct.' )
+			return
 		}
 		
 		// Secondly we check the bmk version
@@ -370,13 +371,10 @@ export class BlitzMaxHandler{
 						return
 					}
 				}
-			}catch(err){
-				let msg:string = err
-				if (err.stderr) msg = err.stderr
-				if (err.stdout) msg = err.stdout
-				
+			} catch(err) {
 				this._problem = 'Unable to determine bmk version'
-				this.askForPath( 'Make sure your BlitzMax path is correct. (' + msg + ')' )
+				this.askForPath( 'Make sure your BlitzMax path is correct' )
+				return
 			}
 		}
 		
