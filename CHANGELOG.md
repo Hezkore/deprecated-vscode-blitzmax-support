@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.19.5
+* Stricter rules for debug builds.
+
 ## Version 1.19.4
 * Better error reports when setting source file.
 

@@ -190,7 +190,10 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 		args.push( outPath )
 	} else if (definition.debug) {
 		args.push( '-o' )
-		args.push( source.split( path.extname( source ) )[0] + '.debug' )
+		if (path.extname( source ).length > 0)
+			args.push( source.split( path.extname( source ) )[0] + '.debug' )
+		else
+			args.push( source + '.debug' )
 	}
 	
 	// Execute after build
