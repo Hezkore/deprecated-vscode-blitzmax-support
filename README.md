@@ -37,7 +37,7 @@ Just open the Command Palette by pressing `Ctrl+Shift+P` and type `Generate Docu
 I have a question or problem that is not listed in the troubleshooting section.
 * **A. We'll figure it out.**\
 For questions you can always contact me on Telegram [@Hezkore](https://t.me/Hezkore).\
-You can use the GitHub issues page for everything else, which you can find [here](https://github.com/Hezkore/vscode-blitzmax-support/issues).
+Use the GitHub issues page for everything else, which you can find [here](https://github.com/Hezkore/vscode-blitzmax-support/issues).
 
 ## Credits
 [BlitzMax](https://nitrologic.itch.io/blitzmax/) by [Mark Sibly](https://github.com/blitz-research).\
