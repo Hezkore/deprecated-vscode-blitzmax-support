@@ -5,6 +5,7 @@
 
 ## Version 1.19.4
 * Better error reports when setting source file.
+* F5/F6 shortcuts should now work globally.
 
 ## Version 1.19.3
 * Better error reports.
