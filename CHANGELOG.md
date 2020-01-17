@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.19.4
+* Better error reports when setting source file.
+
 ## Version 1.19.3
 * Better error reports.
 

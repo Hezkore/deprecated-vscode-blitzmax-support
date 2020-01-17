@@ -139,17 +139,31 @@ export async function readStats( filename:string ): Promise<fs.Stats> {
 }
 export function setSourceFile( file: vscode.Uri | undefined ){
 	
-	if (!file) return
+	if (!file) {
+		
+		vscode.window.showErrorMessage( 'No file to set as source' )
+		return
+	}
 	
 	const workPath: vscode.WorkspaceFolder | undefined = vscode.workspace.getWorkspaceFolder( file )
-	if (!workPath) return
+	if (!workPath) {
+		
+		vscode.window.showErrorMessage( 'No workspace folder' )
+		return
+	}
 	
 	const config = vscode.workspace.getConfiguration( 'tasks' )
-	if (!config) return
+	if (!config) {
+		
+		vscode.window.showErrorMessage( 'You must first select a task' )
+		vscode.commands.executeCommand( 'workbench.action.tasks.configureDefaultBuildTask' )
+		return
+	}
 	
 	const tasks: BmxTaskDefinition | undefined = config.get( 'tasks' )
 	if (!tasks){
 		
+		vscode.window.showErrorMessage( 'You must first select a task' )
 		vscode.commands.executeCommand( 'workbench.action.tasks.configureDefaultBuildTask' )
 		return
 	}
