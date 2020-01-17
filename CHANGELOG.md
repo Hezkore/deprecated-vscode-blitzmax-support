@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.19.3
+* Better error reports.
+
 ## Version 1.19.2
 * Stricter rules while initializing BlitzMax.
 
