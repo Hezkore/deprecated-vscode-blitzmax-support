@@ -314,7 +314,7 @@ export class BlitzMaxHandler{
 		
 		// First we check the bcc version
 		try {
-			let {stdout, stderr} = await exec( 'bcc', {cwd: this.binPath} )
+			let {stdout, stderr} = await exec( path.join( this.binPath, 'bcc' ) )
 			
 			if (stderr && stderr.length > 0)
 			{
@@ -348,10 +348,9 @@ export class BlitzMaxHandler{
 		
 		// Secondly we check the bmk version
 		// Notice that Legacy bmk doesn't even provide a bmk version ¯\_(ツ)_/¯
-		if (!this._legacy)
-		{
+		if (!this._legacy) {
 			try {
-				let {stdout, stderr} = await exec('bmk -v', {cwd: this.binPath})
+				let {stdout, stderr} = await exec( path.join( this.binPath, 'bmk' ), ['-v'] )
 				
 				if (stderr && stderr.length > 0)
 				{

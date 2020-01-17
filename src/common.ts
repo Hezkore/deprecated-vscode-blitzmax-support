@@ -4,6 +4,7 @@ import * as vscode from 'vscode'
 import * as path from 'path'
 import * as process from 'child_process'
 import * as fs from 'fs'
+import * as os from 'os'
 import { BmxTaskDefinition } from './taskProvider'
 
 let outputChannel: vscode.OutputChannel
@@ -260,11 +261,12 @@ export function currentBmx(): vscode.Uri | undefined {
 	return file
 }
 
-export async function exec( command: string, options: process.ExecOptions ): Promise<{ stdout: string; stderr: string }> {
+export async function exec( executable: string, args: string[] = [] ): Promise<{ stdout: string; stderr: string }> {
 	
 	return new Promise<{stdout:string; stderr:string}>( (resolve, reject) => {
 		
-		process.exec( command, options, (error, stdout, stderr) => {
+		
+		process.execFile( executable, args, (error, stdout, stderr) => {
 			
 			if (error)
 				return reject({ error, stdout, stderr })
