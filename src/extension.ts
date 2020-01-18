@@ -16,14 +16,18 @@ import { BmxHoverProvider } from './hoverProvider'
 import { BlitzMax } from './blitzmax'
 import { AnalyzeDoc, scanModules } from './bmxModules'
 import { askToGenerateProject } from './generateProject'
+import { checkBlitzMaxUpdates } from './checkUpdates'
 
-export function activate( context: vscode.ExtensionContext ) {
+export async function activate( context: vscode.ExtensionContext ) {
 	
 	registerEvents( context )
 	registerCommands( context )
 	registerProviders( context )
 	
-	BlitzMax.setup( context )
+	await BlitzMax.setup( context )
+	
+	if (vscode.workspace.getConfiguration( 'blitzmax' ).get( 'checkForUpdates' ))
+		checkBlitzMaxUpdates( true )
 }
 
 export function deactivate(): void {
@@ -118,6 +122,13 @@ async function registerProviders( context:vscode.ExtensionContext ) {
 async function registerCommands( context:vscode.ExtensionContext ) {
 	
 	context.subscriptions.push(
+		vscode.commands.registerCommand( 'blitzmax.checkForUpdates', () => {
+			
+			checkBlitzMaxUpdates()
+		})
+	)
+	
+	context.subscriptions.push(
 		vscode.commands.registerCommand( 'blitzmax.generateProject', () => {
 			
 			askToGenerateProject( context )
@@ -174,7 +185,7 @@ async function registerCommands( context:vscode.ExtensionContext ) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand( 'blitzmax.generateDocs', () => {
 			
-			log( '\nUpdating all modules', false, true )
+			log( '\nUpdating all modules', true, true )
 			scanModules( context, true )
 		})
 	)

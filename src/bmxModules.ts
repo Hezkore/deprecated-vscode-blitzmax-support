@@ -24,7 +24,7 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 	
 	if (BlitzMax.problem) return
 	
-	log('')
+	log()
 	log('Updating Modules:')
 	
 	/*
@@ -146,16 +146,17 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 			}
 			
 			// Save updated modules
-			if (changedModules > 0)
-			{
-				log(`${changedModules} module update`, false)
-				log(changedModules == 1 ? `d` : `s`)
+			if (changedModules > 0) {
+				log()
+				log( `${changedModules} module` )
+				if (changedModules != 1) log( 's', false )
+				log( ' updated', false )
 				await saveModules( modJsonPath )
 			}else
-				log('\tNo module updates')
+				log( '\tNo modules updated' )
 			
-			log('')
-			log(`${BlitzMax._modules.size} Modules ${BlitzMax._commands.length} Commands`)
+			log()
+			log( `${BlitzMax._modules.size} Modules ${BlitzMax._commands.length} Commands` )
 			//return resolve()
 		//})
 	//})
@@ -163,14 +164,14 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 
 async function saveModules( path: string ){
 	
-	log('Saving Module Database ... ', false)
+	log( 'Saving Module Database ... ' )
 	await writeFile(path, modulesToJson( BlitzMax._modules ))
-	log('done')
+	log( 'done', false )
 }
 
 async function updateModule( mod: BmxModule ){
 	
-	log(`\t${mod.parent}/${mod.folderName} `, false)
+	log( `\t${mod.parent}/${mod.folderName} `)
 	
 	return new Promise(async function(resolve, reject) {
 		
@@ -193,7 +194,7 @@ async function updateModule( mod: BmxModule ){
 		if (result.bbdoc)
 			mod.commands = result.bbdoc
 		
-		log( ' done' )
+		log( ' done', false )
 		return resolve()
 	})
 }
@@ -477,7 +478,7 @@ async function cleanAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
 					}else if(letter == '$'){
 						if (item.args) item.args[argCount].returns = 'String'
 					}else{
-						log( '\n\t-Unkown part - Report to Hezkore', true, true )
+						log( '\t- Unkown part - Report to Hezkore', true, true )
 					}
 					break
 					
@@ -609,8 +610,6 @@ async function cleanAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
 
 async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 	return new Promise( async function( resolve, reject ) {
-		
-		let nlOnEnd: boolean = false
 		
 		let lines = options.data.split( "\n" )
 		
@@ -795,8 +794,7 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 					
 					// Do we have a parent?
 					if (!regardsParent){
-						log( '\n\t-No bbdoc parent - Report to Hezkore', true, true )
-						nlOnEnd = true
+						log( '\t- No bbdoc parent - Report to Hezkore', true, true )
 						inside = insideHistory.pop()
 						break
 					}
@@ -818,11 +816,9 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 									
 								default:
 									if (bbdocTag != 'about'){
-										log( '\n\t- Unknown bbdoc tag: ' +
+										log( '\t- Unknown bbdoc tag: ' +
 										line.slice( 0, -line.length + split[0].length + 1 ).trim() +
-										' (' + options.file + ':' + regardsParent.line + ')'
-										, false)
-										nlOnEnd = true
+										' (' + options.file + ':' + regardsParent.line + ')' )
 									}
 									break
 							}
@@ -1006,12 +1002,11 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 			}
 		}
 		
-		if (nlOnEnd) log('\n\t', false)
 		return resolve( result )
 	})
 }
 
-function modulesToJson(map: Map<string, BmxModule>): string {
+function modulesToJson( map: Map<string, BmxModule> ): string {
 	
 	return JSON.stringify( Array.from( map.entries() ) )
 }

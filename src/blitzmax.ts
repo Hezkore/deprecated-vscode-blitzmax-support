@@ -21,6 +21,7 @@ export class BlitzMaxHandler{
 	private _version:string = 'Unknown'
 	private _bccVersion: string = '0.0'
 	private _bmkVersion: string = '0.0'
+	private _releaseVersion: string = '0.0.0.0'
 	private _askedForPath: boolean = false
 	
 	get path(): string {
@@ -50,6 +51,7 @@ export class BlitzMaxHandler{
 	get bccVersion(): string { return this._bccVersion }
 	get bmkVersion(): string { return this._bmkVersion }
 	get version(): string { return this._version }
+	get releaseVersion(): string { return this._releaseVersion }
 	get supportsVarSubOutput(): boolean{
 		
 		// Minimum bmk NG version is 3.39
@@ -120,7 +122,7 @@ export class BlitzMaxHandler{
 			log( `BlitzMax ${this.version} Ready!` )
 			
 			if (!this.supportsVarSubOutput) {
-				log( '' )
+				log()
 				log( '*Notice* task.json output is NOT supported on this version of BlitzMax', true, true )
 				log( this._troubleshootString )
 			}
@@ -315,6 +317,7 @@ export class BlitzMaxHandler{
 		this._version = 'Unknown'
 		this._bccVersion = '0.0'
 		this._bmkVersion = '0.0'
+		this._releaseVersion = '0.0.0.0'
 		
 		// First we check the bcc version
 		try {
@@ -378,7 +381,8 @@ export class BlitzMaxHandler{
 			}
 		}
 		
-		log(`\tBlitzMax Version: ${this._bccVersion}.${this._bmkVersion}`)
+		this._releaseVersion = `${this._bccVersion}.${this._bmkVersion}`
+		log( '\tBlitzMax Version: ' + this.releaseVersion )
 	}
 	
 	async hasExample( cmd: AnalyzeDoc ): Promise<string>{

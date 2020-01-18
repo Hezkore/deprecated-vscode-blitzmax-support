@@ -1,6 +1,6 @@
 {
 	"name": "blitzmax",
-	"version": "1.19.5",
+	"version": "1.20.0",
 	"displayName": "BlitzMax Language Basics",
 	"description": "Provides snippets, syntax highlighting, bracket matching and folding in BlitzMax files.",
 	"repository": {
@@ -200,6 +200,11 @@
 		],
 		"commands": [
 			{
+				"command": "blitzmax.checkForUpdates",
+				"title": "Check for BlitzMax NG Updates",
+				"category": "BlitzMax"
+			},
+			{
 				"command": "blitzmax.generateProject",
 				"title": "Generate BlitzMax Project",
 				"category": "BlitzMax"
@@ -291,6 +296,11 @@
 					"type": "boolean",
 					"description": "Set the Output path by default when creating new tasks",
 					"default": false
+				},
+				"blitzmax.checkForUpdates": {
+					"type": "boolean",
+					"description": "Check for BlitzMax NG updates at startup",
+					"default": true
 				}
 			}
 		},

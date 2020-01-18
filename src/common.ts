@@ -4,19 +4,15 @@ import * as vscode from 'vscode'
 import * as path from 'path'
 import * as process from 'child_process'
 import * as fs from 'fs'
-import * as os from 'os'
 import { BmxTaskDefinition } from './taskProvider'
 
 let outputChannel: vscode.OutputChannel
-export function log( text:string, newLine: boolean = true, show: boolean = false ) {
+export function log( text:string = '', onNewLine: boolean = true, show: boolean = false ) {
 	
 	if (!outputChannel)
 		outputChannel = vscode.window.createOutputChannel( 'BlitzMax' )
 	
-	if (newLine)
-		outputChannel.appendLine( text )
-	else
-		outputChannel.append( text )
+	outputChannel.append( onNewLine ? `\n${text}` : text )
 	
 	if (show) outputChannel.show( true )
 }

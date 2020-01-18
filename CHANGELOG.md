@@ -1,5 +1,10 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.20.0
+* New BlitzMax NG versions will be searched for at startup.
+* New 'Check for BlitzMax NG Updates' command.
+* New option to disable checking for updates at startup.
+
 ## Version 1.19.5
 * Stricter rules for debug builds.
 
