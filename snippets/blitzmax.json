@@ -7,13 +7,13 @@
 	
 	"Function" : {
 		"prefix" : "Function",
-		"body" : [ "Function ${1:Identifier}( ${2:Parameters} )", "\t", "\t$0", "EndFunction" ],
+		"body" : [ "Function ${1:Identifier}(${2:Parameters})", "\t", "\t$0", "EndFunction" ],
 		"description" : "Function"
 	},
 	
 	"Method" : {
 		"prefix" : "Method",
-		"body" : [ "Method ${1:Identifier}( ${2:Parameters} )", "\t", "\t$0", "EndMethod" ],
+		"body" : [ "Method ${1:Identifier}(${2:Parameters})", "\t", "\t$0", "EndMethod" ],
 		"description" : "Method"
 	},
 	
@@ -67,7 +67,7 @@
 	
 	"Type" : {
 		"prefix" : "Type",
-		"body" : [ "Type T${1:Identifier}", "\t", "\tMethod New( $3 )", "\t\t", "\t\t$2", "\tEndMethod$0", "EndType" ],
+		"body" : [ "Type T${1:Identifier}", "\t", "\tMethod New(${3:Parameters})", "\t\t", "\t\t$2", "\tEndMethod$0", "EndType" ],
 		"description" : "Type"
 	},
 	

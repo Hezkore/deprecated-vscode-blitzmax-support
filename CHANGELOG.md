@@ -1,5 +1,10 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.21.0
+* Updated snippets for Type, Function and Method.
+* Better document formatting and bug fixes.
+* Support for metadata.
+
 ## Version 1.20.0
 * New BlitzMax NG versions will be searched for at startup.
 * New 'Check for BlitzMax NG Updates' command.

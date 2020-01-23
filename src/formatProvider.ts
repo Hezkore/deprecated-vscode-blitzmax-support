@@ -71,8 +71,10 @@ function formatDocument( document: vscode.TextDocument, range: vscode.Range | un
 		'=', '-', '+', '~', '/', '*'
 	]
 	let includeWordSeparators:string[] = []
-	let spaceEfter:string[] = ['(', ',', ';', '=', '<', '>']
-	let spaceBefore:string[] = [')', '=', '<', '>']
+	let spaceEfter:string[] = ['(', '{', '}', ',', ';', '=', '<', '>']
+	let spaceBefore:string[] = [')', '{', '}', '=', '<', '>']
+	let noSpaceBefore:string[] = ['(']
+	let noSpacesBeforeExceptions:string[] = ['return']
 	let typeTagShortcuts:string[] = [
 		'%', 'Int',
 		'#', 'Float',
@@ -92,6 +94,9 @@ function formatDocument( document: vscode.TextDocument, range: vscode.Range | un
 		let stringLength:number = 0
 		let wordSplitter:string | undefined
 		let nextChr:string | undefined
+		let previousChr:string | undefined
+		let chr:string  | undefined
+		let chrSpaceCount:number = 0
 		
 		// Check for rem blocks
 		if (inRemBlock){
@@ -111,7 +116,8 @@ function formatDocument( document: vscode.TextDocument, range: vscode.Range | un
 		
 		// Process words
 		for (let chrNr = line.firstNonWhitespaceCharacterIndex; chrNr < line.text.length; chrNr++) {
-			const chr:string = line.text[chrNr]
+			previousChr = chr
+			chr = line.text[chrNr]
 			if (chr == '\t' || chr == '\r' || chr == '\n') continue
 			if (word == "'"){ // Skip comments
 				word = ''
@@ -122,6 +128,10 @@ function formatDocument( document: vscode.TextDocument, range: vscode.Range | un
 				inString = !inString
 				stringLength = 0
 			}
+			if (previousChr == ' ') // Count spaces
+				chrSpaceCount++
+			else
+				chrSpaceCount = 0
 			
 			// Continue looking for string end
 			if (inString){
@@ -134,7 +144,18 @@ function formatDocument( document: vscode.TextDocument, range: vscode.Range | un
 			else
 				nextChr = undefined
 			
-			if (chr){
+			if (chr && !inString && previousChr == ' ' && previousWord && !noSpacesBeforeExceptions.includes( previousWord.toLowerCase() )){
+				// Remove spaces before some letters
+				if (noSpaceBefore.includes( chr.toLowerCase() ) &&
+				!spaceEfter.includes( previousChr.toLowerCase() )){
+					edits.push( vscode.TextEdit.delete( new vscode.Range(
+						new vscode.Position( line.range.start.line, chrNr - chrSpaceCount ),
+						new vscode.Position( line.range.end.line, chrNr )
+					) ) )
+				}
+			}
+			
+			if (chr && !inString){
 				// Add spaces after some letters
 				if (spaceEfter.includes( chr.toLowerCase() ) &&
 				(nextChr && nextChr != ' ' && !spaceBefore.includes( nextChr.toLowerCase() )))
@@ -147,7 +168,7 @@ function formatDocument( document: vscode.TextDocument, range: vscode.Range | un
 				!spaceEfter.includes( chr.toLowerCase() ))
 					edits.push( vscode.TextEdit.insert( new vscode.Position(
 						line.range.start.line, chrNr + 1
-					), ' ' ) )	
+					), ' ' ) )
 			}
 			
 			// Is this character a word separator?
@@ -231,14 +252,20 @@ function formatDocument( document: vscode.TextDocument, range: vscode.Range | un
 }
 
 function needsNewLine( word:string, line:vscode.TextLine, wordLineCount:number, lineNr:number, document:vscode.TextDocument ): vscode.TextEdit[] | undefined {
-		
+	
 	if (wordLineCount == 0 && lineNr + 1 < document.lineCount){
 		
+		let emptyLineBefore:string[] = [
+			'case', 'function', 'method',
+			'type', 'interface', 'struct', 'enum'
+		]
 		let emptyLineAfter:string[] = [
 			'function', 'method',
 			'type', 'interface', 'struct', 'enum',
 			//'if', 'else', 'elseif', 'else if'
 		]
+		
+		let fixes: vscode.TextEdit[] = []
 		
 		if (emptyLineAfter.includes( word.toLowerCase() )){
 			const nextLine:vscode.TextLine = document.lineAt( lineNr + 1 )
@@ -250,11 +277,28 @@ function needsNewLine( word:string, line:vscode.TextLine, wordLineCount:number, 
 					tabs += '\t'
 				}
 				
-				return [
+				fixes.push(
 					vscode.TextEdit.insert( nextLine.range.start, `${tabs}\n` )
-				]
+				)
 			}
 		}
+		
+		if (emptyLineBefore.includes( word.toLowerCase() )){
+			
+			if (!document.lineAt( lineNr - 1 ).isEmptyOrWhitespace){
+				
+				let tabs:string = ''
+				for (let tabIndex = 0; tabIndex <= line.firstNonWhitespaceCharacterIndex; tabIndex++) {
+					tabs += '\t'
+				}
+				
+				fixes.push(
+					vscode.TextEdit.insert( line.range.start, `${tabs}\n` )
+				)
+			}
+		}
+		
+		return fixes
 	}
 	
 	return undefined
@@ -301,6 +345,7 @@ function formatWord( word:string, previousWord:string | undefined, range:vscode.
 	}
 	
 	// Enforce correct names!
+	/*
 	if (previousWord && previousRange){
 		switch (previousWord) {
 			case 'const':
@@ -320,6 +365,7 @@ function formatWord( word:string, previousWord:string | undefined, range:vscode.
 		if (newWord && newWord != word)
 			return [vscode.TextEdit.replace( range, newWord )]
 	}
+	*/
 	
 	// Figure out types
 	let onlyTypes:string[] = []
