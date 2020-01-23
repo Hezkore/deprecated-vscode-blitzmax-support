@@ -5,7 +5,7 @@
 	"patterns" : [
 		{
 			"match" : "\\n",
-			"name" : "meta.ending-space"
+			"name" : "meta.ending-space.bmx"
 		},
 		{
 			"begin" : "^(?:[ \\t]+)?(?i:rem\\b)($|\\s)",
@@ -20,10 +20,10 @@
 				{
 					"captures" : {
 						"1" : {
-							"name" : "meta.odd-tab.tabs"
+							"name" : "meta.odd-tab.tabs.bmx"
 						},
 						"2" : {
-							"name" : "meta.even-tab.tabs"
+							"name" : "meta.even-tab.tabs.bmx"
 						}
 					},
 					"match" : "(\\t)(\\t)?"
@@ -38,10 +38,10 @@
 				{
 					"captures" : {
 						"1" : {
-							"name" : "meta.odd-tab.spaces"
+							"name" : "meta.odd-tab.spaces.bmx"
 						},
 						"2" : {
-							"name" : "meta.even-tab.spaces"
+							"name" : "meta.even-tab.spaces.bmx"
 						}
 					},
 					"match" : "(  )(  )?"
@@ -181,7 +181,7 @@
 		{
 			"begin" : "{",
 			"end" : "}",
-			"name" : "variable.parameter.meta"
+			"name" : "variable.parameter.meta.bmx"
 		}
 	]
 }
