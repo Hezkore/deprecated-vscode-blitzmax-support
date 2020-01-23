@@ -71,10 +71,11 @@ function formatDocument( document: vscode.TextDocument, range: vscode.Range | un
 		'=', '-', '+', '~', '/', '*'
 	]
 	let includeWordSeparators:string[] = []
-	let spaceEfter:string[] = ['(', '{', '}', ',', ';', '=', '<', '>']
-	let spaceBefore:string[] = [')', '{', '}', '=', '<', '>']
-	let noSpaceBefore:string[] = ['(']
+	let spaceEfter:string[] = ['(', '{', '}', ',', ';', '=', '<', '>', '&']
+	let spaceBefore:string[] = [')', '{', '}', '=', '<', '>', '&']
+	let noSpaceBefore:string[] = ['(', '[', ':', ',', '.']
 	let noSpacesBeforeExceptions:string[] = ['return']
+	//let noSpaceAfter:string[] = [':', '.']
 	let typeTagShortcuts:string[] = [
 		'%', 'Int',
 		'#', 'Float',
@@ -97,6 +98,7 @@ function formatDocument( document: vscode.TextDocument, range: vscode.Range | un
 		let previousChr:string | undefined
 		let chr:string  | undefined
 		let chrSpaceCount:number = 0
+		let previousChrBeforeSpaces:string | undefined
 		
 		// Check for rem blocks
 		if (inRemBlock){
@@ -117,6 +119,7 @@ function formatDocument( document: vscode.TextDocument, range: vscode.Range | un
 		// Process words
 		for (let chrNr = line.firstNonWhitespaceCharacterIndex; chrNr < line.text.length; chrNr++) {
 			previousChr = chr
+			if (chr != ' ') previousChrBeforeSpaces = chr
 			chr = line.text[chrNr]
 			if (chr == '\t' || chr == '\r' || chr == '\n') continue
 			if (word == "'"){ // Skip comments
@@ -144,10 +147,10 @@ function formatDocument( document: vscode.TextDocument, range: vscode.Range | un
 			else
 				nextChr = undefined
 			
-			if (chr && !inString && previousChr == ' ' && previousWord && !noSpacesBeforeExceptions.includes( previousWord.toLowerCase() )){
+			if (chr && !inString && previousChr == ' ' && previousChrBeforeSpaces && previousWord && !noSpacesBeforeExceptions.includes( previousWord.toLowerCase() )){
 				// Remove spaces before some letters
 				if (noSpaceBefore.includes( chr.toLowerCase() ) &&
-				!spaceEfter.includes( previousChr.toLowerCase() )){
+				!spaceEfter.includes( previousChrBeforeSpaces.toLowerCase() )){
 					edits.push( vscode.TextEdit.delete( new vscode.Range(
 						new vscode.Position( line.range.start.line, chrNr - chrSpaceCount ),
 						new vscode.Position( line.range.end.line, chrNr )
