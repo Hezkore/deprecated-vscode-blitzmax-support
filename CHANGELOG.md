@@ -1,5 +1,9 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.21.2
+* Updated snippets.
+* Fixed an issue where `End Extern` was incorrectly highlighted.
+
 ## Version 1.21.1
 * Updated document formater.
 
