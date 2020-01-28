@@ -9,7 +9,7 @@
 		},
 		{
 			"begin" : "^(?:[ \\t]+)?(?i:rem\\b)($|\\s)",
-			"end" : "^(?:[ \\t]+)?(?i:end *?rem)",
+			"end" : "^(?:[ \\t]+)?(?i:end\\s*?rem)",
 			"name" : "comment.block.bmx"
 		},
 		{
@@ -66,7 +66,7 @@
 					"name" : "punctuation.definition.parameters.bmx"
 				}
 			},
-			"match" : "(?i:\\s*\\b(Function|End *?Function|Method|End *?Method)\\b\\s*)",
+			"match" : "(?i:\\s*\\b(Function|End\\s*?Function|Method|End\\s*?Method)\\b\\s*)",
 			"name" : "meta.function.bmx"
 		},
 		{
@@ -91,7 +91,7 @@
 			]
 		},
 		{
-			"match" : "(?i:\\b(If|Then|Else|Else *?If|End *?If|Try|Catch|End *?Try|Finally|While|Wend|End *?While|Goto|DefData|ReadData|RestoreData|For|To|Each|EachIn|Case|Select|End *?Select|Step|Return|Continue|Repeat|Until|Forever|Next|Exit)\\b)",
+			"match" : "(?i:\\b(If|Then|Else|Else\\s*?If|End\\s*?If|Try|Catch|End\\s*?Try|Finally|While|Wend|End\\s*?While|Goto|DefData|ReadData|RestoreData|For|To|Each|EachIn|Case|Select|End\\s*?Select|Step|Return|Continue|Repeat|Until|Forever|Next|Exit)\\b)",
 			"name" : "keyword.control.bmx"
 		},
 		{
@@ -118,7 +118,7 @@
 			"name" : "storage.type.bmx"
 		},
 		{
-			"match" : "(?i:\\b(Framework|Import|NoDebug|Alias|Include|Extern|EndExtern|Export|Include|Incbin|IncbinPtr|IncbinLen|Module|ModuleInfo|Strict|SuperStrict|Private|Public|Protected|Default|Abstract|Implements|Extends|Final|Override|Where)\\b)",
+			"match" : "(?i:\\b(Framework|Import|NoDebug|Alias|Include|Extern|End\\s*?Extern|Export|Incbin|IncbinPtr|IncbinLen|Module|ModuleInfo|Strict|SuperStrict|Private|Public|Protected|Default|Abstract|Implements|Extends|Final|Override|Where)\\b)",
 			"name" : "storage.modifier.bmx"
 		},
 		{
@@ -155,7 +155,7 @@
 			"name" : "constant.numeric.bmx"
 		},
 		{
-			"match" : "(?i:\\s*\\b(Type|End *?Type|Enum|End *?Enum|Struct|End *?Struct|Interface|End *?Interface)\\b\\s*)",
+			"match" : "(?i:\\s*\\b(Type|End\\s*?Type|Enum|End\\s*?Enum|Struct|End\\s*?Struct|Interface|End\\s*?Interface)\\b\\s*)",
 			"name" : "support.class.collection.bmx"
 		},
 		{
