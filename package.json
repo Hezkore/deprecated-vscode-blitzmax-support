@@ -1,6 +1,6 @@
 {
 	"name": "blitzmax",
-	"version": "1.21.2",
+	"version": "1.22.0",
 	"displayName": "BlitzMax Language Basics",
 	"description": "Provides snippets, syntax highlighting, bracket matching and folding in BlitzMax files.",
 	"repository": {
@@ -177,6 +177,10 @@
 						"type": "boolean",
 						"description": "Verbose (noisy) build.",
 						"default": false
+					},
+					"appstub": {
+						"type": "string",
+						"description": "Builds an app using a custom appstub (The default is brl.appstub).\nThis can be useful when you want more control over low-level application state and the debugger."
 					}
 				}
 			}

@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.22.0
+* Added support for using a custom appstub.
+
 ## Version 1.21.2
 * Updated snippets.
 * Fixed an issue where `End Extern` was incorrectly highlighted.

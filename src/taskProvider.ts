@@ -19,7 +19,8 @@ export interface BmxTaskDefinition extends vscode.TaskDefinition {
 	gdb?: boolean, // -gdb Mappings suitable for GDB
 	quick?: boolean, // -quick Do a quick build
 	execute?: boolean, // -x Execute after build
-	verbose?: boolean // -v Verbose (noisy) build
+	verbose?: boolean, // -v Verbose (noisy) build
+	appstub?: string // -b Use custom appstub
 }
 
 export function currentDefinition(): BmxTaskDefinition | undefined {
@@ -151,13 +152,20 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 		args.push( platform )
 		
 		// Warn about NG stuff
-		let funcArgCasting = vscode.workspace.getConfiguration( 'blitzmax' ).get( 'funcArgCasting' )
+		const funcArgCasting = vscode.workspace.getConfiguration( 'blitzmax' ).get( 'funcArgCasting' )
 		if (funcArgCasting == 'warn')
 			args.push( '-w' )
 		
 		// Do a quick build
 		if (definition.quick)
 			args.push( '-quick' )
+		
+		// Custom appstub
+		const appstub = definition.appstub
+		if (appstub && appstub.length > 0) {
+			args.push( '-b' )
+			args.push( appstub )
+		}
 	}
 	
 	// Build threaded
