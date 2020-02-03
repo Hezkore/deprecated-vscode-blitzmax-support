@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.22.1
+* Certain control keywords should now correctly highlight on all themes.
+
 ## Version 1.22.0
 * Added support for using a custom appstub.
 

@@ -91,11 +91,11 @@
 			]
 		},
 		{
-			"match" : "(?i:\\b(If|Then|Else|Else\\s*?If|End\\s*?If|Try|Catch|End\\s*?Try|Finally|While|Wend|End\\s*?While|Goto|DefData|ReadData|RestoreData|For|To|Each|EachIn|Case|Select|End\\s*?Select|Step|Return|Continue|Repeat|Until|Forever|Next|Exit)\\b)",
+			"match" : "(?i:\\b(If|Then|Else|Else\\s*?If|End\\s*?If|Try|Catch|End\\s*?Try|Finally|While|Wend|End\\s*?While|Goto|DefData|ReadData|RestoreData|For|To|Each|EachIn|Case|Select|End\\s*?Select|Step|Return|Continue|Repeat|Until|Forever|Next|Exit|Mod|Shl|Shr|Sar|And|Not|Or|Xor|Operator)\\b)",
 			"name" : "keyword.control.bmx"
 		},
 		{
-			"match" : "(?i:\\b(Mod|Shl|Shr|Sar|And|Not|Or|Xor|Operator)\\b)",
+			"match" : "",
 			"name" : "keyword.operator.bmx"
 		},
 		{
