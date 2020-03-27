@@ -4,7 +4,12 @@ import * as vscode from 'vscode'
 import { BlitzMax } from './blitzmax'
 import * as os from 'os'
 import * as path from 'path'
-import { currentBmx, variableSub } from './common'
+import { currentBmx, variableSub, isPartOfWorkspace } from './common'
+
+let standardDefaultDefinition: BmxTaskDefinition =
+{ type: 'bmx', source: '', output: '', make: 'makeapp', app: 'console',
+arch: 'auto', platform: 'auto', threaded: true, debug: true, execute: false, quick: false,
+verbose: false, problemMatcher: ["$blitzmax"], group: { kind: 'build', isDefault: true } }
 
 export interface BmxTaskDefinition extends vscode.TaskDefinition {
 	
@@ -23,22 +28,74 @@ export interface BmxTaskDefinition extends vscode.TaskDefinition {
 	appstub?: string // -b Use custom appstub
 }
 
-export function currentDefinition(): BmxTaskDefinition | undefined {
+export function currentDefinition(): BmxTaskDefinition {
 	
-	const config = vscode.workspace.getConfiguration( 'tasks' )
-	if (!config) return
-	
-	const tasks: vscode.WorkspaceConfiguration | undefined = config.get( 'tasks' )
-	if (!tasks) return
-	
-	for (let i = 0; i < tasks.length; i++) {
-		const def: BmxTaskDefinition = tasks[i]
-		if (!def) continue
+	const curFile = currentBmx( false )
+	if ( (curFile && isPartOfWorkspace( curFile ) ) || !curFile ){
 		
-		if (def.group.isDefault) return def
+		const config = vscode.workspace.getConfiguration( 'tasks' )
+		if (config) {
+			
+			const tasks: vscode.WorkspaceConfiguration | undefined = config.get( 'tasks' )
+			if (tasks) {
+				
+				console.log( 'Using tasks for this workspace' )
+				for (let i = 0; i < tasks.length; i++) {
+					const def: BmxTaskDefinition = tasks[i]
+					if (!def) continue
+					
+					if (def.group.isDefault) return def
+				}
+			} else console.log( 'No tasks for this workspace' )
+		} else console.log( 'No config for this workspace' )
 	}
 	
-	return
+	// Make up a basic task definition!
+	console.log( 'Using made up standard definition' )
+	return standardDefaultDefinition
+}
+
+export function saveAsDefaultTaskDefinition( newDef: BmxTaskDefinition ) : boolean {
+	
+	if (!newDef) {
+		vscode.window.showErrorMessage( 'No definition to save' )
+		return false
+	}
+	
+	// Try to update the actual default task
+	const config = vscode.workspace.getConfiguration( 'tasks' )
+	if (config) {
+		const tasks: BmxTaskDefinition | undefined = config.get( 'tasks' )
+		if (tasks){
+			
+			let updatedTasks: BmxTaskDefinition[] = []
+			let foundDefault: boolean = false
+			for (let i = 0; i < tasks.length; i++) {
+				const oldDef: BmxTaskDefinition = tasks[i]
+				if (!oldDef) continue
+				
+				if (oldDef.group.isDefault){
+					
+					updatedTasks.push( newDef )
+					foundDefault = true
+				} else updatedTasks.push( oldDef )
+			}
+			
+			if (foundDefault)
+				config.update( 'tasks', updatedTasks )
+			else {
+				vscode.window.showErrorMessage( 'You have not defined a default task' )
+				return false
+			}
+		}
+	}
+	
+	// Okay just update the standard def instead and try to save it...
+	standardDefaultDefinition = newDef
+	config.update( 'version', '2.0.0' )
+	config.update( 'tasks', [standardDefaultDefinition] )
+	
+	return true
 }
 
 export class BmxTaskProvider implements vscode.TaskProvider {
@@ -53,14 +110,14 @@ export class BmxTaskProvider implements vscode.TaskProvider {
 		// Console
 		let defConsole: BmxTaskDefinition = { type: 'bmx', make: 'makeapp', app: 'console',
 		arch: 'auto', platform: 'auto', threaded: true, output: outputPath, source: '${relativeFile}',
-		debug: false, execute: false, quick: false, verbose: false }
+		debug: true, execute: false, quick: false, verbose: false }
 		let taskConsole: vscode.Task | undefined = makeTask( defConsole, 'Console Application' )
 		if (taskConsole) tasks.push( taskConsole )
 		
 		// Gui
 		let defGui: BmxTaskDefinition = { type: 'bmx', make: 'makeapp', app: 'gui',
 		arch: 'auto', platform: 'auto', threaded: true, output: outputPath, source: '${relativeFile}',
-		debug: false, execute: false, quick: false, verbose: false }
+		debug: true, execute: false, quick: false, verbose: false }
 		let taskGui: vscode.Task | undefined = makeTask( defGui, 'Gui Application' )
 		if (taskGui) tasks.push( taskGui )
 		
@@ -174,7 +231,7 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 	
 	// Actual file to build
 	let source:string | undefined = definition.source
-	if ( !source || source.length <= 1 ){ // No source file set, figure one out!
+	if ( !source || source.length <= 1 || source == '${relativeFile}' ){ // No source file set, figure one out!
 		
 		// Is a source file even open?
 		let file: vscode.Uri | undefined = currentBmx()
@@ -215,7 +272,6 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 	if (definition.verbose)
 		args.push( '-v' )
 	
-
 	args.push( source )
 	
 	// Setup the task already!
@@ -231,7 +287,7 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 	
 	// Setup the task to function a bit like MaxIDE
 	task.presentationOptions.echo = false
-	task.presentationOptions.reveal = vscode.TaskRevealKind.Always
+	task.presentationOptions.reveal = vscode.TaskRevealKind.Silent
 	task.presentationOptions.focus = false
 	task.presentationOptions.panel = vscode.TaskPanelKind.Shared
 	task.presentationOptions.showReuseMessage = false

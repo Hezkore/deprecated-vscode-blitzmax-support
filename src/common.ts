@@ -4,7 +4,7 @@ import * as vscode from 'vscode'
 import * as path from 'path'
 import * as process from 'child_process'
 import * as fs from 'fs'
-import { BmxTaskDefinition } from './taskProvider'
+import { currentDefinition, saveAsDefaultTaskDefinition } from './taskProvider'
 
 let outputChannel: vscode.OutputChannel
 export function log( text:string = '', onNewLine: boolean = true, show: boolean = false ) {
@@ -135,59 +135,26 @@ export async function readStats( filename:string ): Promise<fs.Stats> {
 }
 export function setSourceFile( file: vscode.Uri | undefined ){
 	
-	if (!file) {
-		
+	if (!file) {	
 		vscode.window.showErrorMessage( 'No file to set as source' )
 		return
 	}
 	
 	const workPath: vscode.WorkspaceFolder | undefined = vscode.workspace.getWorkspaceFolder( file )
-	if (!workPath) {
-		
-		vscode.window.showErrorMessage( 'No workspace folder' )
-		return
+	const filePath: string = workPath ? path.relative( workPath.uri.path, file.path ) : file.fsPath
+	
+	let curDef = currentDefinition()
+	
+	curDef.source = filePath
+	if (curDef.output){
+		curDef.output = curDef.output.replace(
+			'${fileBasenameNoExtension}',
+			path.basename( file.path ).split( '.' )[0]
+		)
 	}
 	
-	const config = vscode.workspace.getConfiguration( 'tasks' )
-	if (!config) {
-		
-		vscode.window.showErrorMessage( 'You must first select a task' )
-		vscode.commands.executeCommand( 'workbench.action.tasks.configureDefaultBuildTask' )
-		return
-	}
-	
-	const tasks: BmxTaskDefinition | undefined = config.get( 'tasks' )
-	if (!tasks){
-		
-		vscode.window.showErrorMessage( 'You must first select a task' )
-		vscode.commands.executeCommand( 'workbench.action.tasks.configureDefaultBuildTask' )
-		return
-	}
-	
-	let updatedTasks: BmxTaskDefinition[] = []
-	let foundDefault: boolean = false
-	for (let i = 0; i < tasks.length; i++) {
-		const def: BmxTaskDefinition = tasks[i]
-		if (!def) continue
-		
-		if (def.group.isDefault){
-			
-			const filePath: string = path.relative( workPath.uri.path, file.path )
-			def.source = filePath
-			if (def.output){
-				
-				def.output = def.output.replace( '${fileBasenameNoExtension}',
-				path.basename( file.path ).split( '.' )[0] )
-			}
-			foundDefault = true
-			vscode.window.showInformationMessage( filePath + ' has been set as the default task source' )
-		}
-		updatedTasks.push( def )
-	}
-	
-	config.update( 'tasks', updatedTasks )
-	
-	if (!foundDefault) vscode.window.showErrorMessage( 'No default task configured' )
+	if (saveAsDefaultTaskDefinition( curDef ))
+		vscode.window.showInformationMessage( filePath + ' has been set as the default task source' )
 }
 
 export function getWordAt( document: vscode.TextDocument, position: vscode.Position ): string{
@@ -241,7 +208,7 @@ export function variableSub( text: string | undefined, arch: string, debug: bool
 	return text
 }
 
-export function currentBmx(): vscode.Uri | undefined {
+export function currentBmx( showError: boolean = true ): vscode.Uri | undefined {
 	
 	const fileType:string = '.bmx'
 	const noFileMsg:string = 'No ' + fileType + ' file open.'
@@ -250,25 +217,30 @@ export function currentBmx(): vscode.Uri | undefined {
 	const textEditor = vscode.window.activeTextEditor
 	if (!textEditor) {
 		
-		vscode.window.showErrorMessage( noFileMsg )
+		if (showError) vscode.window.showErrorMessage( noFileMsg )
 		return
 	}
 	
 	const document = textEditor.document
 	if (!document) {
 		
-		vscode.window.showErrorMessage( noFileMsg )
+		if (showError) vscode.window.showErrorMessage( noFileMsg )
 		return
 	}
 	
 	const file = document.uri
 	if ( !file.fsPath.toLowerCase().endsWith( fileType ) )  {
 		
-		vscode.window.showErrorMessage( notFileMsg )
+		if (showError) vscode.window.showErrorMessage( notFileMsg )
 		return
 	}
 	
 	return file
+}
+
+export function isPartOfWorkspace( uri: vscode.Uri ): boolean {
+	
+	return vscode.workspace.getWorkspaceFolder( uri ) ? true : false
 }
 
 export async function exec( executable: string, args: string[] = [] ): Promise<{ stdout: string; stderr: string }> {

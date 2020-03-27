@@ -14,6 +14,7 @@ export class BlitzMaxHandler{
 	
 	private _troubleshootString: string = 'More info at: https://marketplace.visualstudio.com/items?itemName=Hezkore.blitzmax#troubleshooting'
 	private _ready: boolean = false
+	private _readyToBuild: boolean = false
 	private _busy: boolean = false
 	private _path: string = ''
 	private _problem: string | undefined
@@ -38,6 +39,7 @@ export class BlitzMaxHandler{
 		return path.join( this.path, 'mod' )
 	}
 	get ready(): boolean { return this._ready }
+	get readyToBuild(): boolean { return this._readyToBuild }
 	get busy(): boolean { return this._busy }
 	get problem(): string | undefined { return this._problem }
 	set problem( message:string | undefined ) {
@@ -85,6 +87,7 @@ export class BlitzMaxHandler{
 		this._askedForPath = false
 		this._problem = ''
 		this._ready = false
+		this._readyToBuild = false
 		this._legacy = false
 		this._path = ''
 		
@@ -110,6 +113,8 @@ export class BlitzMaxHandler{
 				log( 'Unable to determine BlitzMax version', true, true )
 				return reject()
 			}
+			
+			this._readyToBuild = true
 			
 			progress.report( {message: 'scanning modules'} )
 			
@@ -458,6 +463,16 @@ export class BlitzMaxHandler{
 			
 			return resolve()
 		})
+	}
+	
+	warnNotReadyToBuild(): boolean{
+		if (this.readyToBuild) return false
+		
+		if (this.problem)
+			vscode.window.showErrorMessage( 'BlitzMax is not ready to build yet: ' + this.problem )
+		else
+			vscode.window.showErrorMessage( "BlitzMax is not ready to build yet" )
+		return true
 	}
 	
 	warnNotReady(): boolean{

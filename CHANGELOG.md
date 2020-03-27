@@ -1,5 +1,10 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.23.0
+* New simpler task/build system.
+* Better explanation of Run and Build buttons.
+* Better detection of function names.
+
 ## Version 1.22.1
 * Certain control keywords should now correctly highlight on all themes.
 

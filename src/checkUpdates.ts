@@ -18,7 +18,7 @@ export async function checkBlitzMaxUpdates( isAuto: boolean = false ) {
 	if (BlitzMax.legacy || !BlitzMax.ready || BlitzMax.problem) return
 	
 	log()
-	log( `Looking for BlitzMax ${BlitzMax.version} updates `, true, !isAuto )
+	log( `Looking for BlitzMax ${BlitzMax.version} ${getOsName().slice(1)} updates `, true, !isAuto )
 	
 	return new Promise<undefined>( async ( resolve, _reject ) => {
 		
@@ -119,7 +119,7 @@ function getOsName(): string {
 		
 		case 'linux':
 			return '.linux.x64'
-			
+		
 		default:
 			return '.' + os.platform().toLowerCase()
 	}

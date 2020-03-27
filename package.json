@@ -1,6 +1,6 @@
 {
 	"name": "blitzmax",
-	"version": "1.22.1",
+	"version": "1.23.0",
 	"displayName": "BlitzMax Language Basics",
 	"description": "Provides snippets, syntax highlighting, bracket matching and folding in BlitzMax files.",
 	"repository": {
@@ -59,11 +59,11 @@
 				{
 					"when": "editorLangId == blitzmax",
 					"command": "blitzmax.build",
-					"group": "navigation@1"
+					"group": "navigation@0"
 				},
 				{
 					"when": "editorLangId == blitzmax",
-					"command": "blitzmax.quickBuild",
+					"command": "blitzmax.buildAndRun",
 					"group": "navigation@0"
 				}
 			],
@@ -187,7 +187,7 @@
 		],
 		"keybindings": [
 			{
-				"command": "blitzmax.quickBuild",
+				"command": "blitzmax.buildAndRun",
 				"key": "f5",
 				"when": "resourceLangId == blitzmax"
 			},
@@ -248,8 +248,8 @@
 				}
 			},
 			{
-				"command": "blitzmax.quickBuild",
-				"title": "Quickly build a debug console application",
+				"command": "blitzmax.buildAndRun",
+				"title": "Build & Run Application",
 				"category": "BlitzMax",
 				"icon": {
 					"light": "media/build_run_light.svg",
@@ -334,7 +334,7 @@
 				},
 				"pattern": [
 					{
-						"regexp": "Compile (Error|Warning)?: (.*)",
+						"regexp": "^Compile (Error|Warning)?: (.*)",
 						"message": 2,
 						"severity": 1
 					},

@@ -34,7 +34,7 @@ export function deactivate(): void {
 }
 
 async function registerEvents( context:vscode.ExtensionContext ) {
-
+	
 	// Setup BlitzMax again if path changed
 	context.subscriptions.push(
 		vscode.workspace.onDidChangeConfiguration( event => {
@@ -193,32 +193,21 @@ async function registerCommands( context:vscode.ExtensionContext ) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand( 'blitzmax.setSourceFile', context => {
 			
-			if (context)
-				setSourceFile( context )
-			else
-				setSourceFile( currentBmx() )
+			setSourceFile( context ? context : currentBmx() )
 		})
 	)
 	
 	context.subscriptions.push(
-		vscode.commands.registerCommand( 'blitzmax.quickBuild', () => {
+		vscode.commands.registerCommand( 'blitzmax.buildAndRun', () => {
 			
-			if (BlitzMax.warnNotReady()) return
+			if (BlitzMax.warnNotReadyToBuild()) return
 			
 			const def = currentDefinition()
-			if (!def)
-			{
-				vscode.commands.executeCommand( 'workbench.action.tasks.configureDefaultBuildTask' )
-				return
-			}
 			
-			// Make sure that quick builds are always debug and execute
-			// Set to console as well so print commands aren't stripped
+			// Update definition so that it always executes
 			def.execute = true
-			def.debug = true
-			def.app = 'console'
 			
-			const task = makeTask( def, 'Quick Build' )
+			const task = makeTask( def, 'Build & Run' )
 			if (!task) return
 			
 			vscode.tasks.executeTask( task )
@@ -228,7 +217,7 @@ async function registerCommands( context:vscode.ExtensionContext ) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand( 'blitzmax.build', () => {
 			
-			if (BlitzMax.warnNotReady()) return
+			if (BlitzMax.warnNotReadyToBuild()) return
 			
 			vscode.commands.executeCommand( 'workbench.action.tasks.build' )
 		})
