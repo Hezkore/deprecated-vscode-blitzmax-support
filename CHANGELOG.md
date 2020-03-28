@@ -1,5 +1,12 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.24.0
+* Fixed an issue when saving workspace task settings.
+* Fixed an issue when using the Build button.
+* New unique BlitzMax view container.
+* Build Options added to view container.
+* New 'toggleBuildOption' command.
+
 ## Version 1.23.0
 * New simpler task/build system.
 * Better explanation of Run and Build buttons.

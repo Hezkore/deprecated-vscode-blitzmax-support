@@ -39,20 +39,122 @@ export function currentDefinition(): BmxTaskDefinition {
 			const tasks: vscode.WorkspaceConfiguration | undefined = config.get( 'tasks' )
 			if (tasks) {
 				
-				console.log( 'Using tasks for this workspace' )
+				//console.log( 'Using tasks for this workspace' )
 				for (let i = 0; i < tasks.length; i++) {
 					const def: BmxTaskDefinition = tasks[i]
 					if (!def) continue
 					
 					if (def.group.isDefault) return def
 				}
-			} else console.log( 'No tasks for this workspace' )
-		} else console.log( 'No config for this workspace' )
+			} //else console.log( 'No tasks for this workspace' )
+		} //else console.log( 'No config for this workspace' )
 	}
 	
 	// Make up a basic task definition!
-	console.log( 'Using made up standard definition' )
+	//console.log( 'Using made up standard definition' )
 	return standardDefaultDefinition
+}
+
+export async function toggleBuildOptions( option: string, save: boolean) {
+	
+	let curDef = currentDefinition()
+	let selection
+	
+	switch ( option ) {				
+		case 'source':
+			selection = await vscode.window.showInputBox( {value: curDef.source} )
+			curDef.source = selection
+			break
+		
+		case 'output':
+			selection = await vscode.window.showInputBox( {value: curDef.output} )
+			curDef.output = selection
+			break
+		
+		case 'make':
+			selection = await vscode.window.showQuickPick( [
+				"makeapp",
+				"makemods",
+				"makelib"
+			] )
+			if (selection) curDef.make = selection
+			break
+		
+		case 'app':
+			if (curDef.app?.toLowerCase() == 'console')
+				curDef.app = 'gui'
+			else
+				curDef.app = 'console'
+			break
+		
+		case 'arch':
+			selection = await vscode.window.showQuickPick( [
+				"auto",
+				"x86",
+				"x64",
+				"arm",
+				"arm64",
+				"armv7",
+				"armeabi",
+				"armeabiv7a",
+				"arm64v8a"
+			] )
+			if (selection) curDef.arch = selection
+			break
+		
+		case 'platform':
+			selection = await vscode.window.showQuickPick( [
+				"auto",
+				"win32",
+				"linux",
+				"macos",
+				"ios",
+				"android",
+				"raspberrypi",
+				"nx"
+			] )
+			if (selection) curDef.platform = selection
+			break
+		
+		case 'threaded':
+			curDef.threaded = !curDef.threaded
+			break
+			
+		case 'debug':
+			curDef.debug = !curDef.debug
+			break
+		
+		case 'gdb':
+			curDef.gdb = !curDef.gdb
+			break
+		
+		case 'quick':
+			curDef.quick = !curDef.quick
+			break
+		
+		case 'execute':
+			curDef.execute = !curDef.execute
+			break
+		
+		case 'verbose':
+			curDef.verbose = !curDef.verbose
+			break
+		
+		case 'appstub':
+			selection = await vscode.window.showInputBox( {value: curDef.appstub} )
+			curDef.appstub = selection
+			break
+		
+		default:
+			console.log( 'Unknown build option "' + option + '"' )
+			return
+	}
+	
+	if (!save) {
+		vscode.commands.executeCommand( 'blitzmax.refreshBuildOptions' )
+	} else if( !saveAsDefaultTaskDefinition( curDef ) ) {
+		vscode.window.showErrorMessage( 'Unable to save default task definition' )
+	}
 }
 
 export function saveAsDefaultTaskDefinition( newDef: BmxTaskDefinition ) : boolean {

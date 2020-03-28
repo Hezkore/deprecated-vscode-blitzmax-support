@@ -70,14 +70,24 @@ export class BmxBuildTreeProvider implements vscode.TreeDataProvider<vscode.Tree
 			let rootName: string = 'Unknown'
 			
 			const sourceFile = currentBmx( false )
-			if (!sourceFile) return Promise.resolve( [] )
-			
-			const workspaceFolder = vscode.workspace.getWorkspaceFolder( sourceFile )
-			rootName = workspaceFolder ?
-				'Workspace: ' + workspaceFolder.name.toUpperCase()
-				:
-				'File: ' + path.basename( sourceFile.fsPath )
-			this.isForWorkspace = workspaceFolder ? true : false
+			if (sourceFile) {
+
+				const workspaceFolder = vscode.workspace.getWorkspaceFolder( sourceFile )
+				rootName = workspaceFolder ?
+					'Workspace: ' + workspaceFolder.name.toUpperCase()
+					:
+					'File: ' + path.basename( sourceFile.fsPath )
+				this.isForWorkspace = workspaceFolder ? true : false
+			} else {
+				
+				if (vscode.workspace && vscode.workspace.getWorkspaceFolder.length > 0){
+					rootName = 'Workspace: ' + vscode.workspace.name?.toUpperCase()
+					this.isForWorkspace = true
+				} else {
+					this.isForWorkspace = false
+					return Promise.resolve( [] )
+				}
+			}
 			
 			return Promise.resolve( [
 				new vscode.TreeItem( rootName, vscode.TreeItemCollapsibleState.Expanded )
