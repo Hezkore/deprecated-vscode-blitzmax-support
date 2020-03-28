@@ -81,9 +81,10 @@ export function saveAsDefaultTaskDefinition( newDef: BmxTaskDefinition ) : boole
 				} else updatedTasks.push( oldDef )
 			}
 			
-			if (foundDefault)
+			if (foundDefault) {
 				config.update( 'tasks', updatedTasks )
-			else {
+				return true
+			} else {
 				vscode.window.showErrorMessage( 'You have not defined a default task' )
 				return false
 			}

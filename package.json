@@ -31,10 +31,28 @@
 		"bmx"
 	],
 	"activationEvents": [
+		"onView:blitzmax",
 		"onCommand:blitzmax.generateProject",
 		"onLanguage:blitzmax"
 	],
 	"contributes": {
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "blitzmax",
+					"title": "BlitzMax",
+					"icon": "media/icon.png"
+				}
+			]
+		},
+		"views": {
+			"blitzmax": [
+				{
+					"id": "blitzmax-build",
+					"name": "Build Options"
+				}
+			]
+		},
 		"icons": [
 			{
 				"id": "blitzmax-icons",
@@ -170,7 +188,7 @@
 					},
 					"execute": {
 						"type": "boolean",
-						"description": "Executes built application. (makeapp only)",
+						"description": "Execute built application. (makeapp only)",
 						"default": false
 					},
 					"verbose": {
@@ -255,6 +273,16 @@
 					"light": "media/build_run_light.svg",
 					"dark": "media/build_run_dark.svg"
 				}
+			},
+			{
+				"command": "blitzmax.toggleBuildOption",
+				"title": "Toggle BlitzMax build option",
+				"category": "BlitzMax"
+			},
+			{
+				"command": "blitzmax.refreshBuildOptions",
+				"title": "Refresh BlitzMax build options",
+				"category": "BlitzMax"
 			}
 		],
 		"languages": [

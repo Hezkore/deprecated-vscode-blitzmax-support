@@ -7,7 +7,7 @@ import { BmxDocumentSymbolProvider } from './documentSymbolProvider'
 import { BmxFormatProvider, BmxRangeFormatProvider, BmxOnTypeFormatProvider } from './formatProvider'
 import { BmxActionProvider } from './actionProvider'
 import { BmxDefinitionProvider } from './definitionProvider'
-import { currentDefinition, BmxTaskProvider, makeTask } from './taskProvider'
+import { currentDefinition, BmxTaskProvider, makeTask, saveAsDefaultTaskDefinition } from './taskProvider'
 import { runSelectedText } from './runSelected'
 import { moveSelectedText } from './moveSelected'
 import { BmxCompletionProvider } from './completionProvider'
@@ -17,6 +17,7 @@ import { BlitzMax } from './blitzmax'
 import { AnalyzeDoc, scanModules } from './bmxModules'
 import { askToGenerateProject } from './generateProject'
 import { checkBlitzMaxUpdates } from './checkUpdates'
+import { BmxBuildTreeProvider } from './buildTree'
 
 export async function activate( context: vscode.ExtensionContext ) {
 	
@@ -49,7 +50,11 @@ async function registerEvents( context:vscode.ExtensionContext ) {
 	bmxDiagnostics.register( context )
 }
 
-async function registerProviders( context:vscode.ExtensionContext ) {
+async function registerProviders( context: vscode.ExtensionContext ) {
+	
+	const bmxBuildTreeProvider = new BmxBuildTreeProvider( context )
+	vscode.window.registerTreeDataProvider( 'blitzmax-build', bmxBuildTreeProvider)
+	vscode.commands.registerCommand( 'blitzmax.refreshBuildOptions', () => bmxBuildTreeProvider.refresh() )
 	
 	// Document symbol provider
     context.subscriptions.push(
@@ -205,9 +210,11 @@ async function registerCommands( context:vscode.ExtensionContext ) {
 			const def = currentDefinition()
 			
 			// Update definition so that it always executes
+			const defaultExecuteState = def.execute
 			def.execute = true
 			
 			const task = makeTask( def, 'Build & Run' )
+			def.execute = defaultExecuteState
 			if (!task) return
 			
 			vscode.tasks.executeTask( task )
@@ -220,6 +227,110 @@ async function registerCommands( context:vscode.ExtensionContext ) {
 			if (BlitzMax.warnNotReadyToBuild()) return
 			
 			vscode.commands.executeCommand( 'workbench.action.tasks.build' )
+		})
+	)
+	
+	context.subscriptions.push(
+		vscode.commands.registerCommand( 'blitzmax.toggleBuildOption', async ( option: string, save: boolean ) => {
+			
+			let curDef = currentDefinition()
+			let selection
+			
+			switch ( option ) {				
+				case 'source':
+					selection = await vscode.window.showInputBox( {value: curDef.source} )
+					curDef.source = selection
+					break
+				
+				case 'output':
+					selection = await vscode.window.showInputBox( {value: curDef.output} )
+					curDef.output = selection
+					break
+				
+				case 'make':
+					selection = await vscode.window.showQuickPick( [
+						"makeapp",
+						"makemods",
+						"makelib"
+					] )
+					if (selection) curDef.make = selection
+					break
+				
+				case 'app':
+					if (curDef.app?.toLowerCase() == 'console')
+						curDef.app = 'gui'
+					else
+						curDef.app = 'console'
+					break
+				
+				case 'arch':
+					selection = await vscode.window.showQuickPick( [
+						"auto",
+						"x86",
+						"x64",
+						"arm",
+						"arm64",
+						"armv7",
+						"armeabi",
+						"armeabiv7a",
+						"arm64v8a"
+					] )
+					if (selection) curDef.arch = selection
+					break
+				
+				case 'platform':
+					selection = await vscode.window.showQuickPick( [
+						"auto",
+						"win32",
+						"linux",
+						"macos",
+						"ios",
+						"android",
+						"raspberrypi",
+						"nx"
+					] )
+					if (selection) curDef.platform = selection
+					break
+				
+				case 'threaded':
+					curDef.threaded = !curDef.threaded
+					break
+					
+				case 'debug':
+					curDef.debug = !curDef.debug
+					break
+				
+				case 'gdb':
+					curDef.gdb = !curDef.gdb
+					break
+				
+				case 'quick':
+					curDef.quick = !curDef.quick
+					break
+				
+				case 'execute':
+					curDef.execute = !curDef.execute
+					break
+				
+				case 'verbose':
+					curDef.verbose = !curDef.verbose
+					break
+				
+				case 'appstub':
+					selection = await vscode.window.showInputBox( {value: curDef.appstub} )
+					curDef.appstub = selection
+					break
+				
+				default:
+					console.log( 'Unknown build option "' + option + '"' )
+					return
+			}
+			
+			if (!save) {
+				vscode.commands.executeCommand( 'blitzmax.refreshBuildOptions' )
+			} else if( !saveAsDefaultTaskDefinition( curDef ) ) {
+				vscode.window.showErrorMessage( 'Unable to save default task definition' )
+			}
 		})
 	)
 }
