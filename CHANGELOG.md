@@ -1,5 +1,12 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.24.1
+* Fixed a spelling error.
+* Better error reporting.
+* Aborting input fields no longer clears build options.
+* New task reveal setting (On Problem, Always, Never).
+* Task is now echoed by default.
+
 ## Version 1.24.0
 * Fixed an issue when saving workspace task settings.
 * Fixed an issue when using the Build button.

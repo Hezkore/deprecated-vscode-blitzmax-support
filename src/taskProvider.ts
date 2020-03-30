@@ -63,12 +63,12 @@ export async function toggleBuildOptions( option: string, save: boolean) {
 	switch ( option ) {				
 		case 'source':
 			selection = await vscode.window.showInputBox( {value: curDef.source} )
-			curDef.source = selection
+			if (selection != undefined) curDef.source = selection
 			break
 		
 		case 'output':
 			selection = await vscode.window.showInputBox( {value: curDef.output} )
-			curDef.output = selection
+			if (selection != undefined) curDef.output = selection
 			break
 		
 		case 'make':
@@ -142,7 +142,7 @@ export async function toggleBuildOptions( option: string, save: boolean) {
 		
 		case 'appstub':
 			selection = await vscode.window.showInputBox( {value: curDef.appstub} )
-			curDef.appstub = selection
+			if (selection != undefined) curDef.appstub = selection
 			break
 		
 		default:
@@ -313,7 +313,7 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 		
 		// Warn about NG stuff
 		const funcArgCasting = vscode.workspace.getConfiguration( 'blitzmax' ).get( 'funcArgCasting' )
-		if (funcArgCasting == 'warn')
+		if (funcArgCasting == 'Warning')
 			args.push( '-w' )
 		
 		// Do a quick build
@@ -389,12 +389,25 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 	let task: vscode.Task = new vscode.Task( definition, vscode.TaskScope.Workspace, name, 'BlitzMax', exec, '$blitzmax' )
 	
 	// Setup the task to function a bit like MaxIDE
-	task.presentationOptions.echo = false
-	task.presentationOptions.reveal = vscode.TaskRevealKind.Silent
+	task.presentationOptions.echo = true
 	task.presentationOptions.focus = false
 	task.presentationOptions.panel = vscode.TaskPanelKind.Shared
 	task.presentationOptions.showReuseMessage = false
 	task.presentationOptions.clear = true
+	
+	switch (vscode.workspace.getConfiguration( 'blitzmax' ).get( 'revealTerminalOnBuild' )) {
+		case 'On Problem':
+			task.presentationOptions.reveal = vscode.TaskRevealKind.Silent
+			break
+		
+		case 'Never':
+			task.presentationOptions.reveal = vscode.TaskRevealKind.Never
+			break
+		
+		default:
+			task.presentationOptions.reveal = vscode.TaskRevealKind.Always
+			break
+	}
 	
 	return task
 }

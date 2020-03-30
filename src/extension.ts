@@ -209,13 +209,16 @@ async function registerCommands( context:vscode.ExtensionContext ) {
 			
 			const def = currentDefinition()
 			
-			// Update definition so that it always executes
+			// Update definition so that it ALWAYS executes
 			const defaultExecuteState = def.execute
 			def.execute = true
 			
 			const task = makeTask( def, 'Build & Run' )
 			def.execute = defaultExecuteState
-			if (!task) return
+			if (!task) {
+				vscode.window.showErrorMessage( 'Error when running task. Try removing tasks.json.' )
+				return
+			}
 			
 			vscode.tasks.executeTask( task )
 		})
@@ -228,8 +231,16 @@ async function registerCommands( context:vscode.ExtensionContext ) {
 			
 			const def = currentDefinition()
 			
-			const task = makeTask( def, 'Build & Run' )
-			if (!task) return
+			// Update definition so that it NEVER executes
+			const defaultExecuteState = def.execute
+			def.execute = false
+			
+			const task = makeTask( def, 'Build' )
+			def.execute = defaultExecuteState
+			if (!task) {
+				vscode.window.showErrorMessage( 'Error when running task. Try removing tasks.json.' )
+				return
+			}
 			
 			vscode.tasks.executeTask( task )
 		})

@@ -1,6 +1,6 @@
 {
 	"name": "blitzmax",
-	"version": "1.24.0",
+	"version": "1.24.1",
 	"displayName": "BlitzMax Language Basics",
 	"description": "Provides snippets, syntax highlighting, bracket matching and folding in BlitzMax files.",
 	"repository": {
@@ -318,10 +318,10 @@
 				},
 				"blitzmax.funcArgCasting": {
 					"type": "string",
-					"description": "How to handle function argument casting issues. (NG only)",
+					"description": "How to handle function argument casting issues (NG only)",
 					"enum": [
-						"warn",
-						"error"
+						"Warning",
+						"Error"
 					]
 				},
 				"blitzmax.autoSetTaskOutput": {
@@ -333,6 +333,15 @@
 					"type": "boolean",
 					"description": "Check for BlitzMax NG updates at startup",
 					"default": true
+				},
+				"blitzmax.revealTerminalOnBuild": {
+					"type": "string",
+					"description": "Controls whether the task output is revealed when building",
+					"enum": [
+						"Always",
+						"On Problem",
+						"Never"
+					]
 				}
 			}
 		},
