@@ -60,7 +60,7 @@ export class BmxBuildTreeProvider implements vscode.TreeDataProvider<vscode.Tree
 			items.push( this.createChildItem( 'Platform', 'Cross-compiles to the specific target platform', def.platform ) )
 			items.push( this.createChildItem( 'Threaded', 'Builds multithreaded version', def.threaded ? 'true' : 'false' ) )
 			items.push( this.createChildItem( 'GDB', 'Generates line mappings suitable for GDB debugging', def.gdb ? 'true' : 'false' ) )
-			items.push( this.createChildItem( 'Execute', 'Execute built application', def.execute ? 'true' : 'false' ) )
+			//items.push( this.createChildItem( 'Execute', 'Execute built application', def.execute ? 'true' : 'false' ) )
 			items.push( this.createChildItem( 'Verbose', 'Verbose (noisy) build', def.verbose ? 'true' : 'false' ) )
 			items.push( this.createChildItem( 'Appstub', 'Builds an app using a custom appstub (The default is brl.appstub)\nThis can be useful when you want more control over low-level application state and the debugger', def.appstub ) )
 			

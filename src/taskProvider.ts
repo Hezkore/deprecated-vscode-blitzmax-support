@@ -259,7 +259,7 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 		vscode.window.showErrorMessage( "No 'make' defined!" )
 		return
 	}
-	if (!BlitzMax.ready) return
+	if (!BlitzMax.readyToBuild) return
 	
 	// Prepare args
 	let args:string[] = []
@@ -313,7 +313,8 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 		
 		// Warn about NG stuff
 		const funcArgCasting = vscode.workspace.getConfiguration( 'blitzmax' ).get( 'funcArgCasting' )
-		if (funcArgCasting == 'Warning')
+		console.log( funcArgCasting )
+		if (funcArgCasting != 'Error')
 			args.push( '-w' )
 		
 		// Do a quick build

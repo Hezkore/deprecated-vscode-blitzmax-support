@@ -1,5 +1,10 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.24.2
+* Building before modules have been scanned is now possible.
+* 'Execute' removed from 'Build Options' (Still exists in task settings).
+* Fixed a function argument casting issue.
+
 ## Version 1.24.1
 * Fixed a spelling error.
 * Better error reporting.
