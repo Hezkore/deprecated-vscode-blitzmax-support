@@ -18,6 +18,7 @@ import { AnalyzeDoc, scanModules } from './bmxModules'
 import { askToGenerateProject } from './generateProject'
 import { checkBlitzMaxUpdates } from './checkUpdates'
 import { BmxBuildTreeProvider } from './buildTree'
+import { BmxSamplesExplorer } from './samplesTree'
 
 export async function activate( context: vscode.ExtensionContext ) {
 	
@@ -52,9 +53,13 @@ async function registerEvents( context:vscode.ExtensionContext ) {
 
 async function registerProviders( context: vscode.ExtensionContext ) {
 	
+	// Build option tree provider
 	const bmxBuildTreeProvider = new BmxBuildTreeProvider( context )
 	vscode.window.registerTreeDataProvider( 'blitzmax-build', bmxBuildTreeProvider)
 	vscode.commands.registerCommand( 'blitzmax.refreshBuildOptions', () => bmxBuildTreeProvider.refresh() )
+	
+	// Samples tree provider
+	new BmxSamplesExplorer( context )
 	
 	// Document symbol provider
     context.subscriptions.push(

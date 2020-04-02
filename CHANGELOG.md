@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.25.0
+* Samples added to view container.
+
 ## Version 1.24.2
 * Building before modules have been scanned is now possible.
 * 'Execute' removed from 'Build Options' (Still exists in task settings).
