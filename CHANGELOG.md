@@ -1,5 +1,10 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.26.0
+* Samples now loads even without a workspace.
+* Selecting Appstub via build options now shows a quick pick list.
+* New welcome screen for build options.
+
 ## Version 1.25.0
 * Samples added to view container.
 

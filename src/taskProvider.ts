@@ -5,6 +5,7 @@ import { BlitzMax } from './blitzmax'
 import * as os from 'os'
 import * as path from 'path'
 import { currentBmx, variableSub, isPartOfWorkspace } from './common'
+import { BmxModule } from './bmxModules'
 
 let standardDefaultDefinition: BmxTaskDefinition =
 { type: 'bmx', source: '', output: '', make: 'makeapp', app: 'console',
@@ -141,8 +142,15 @@ export async function toggleBuildOptions( option: string, save: boolean) {
 			break
 		
 		case 'appstub':
-			selection = await vscode.window.showInputBox( {value: curDef.appstub} )
-			if (selection != undefined) curDef.appstub = selection
+			let appstubs: string[] = []
+			BlitzMax.getAppStubs()?.forEach((mod: BmxModule) => {
+				if (mod.name)
+					appstubs.push( mod.name )
+			})
+			if(appstubs.length > 0){
+				selection = await vscode.window.showQuickPick( appstubs )
+				if (selection) curDef.appstub = selection
+			}
 			break
 		
 		default:

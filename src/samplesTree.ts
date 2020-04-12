@@ -13,8 +13,6 @@ const acceptedFolderNames = [
 
 namespace _ {
 	
-
-	
 	function handleResult<T>(resolve: (result: T) => void, reject: (error: Error) => void, error: Error | null | undefined, result: T): void {
 		if (error) {
 			reject(massageError(error))
@@ -366,7 +364,7 @@ export class BmxSamplesTreeProvider implements vscode.TreeDataProvider<Entry>, v
 		const treeItem = new vscode.TreeItem(element.name, element.type === vscode.FileType.Directory ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None)
 		treeItem.description = element.desc
 		if (element.type === vscode.FileType.File) {
-			treeItem.command = { command: 'bmxSamplesExplorer.openFile', title: "Open File", arguments: [element.uri], }
+			treeItem.command = { command: 'blitzmax.samplesExplorerOpenFile', title: "Open File", arguments: [element.uri], }
 			treeItem.contextValue = 'file'
 		}
 		return treeItem
@@ -378,7 +376,7 @@ export class BmxSamplesExplorer {
 	constructor( context: vscode.ExtensionContext ) {
 		const treeDataProvider = new BmxSamplesTreeProvider()
 		vscode.window.registerTreeDataProvider( 'blitzmax-samples', treeDataProvider)
-		vscode.commands.registerCommand('bmxSamplesExplorer.openFile', (resource) => this.openResource(resource))
+		vscode.commands.registerCommand('blitzmax.samplesExplorerOpenFile', (resource) => this.openResource(resource))
 	}
 	
 	private openResource(resource: vscode.Uri): void {

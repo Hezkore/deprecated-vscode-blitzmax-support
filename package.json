@@ -1,6 +1,6 @@
 {
 	"name": "blitzmax",
-	"version": "1.25.0",
+	"version": "1.26.0",
 	"displayName": "BlitzMax Language Basics",
 	"description": "Provides snippets, syntax highlighting, bracket matching and folding in BlitzMax files.",
 	"repository": {
@@ -31,11 +31,18 @@
 		"bmx"
 	],
 	"activationEvents": [
-		"onView:blitzmax",
+		"onView:blitzmax-build",
+		"onView:blitzmax-samples",
 		"onCommand:blitzmax.generateProject",
 		"onLanguage:blitzmax"
 	],
 	"contributes": {
+		"viewsWelcome": [
+			{
+				"view": "blitzmax-build",
+				"contents": "You have not yet opened a BlitzMax project.\n[Open Folder](command:workbench.action.files.openFolder)\nYou can also open a single BlitzMax file.\n[Open File](command:workbench.action.files.openFile)"
+			}
+		],
 		"viewsContainers": {
 			"activitybar": [
 				{
@@ -281,11 +288,6 @@
 			{
 				"command": "blitzmax.toggleBuildOption",
 				"title": "Toggle BlitzMax build option",
-				"category": "BlitzMax"
-			},
-			{
-				"command": "blitzmax.refreshBuildOptions",
-				"title": "Refresh BlitzMax build options",
 				"category": "BlitzMax"
 			}
 		],

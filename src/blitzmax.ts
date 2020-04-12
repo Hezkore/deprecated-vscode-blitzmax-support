@@ -38,6 +38,7 @@ export class BlitzMaxHandler{
 		
 		return path.join( this.path, 'mod' )
 	}
+	get modules(): Map<string, BmxModule> { return this._modules }
 	get ready(): boolean { return this._ready }
 	get readyToBuild(): boolean { return this._readyToBuild }
 	get busy(): boolean { return this._busy }
@@ -182,6 +183,21 @@ export class BlitzMaxHandler{
 		if (!this.ready) return undefined
 		
 		return this._modules.get( parent + "/" + name )
+	}
+	
+	getAppStubs(): BmxModule[] | undefined {
+		
+		if (!this.ready) return undefined
+		
+		let modules: BmxModule[] = []
+		
+		this._modules.forEach( module => {
+			
+			if(module.name && module.name.toLocaleLowerCase().endsWith( '.appstub' ))
+				modules.push( module )
+		})
+		
+		return modules
 	}
 	
 	getCommand( name:string, allowMethod: boolean = false ): AnalyzeDoc[] {
