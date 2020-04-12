@@ -28,11 +28,19 @@ export async function activate( context: vscode.ExtensionContext ) {
 	
 	await BlitzMax.setup( context )
 	
-	if (vscode.workspace.getConfiguration( 'blitzmax' ).get( 'checkForUpdates' ))
+	registerPostMisc( context )
+	
+	if (!BlitzMax.problem && vscode.workspace.getConfiguration( 'blitzmax' ).get( 'checkForUpdates' ))
 		checkBlitzMaxUpdates( true )
 }
 
 export function deactivate(): void {
+}
+
+async function registerPostMisc( context:vscode.ExtensionContext ) {
+	
+	// Samples tree provider
+	new BmxSamplesExplorer( context )
 }
 
 async function registerEvents( context:vscode.ExtensionContext ) {
@@ -41,8 +49,10 @@ async function registerEvents( context:vscode.ExtensionContext ) {
 	context.subscriptions.push(
 		vscode.workspace.onDidChangeConfiguration( event => {
 			
-			if (event.affectsConfiguration( 'blitzmax.bmxPath' ))
+			if (event.affectsConfiguration( 'blitzmax.bmxPath' )) {
 				BlitzMax.setup( context )
+				vscode.commands.executeCommand( 'blitzmax.refreshSamples' )
+			}
 		})
 	)
 	
@@ -57,9 +67,6 @@ async function registerProviders( context: vscode.ExtensionContext ) {
 	const bmxBuildTreeProvider = new BmxBuildTreeProvider( context )
 	vscode.window.registerTreeDataProvider( 'blitzmax-build', bmxBuildTreeProvider)
 	vscode.commands.registerCommand( 'blitzmax.refreshBuildOptions', () => bmxBuildTreeProvider.refresh() )
-	
-	// Samples tree provider
-	new BmxSamplesExplorer( context )
 	
 	// Document symbol provider
     context.subscriptions.push(

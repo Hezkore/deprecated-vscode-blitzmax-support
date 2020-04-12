@@ -105,14 +105,14 @@ export class BlitzMaxHandler{
 			if (this.path.length <= 1) {
 				this._busy = false
 				this.problem = 'No BlitzMax path set'
-				return reject()
+				return resolve()
 			}
 			
 			await this.checkVersion()
 			if (this.problem) {
 				this._busy = false
 				log( 'Unable to determine BlitzMax version', true, true )
-				return reject()
+				return resolve()
 			}
 			
 			this._readyToBuild = true
@@ -133,7 +133,7 @@ export class BlitzMaxHandler{
 				log( this._troubleshootString )
 			}
 			
-			resolve()
+			return resolve()
 			})
 		})
 	}

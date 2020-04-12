@@ -129,36 +129,15 @@ interface Entry {
 	desc?: string
 }
 
-export class BmxSamplesTreeProvider implements vscode.TreeDataProvider<Entry>, vscode.FileSystemProvider {
+export class BmxSamplesTreeProvider implements vscode.TreeDataProvider<Entry> {
 	
-	private _onDidChangeFile: vscode.EventEmitter<vscode.FileChangeEvent[]>
+	private _onDidChangeTreeData: vscode.EventEmitter<Entry | null> = new vscode.EventEmitter<Entry | null>()
+	readonly onDidChangeTreeData: vscode.Event<Entry | null> = this._onDidChangeTreeData.event
+	
 	
 	constructor() {
-		this._onDidChangeFile = new vscode.EventEmitter<vscode.FileChangeEvent[]>()
 	}
 	
-	get onDidChangeFile(): vscode.Event<vscode.FileChangeEvent[]> {
-		return this._onDidChangeFile.event
-	}
-	
-	watch(uri: vscode.Uri, options: { recursive: boolean, excludes: string[] }): vscode.Disposable {
-		const watcher = fs.watch(uri.fsPath, { recursive: options.recursive }, async (event: string, filename: string | Buffer) => {
-			const filepath = path.join(uri.fsPath, _.normalizeNFC(filename.toString()))
-			
-			// TODO support excludes (using minimatch library?)
-			
-			this._onDidChangeFile.fire([{
-				type: event === 'change' ? vscode.FileChangeType.Changed : await _.exists(filepath) ? vscode.FileChangeType.Created : vscode.FileChangeType.Deleted,
-				uri: uri.with({ path: filepath })
-			} as vscode.FileChangeEvent])
-		})
-		
-		return { dispose: () => watcher.close() }
-	}
-	
-	stat(uri: vscode.Uri): vscode.FileStat | Thenable<vscode.FileStat> {
-		return this._stat(uri.fsPath)
-	}
 	
 	async _stat(path: string): Promise<vscode.FileStat> {
 		return new FileStat(await _.stat(path))
@@ -169,6 +148,9 @@ export class BmxSamplesTreeProvider implements vscode.TreeDataProvider<Entry>, v
 	}
 	
 	async _readDirectory(uri: vscode.Uri, subFolders: boolean = true): Promise<[string, vscode.FileType][]> {
+		
+		if (BlitzMax.problem) return Promise.resolve( [] )
+		
 		const children = await _.readdir(uri.fsPath)
 		
 		const result: [string, vscode.FileType][] = []
@@ -369,6 +351,10 @@ export class BmxSamplesTreeProvider implements vscode.TreeDataProvider<Entry>, v
 		}
 		return treeItem
 	}
+	
+	refresh() {
+		this._onDidChangeTreeData.fire()
+	}
 }
 
 export class BmxSamplesExplorer {
@@ -376,10 +362,11 @@ export class BmxSamplesExplorer {
 	constructor( context: vscode.ExtensionContext ) {
 		const treeDataProvider = new BmxSamplesTreeProvider()
 		vscode.window.registerTreeDataProvider( 'blitzmax-samples', treeDataProvider)
-		vscode.commands.registerCommand('blitzmax.samplesExplorerOpenFile', (resource) => this.openResource(resource))
+		vscode.commands.registerCommand( 'blitzmax.samplesExplorerOpenFile', (resource) => this.openResource(resource))
+		vscode.commands.registerCommand( 'blitzmax.refreshSamples', () => treeDataProvider.refresh() )
 	}
 	
 	private openResource(resource: vscode.Uri): void {
-		vscode.window.showTextDocument(resource)
+		vscode.window.showTextDocument( resource )
 	}
 }
