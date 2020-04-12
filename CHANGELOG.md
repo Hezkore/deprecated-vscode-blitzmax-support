@@ -1,7 +1,7 @@
 # BlitzMax Language Basics CHANGELOG
 
 ## Version 1.26.1
-* 
+* Fixed a samples tree issue.
 
 ## Version 1.26.0
 * Samples now loads even without a workspace.
