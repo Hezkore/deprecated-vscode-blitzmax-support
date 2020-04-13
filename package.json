@@ -1,6 +1,6 @@
 {
 	"name": "blitzmax",
-	"version": "1.26.2",
+	"version": "1.27.0",
 	"displayName": "BlitzMax Language Basics",
 	"description": "Provides snippets, syntax highlighting, bracket matching and folding in BlitzMax files.",
 	"repository": {
@@ -40,7 +40,18 @@
 		"viewsWelcome": [
 			{
 				"view": "blitzmax-build",
-				"contents": "You have not yet opened a BlitzMax project.\n[Open Folder](command:workbench.action.files.openFolder)\nYou can also open a single BlitzMax file.\n[Open File](command:workbench.action.files.openFile)"
+				"contents": "You have not yet set your BlitzMax path.\n[Select BlitzMax Folder](command:blitzmax.selectPath)",
+				"when": "!config.blitzmax.bmxPath"
+			},
+			{
+				"view": "blitzmax-build",
+				"contents": "You have not yet opened a BlitzMax project.\n[Open Folder](command:workbench.action.files.openFolder)\nYou can also open a single BlitzMax file.\n[Open File](command:workbench.action.files.openFile)",
+				"when": "config.blitzmax.bmxPath && workbenchState == empty"
+			},
+			{
+				"view": "blitzmax-build",
+				"contents": "Generate a new BlitzMax project.\n[Generate Project](command:blitzmax.generateProject)",
+				"when": "config.blitzmax.bmxPath && workbenchState != empty"
 			}
 		],
 		"viewsContainers": {
@@ -232,6 +243,11 @@
 			}
 		],
 		"commands": [
+			{
+				"command": "blitzmax.selectPath",
+				"title": "Select your BlitzMax path",
+				"category": "BlitzMax"
+			},
 			{
 				"command": "blitzmax.checkForUpdates",
 				"title": "Check for BlitzMax NG Updates",

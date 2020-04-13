@@ -2,6 +2,7 @@ import * as vscode from 'vscode'
 import * as path from 'path'
 import { currentBmx } from './common'
 import { currentDefinition } from './taskProvider'
+import * as fs from 'fs'
 
 export class BmxBuildTreeProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
 	
@@ -80,13 +81,15 @@ export class BmxBuildTreeProvider implements vscode.TreeDataProvider<vscode.Tree
 				this.isForWorkspace = workspaceFolder ? true : false
 			} else {
 				
-				if (vscode.workspace && vscode.workspace.getWorkspaceFolder.length > 0 && vscode.workspace.name){
-					rootName = 'Workspace: ' + vscode.workspace.name.toUpperCase()
-					this.isForWorkspace = true
-				} else {
-					this.isForWorkspace = false
-					return Promise.resolve( [] )
-				}
+				if (vscode.workspace && vscode.workspace.rootPath && vscode.workspace.name){
+					const files = fs.readdirSync( vscode.workspace.rootPath )
+					if (files.length > 0) {
+						rootName = 'Workspace: ' + vscode.workspace.name.toUpperCase()
+						this.isForWorkspace = true
+					} else this.isForWorkspace = false
+				} else this.isForWorkspace = false
+				
+				if (!this.isForWorkspace) return Promise.resolve( [] )
 			}
 			
 			return Promise.resolve( [

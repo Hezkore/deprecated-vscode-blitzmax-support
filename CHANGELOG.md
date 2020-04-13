@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.27.0
+
+
 ## Version 1.26.2
 * The samples tree now uses a custom tree data provider.
 

@@ -155,27 +155,29 @@ export class BlitzMaxHandler{
 	private async askForPath( msg:string = 'BlitzMax path not set in extension configuration' ){
 		
 		const opt = await vscode.window.showErrorMessage( msg, 'Set Path' )
-		if (opt) {
-			
-			const folderOpt: vscode.OpenDialogOptions = {
-				canSelectMany: false,
-				canSelectFolders: true,
-				canSelectFiles: false,
-				openLabel: 'Select'
-			}
-			
-			await vscode.window.showOpenDialog( folderOpt ).then( async fileUri => {
-				
-				if (fileUri && fileUri[0]) {
-					
-					await vscode.workspace.getConfiguration( 'blitzmax' ).update( 'bmxPath', fileUri[0].fsPath, true )
-					this.findPath()
-					
-					if (this.path)
-						vscode.window.showInformationMessage( 'BlitzMax Path Set' )
-				}
-			})
+		if (opt) this.showSelectBlitzMaxPath()
+	}
+	
+	async showSelectBlitzMaxPath() {
+		
+		const folderOpt: vscode.OpenDialogOptions = {
+			canSelectMany: false,
+			canSelectFolders: true,
+			canSelectFiles: false,
+			openLabel: 'Select'
 		}
+		
+		await vscode.window.showOpenDialog( folderOpt ).then( async fileUri => {
+			
+			if (fileUri && fileUri[0]) {
+				
+				await vscode.workspace.getConfiguration( 'blitzmax' ).update( 'bmxPath', fileUri[0].fsPath, true )
+				this.findPath()
+				
+				if (this.path)
+					vscode.window.showInformationMessage( 'BlitzMax Path Set' )
+			}
+		})
 	}
 	
 	getModule( parent: string, name:string ): BmxModule | undefined {

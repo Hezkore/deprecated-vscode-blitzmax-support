@@ -56,6 +56,8 @@ export async function askToGenerateProject( context: vscode.ExtensionContext ) {
 			})
 		}
 		
+		vscode.commands.executeCommand( 'blitzmax.refreshBuildOptions' )
+		
 		return resolve()
 	})
 }
