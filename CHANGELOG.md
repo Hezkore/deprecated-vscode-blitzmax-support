@@ -1,7 +1,11 @@
 # BlitzMax Language Basics CHANGELOG
 
-## Version 1.27.0
+## Version 1.27.1
+* Hotfix.
 
+## Version 1.27.0
+* Updated Build Options welcome screen.
+* Fixed an issue with Generate Project.
 
 ## Version 1.26.2
 * The samples tree now uses a custom tree data provider.
