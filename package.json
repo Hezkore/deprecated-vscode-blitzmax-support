@@ -1,6 +1,6 @@
 {
 	"name": "blitzmax",
-	"version": "1.27.1",
+	"version": "1.27.2",
 	"displayName": "BlitzMax Language Basics",
 	"description": "Provides snippets, syntax highlighting, bracket matching and folding in BlitzMax files.",
 	"repository": {
@@ -336,7 +336,8 @@
 				"blitzmax.bmxPath": {
 					"type": "string",
 					"default": "",
-					"description": "Path to BlitzMax. (e.g: C:\\Program Files (x86)\\BlitzMax)"
+					"description": "Path to BlitzMax. (e.g: C:\\Program Files (x86)\\BlitzMax)",
+					"scope": "resource"
 				},
 				"blitzmax.funcArgCasting": {
 					"type": "string",

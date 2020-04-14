@@ -4,7 +4,7 @@ import * as vscode from 'vscode'
 import * as path from 'path'
 import * as fs from 'fs'
 import { scanModules, BmxModule, AnalyzeDoc, AnalyzeItem } from './bmxModules'
-import { exec, exists, readFile, log, clearLog } from './common'
+import { exec, exists, readFile, log, clearLog, currentBmx } from './common'
 
 export class BlitzMaxHandler{
 	
@@ -26,6 +26,11 @@ export class BlitzMaxHandler{
 	private _askedForPath: boolean = false
 	
 	get path(): string {
+		
+		if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders?.length > 1) {
+			this.findPathQuick()
+			console.log( 'NOW: ' + this._path )
+		}
 		
 		return this._path
 	}
@@ -150,6 +155,12 @@ export class BlitzMaxHandler{
 			return
 		}
 		this._path = confPath
+	}
+	
+	private findPathQuick() {
+		let confPath: string | undefined = vscode.workspace.getConfiguration( 'blitzmax', currentBmx() ).get( 'bmxPath' )
+		if (confPath) this._path = confPath
+		this._askedForPath = true
 	}
 	
 	private async askForPath( msg:string = 'BlitzMax path not set in extension configuration' ){

@@ -1013,5 +1013,6 @@ function modulesToJson( map: Map<string, BmxModule> ): string {
 
 function modulesFromJson(jsonStr: string): Map<string, BmxModule> {
 	
+	if (!jsonStr) return new Map()
 	return new Map( JSON.parse( jsonStr ) )
 }

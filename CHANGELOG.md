@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.27.2
+* Fixed an issue with module scanning getting stuck forever.
+
 ## Version 1.27.1
 * Hotfix.
 
