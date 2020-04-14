@@ -143,7 +143,7 @@ export class BlitzMaxHandler{
 		})
 	}
 	
-	private async findPath(){
+	async findPath(){
 		this._path = ''
 		
 		let confPath: string | undefined = await vscode.workspace.getConfiguration( 'blitzmax' ).get( 'bmxPath' )

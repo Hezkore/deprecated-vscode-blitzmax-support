@@ -1,6 +1,6 @@
 {
 	"name": "blitzmax",
-	"version": "1.27.2",
+	"version": "1.27.3",
 	"displayName": "BlitzMax Language Basics",
 	"description": "Provides snippets, syntax highlighting, bracket matching and folding in BlitzMax files.",
 	"repository": {
@@ -246,6 +246,11 @@
 			{
 				"command": "blitzmax.selectPath",
 				"title": "Select your BlitzMax path",
+				"category": "BlitzMax"
+			},
+			{
+				"command": "blitzmax.setPath",
+				"title": "Set your BlitzMax path",
 				"category": "BlitzMax"
 			},
 			{

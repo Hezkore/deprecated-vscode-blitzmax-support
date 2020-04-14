@@ -139,6 +139,13 @@ async function registerProviders( context: vscode.ExtensionContext ) {
 async function registerCommands( context:vscode.ExtensionContext ) {
 	
 	context.subscriptions.push(
+		vscode.commands.registerCommand( 'blitzmax.setPath', ( path ) => {
+			
+			vscode.workspace.getConfiguration( 'blitzmax' ).update( 'bmxPath', path, true )
+		})
+	)
+	
+	context.subscriptions.push(
 		vscode.commands.registerCommand( 'blitzmax.selectPath', () => {
 			
 			BlitzMax.showSelectBlitzMaxPath()
