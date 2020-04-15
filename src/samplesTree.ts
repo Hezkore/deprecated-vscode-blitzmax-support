@@ -2,7 +2,7 @@ import * as vscode from 'vscode'
 import * as path from 'path'
 import * as fs from 'fs'
 import { BlitzMax } from './blitzmax'
-import { readStats, exists } from './common'
+import { readStats } from './common'
 
 interface Entry {
 	uri: vscode.Uri

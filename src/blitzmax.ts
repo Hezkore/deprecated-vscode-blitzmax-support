@@ -24,6 +24,8 @@ export class BlitzMaxHandler{
 	private _bmkVersion: string = '0.0'
 	private _releaseVersion: string = '0.0.0.0'
 	private _askedForPath: boolean = false
+	useNotificationProgress: boolean = false
+	useCustomProgressName: string | undefined
 	
 	get path(): string {
 		
@@ -97,14 +99,19 @@ export class BlitzMaxHandler{
 		this._legacy = false
 		this._path = ''
 		
+		const initText = this.useCustomProgressName ? this.useCustomProgressName : 'Initializing BlitzMax'
+		this.useCustomProgressName = undefined
+		
 		clearLog()
-		log( 'Initializing BlitzMax' )
+		log( initText )
 		
 		await vscode.window.withProgress( {
-			location: vscode.ProgressLocation.Window,
-			title: 'Initializing BlitzMax',
+			location: this.useNotificationProgress ? vscode.ProgressLocation.Notification : vscode.ProgressLocation.Window,
+			title:  initText,
 			cancellable: false
 		}, (progress, token) => { return new Promise<boolean>( async ( resolve, reject ) => {
+			
+			this.useNotificationProgress = false
 			
 			await this.findPath()
 			if (this.path.length <= 1) {

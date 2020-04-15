@@ -19,6 +19,7 @@ import { askToGenerateProject } from './generateProject'
 import { checkBlitzMaxUpdates } from './checkUpdates'
 import { BmxBuildTreeProvider } from './buildTree'
 import { BmxSamplesExplorer } from './samplesTree'
+import { MultiBmxExplorer, addNewMultiPath, switchMultiPath, removeMultiPath, renameMultiPath } from './multiBmxHandler'
 
 export async function activate( context: vscode.ExtensionContext ) {
 	
@@ -41,6 +42,9 @@ async function registerPostMisc( context:vscode.ExtensionContext ) {
 	
 	// Samples tree provider
 	new BmxSamplesExplorer( context )
+	
+	// Multi Bmx tree provider
+	new MultiBmxExplorer( context )
 }
 
 async function registerEvents( context:vscode.ExtensionContext ) {
@@ -52,6 +56,7 @@ async function registerEvents( context:vscode.ExtensionContext ) {
 			if (event.affectsConfiguration( 'blitzmax.bmxPath' )) {
 				BlitzMax.setup( context )
 				vscode.commands.executeCommand( 'blitzmax.refreshSamples' )
+				vscode.commands.executeCommand( 'blitzmax.refreshMultiBmx' )
 			}
 		})
 	)
@@ -139,7 +144,42 @@ async function registerProviders( context: vscode.ExtensionContext ) {
 async function registerCommands( context:vscode.ExtensionContext ) {
 	
 	context.subscriptions.push(
-		vscode.commands.registerCommand( 'blitzmax.setPath', ( path ) => {
+		vscode.commands.registerCommand( 'blitzmax.renameMultiPath', (context) => {
+			
+			renameMultiPath( context )
+		})
+	)
+	
+	context.subscriptions.push(
+		vscode.commands.registerCommand( 'blitzmax.removeMultiPath', (context) => {
+			
+			removeMultiPath( context )
+		})
+	)
+	
+	context.subscriptions.push(
+		vscode.commands.registerCommand( 'blitzmax.switchMultiPath', (context) => {
+			
+			switchMultiPath( context )
+		})
+	)
+	
+	context.subscriptions.push(
+		vscode.commands.registerCommand( 'blitzmax.addNewMultiPath', () => {
+			
+			addNewMultiPath()
+		})
+	)
+	
+	context.subscriptions.push(
+		vscode.commands.registerCommand( 'blitzmax.setPath', ( path: string, isSwitch: string | undefined ) => {
+			
+			if (BlitzMax.busy) {
+				vscode.window.showErrorMessage( 'Cannot change path when BlitzMax is busy' )
+			}
+			
+			BlitzMax.useNotificationProgress = true
+			if (isSwitch) BlitzMax.useCustomProgressName = isSwitch
 			
 			vscode.workspace.getConfiguration( 'blitzmax' ).update( 'bmxPath', path, true )
 		})
@@ -273,9 +313,14 @@ async function registerCommands( context:vscode.ExtensionContext ) {
 	)
 	
 	context.subscriptions.push(
-		vscode.commands.registerCommand( 'blitzmax.toggleBuildOption', async ( option: string, save: boolean ) => {
+		vscode.commands.registerCommand( 'blitzmax.toggleBuildOption', async ( option: any, save: boolean ) => {
 			
-			toggleBuildOptions( option, save )
+			if (typeof option === "string") {
+				toggleBuildOptions( option, save )
+			} else {
+				const treeItem: vscode.TreeItem = option
+				if (treeItem.label) toggleBuildOptions( treeItem.label.toLocaleLowerCase(), true )
+			}
 		})
 	)
 }

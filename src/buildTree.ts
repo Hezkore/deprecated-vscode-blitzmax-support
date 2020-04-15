@@ -35,6 +35,7 @@ export class BmxBuildTreeProvider implements vscode.TreeDataProvider<vscode.Tree
 		let item = new vscode.TreeItem( label, vscode.TreeItemCollapsibleState.None )
 		item.description = state ? state : 'Undefined'
 		item.tooltip = tooltip
+		item.contextValue = 'option'
 		item.command = {
 			command: command,
 			title: '',

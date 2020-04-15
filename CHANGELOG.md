@@ -1,5 +1,10 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.28.0
+* 'Versions' added to view container.
+* 'Build Options' now has an edit button.
+* Fixed an issue with the 'setPath' command.
+
 ## Version 1.27.3
 * New 'setPath' command.
 
@@ -10,22 +15,22 @@
 * Hotfix.
 
 ## Version 1.27.0
-* Updated Build Options welcome screen.
+* Updated 'Build Options' welcome screen.
 * Fixed an issue with Generate Project.
 
 ## Version 1.26.2
-* The samples tree now uses a custom tree data provider.
+* 'Samples' now uses a custom tree data provider.
 
 ## Version 1.26.1
-* Fixed a samples tree issue.
+* Fixed a 'Samples' issue.
 
 ## Version 1.26.0
-* Samples now loads even without a workspace.
-* Selecting Appstub via build options now shows a quick pick list.
-* New welcome screen for build options.
+* 'Samples' now loads even without a workspace.
+* Selecting Appstub via 'Build Options' now shows a quick pick list.
+* New welcome screen for 'Build Options'.
 
 ## Version 1.25.0
-* Samples added to view container.
+* 'Samples' added to view container.
 
 ## Version 1.24.2
 * Building before modules have been scanned is now possible.
@@ -43,7 +48,7 @@
 * Fixed an issue when saving workspace task settings.
 * Fixed an issue when using the Build button.
 * New unique BlitzMax view container.
-* Build Options added to view container.
+* 'Build Options' added to view container.
 * New 'toggleBuildOption' command.
 
 ## Version 1.23.0

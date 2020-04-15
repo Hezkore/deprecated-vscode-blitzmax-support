@@ -33,11 +33,16 @@
 	"activationEvents": [
 		"onView:blitzmax-build",
 		"onView:blitzmax-samples",
+		"onView:blitzmax-multi",
 		"onCommand:blitzmax.generateProject",
 		"onLanguage:blitzmax"
 	],
 	"contributes": {
 		"viewsWelcome": [
+			{
+				"view": "blitzmax-multi",
+				"contents": "Have multiple versions for BlitzMax? Add them all and easily switch between them here.\n[Add BlitzMax Version](command:blitzmax.addNewMultiPath)"
+			},
 			{
 				"view": "blitzmax-build",
 				"contents": "You have not yet set your BlitzMax path.\n[Select BlitzMax Folder](command:blitzmax.selectPath)",
@@ -72,6 +77,10 @@
 				{
 					"id": "blitzmax-samples",
 					"name": "Samples"
+				},
+				{
+					"id": "blitzmax-multi",
+					"name": "Versions"
 				}
 			]
 		},
@@ -83,6 +92,37 @@
 			}
 		],
 		"menus": {
+			"view/title": [
+				{
+					"command": "blitzmax.addNewMultiPath",
+					"when": "view == blitzmax-multi",
+					"group": "navigation"
+				}
+			],
+			"view/item/context": [
+				{
+					"command": "blitzmax.addNewMultiPath",
+					"when": "view == blitzmax-multi"
+				},
+				{
+					"command": "blitzmax.removeMultiPath",
+					"when": "view == blitzmax-multi"
+				},
+				{
+					"command": "blitzmax.renameMultiPath",
+					"when": "view == blitzmax-multi"
+				},
+				{
+					"command": "blitzmax.toggleBuildOption",
+					"when": "view == blitzmax-build && viewItem == option",
+					"group": "inline"
+				},
+				{
+					"command": "blitzmax.switchMultiPath",
+					"when": "view == blitzmax-multi",
+					"group": "inline"
+				}
+			],
 			"editor/context": [
 				{
 					"when": "editorLangId == blitzmax && editorHasSelection",
@@ -244,6 +284,30 @@
 		],
 		"commands": [
 			{
+				"command": "blitzmax.switchMultiPath",
+				"title": "Switch BlitzMax Version",
+				"category": "BlitzMax",
+				"icon": "$(rocket)"
+			},
+			{
+				"command": "blitzmax.removeMultiPath",
+				"title": "Remove BlitzMax Version",
+				"category": "BlitzMax",
+				"icon": "$(trash)"
+			},
+			{
+				"command": "blitzmax.renameMultiPath",
+				"title": "Rename BlitzMax Version",
+				"category": "BlitzMax",
+				"icon": "$(edit)"
+			},
+			{
+				"command": "blitzmax.addNewMultiPath",
+				"title": "Add BlitzMax version",
+				"category": "BlitzMax",
+				"icon": "$(add)"
+			},
+			{
 				"command": "blitzmax.selectPath",
 				"title": "Select your BlitzMax path",
 				"category": "BlitzMax"
@@ -309,7 +373,8 @@
 			{
 				"command": "blitzmax.toggleBuildOption",
 				"title": "Toggle BlitzMax build option",
-				"category": "BlitzMax"
+				"category": "BlitzMax",
+				"icon": "$(edit)"
 			}
 		],
 		"languages": [
@@ -338,6 +403,26 @@
 			"type": "object",
 			"title": "BlitzMax",
 			"properties": {
+				"blitzmax.multiBmxPath": {
+					"type": "array",
+					"description": "Advanced feature for users with multiple BlitzMax installations",
+					"items": {
+						"type": "object",
+						"title": "Alternative BlitzMax Installations",
+						"properties": {
+							"name": {
+								"type": "string",
+								"default": "Aternative BlitzMax Installation",
+								"description": "Name of tis BlitzMax installation"
+							},
+							"path": {
+								"type": "string",
+								"default": "C:\\BlitzMax",
+								"description": "Path to your BlitzMax root folder"
+							}
+						}
+					}
+				},
 				"blitzmax.bmxPath": {
 					"type": "string",
 					"default": "",
