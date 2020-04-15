@@ -303,7 +303,7 @@
 			},
 			{
 				"command": "blitzmax.addNewMultiPath",
-				"title": "Add BlitzMax version",
+				"title": "Add BlitzMax Version",
 				"category": "BlitzMax",
 				"icon": "$(add)"
 			},
