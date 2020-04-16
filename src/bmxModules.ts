@@ -37,6 +37,7 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 			BlitzMax._modules.clear()
 			BlitzMax._commands = []
 			BlitzMax._autoCompletes = []
+			BlitzMax._autoCompleteMethods = []
 			
 			let changedModules: number = 0
 			

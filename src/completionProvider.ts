@@ -8,6 +8,9 @@ export class BmxCompletionProvider implements vscode.CompletionItemProvider {
 		
 		if (!BlitzMax.ready) return null
 		
-		return BlitzMax.getAutoCompletes()
+		if (context.triggerCharacter == '.')
+			return BlitzMax.getAutoCompleteMethods()
+		else
+			return BlitzMax.getAutoCompletes()
 	}
 }

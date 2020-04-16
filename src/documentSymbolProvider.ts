@@ -1,13 +1,14 @@
 'use strict'
 
 import * as vscode from 'vscode'
+import { BlitzMax } from './blitzmax'
 
 export class BmxDocumentSymbolProvider implements vscode.DocumentSymbolProvider {
     public provideDocumentSymbols( document: vscode.TextDocument, token: vscode.CancellationToken ): vscode.DocumentSymbol[] {
 		
-		let symbols: vscode.DocumentSymbol[] = []
-		let containers:vscode.DocumentSymbol[] = []
-		let inRemBlock:boolean = false
+		BlitzMax._symbols = []
+		let containers: vscode.DocumentSymbol[] = []
+		let inRemBlock: boolean = false
 		
 		for (var lineNr = 0; lineNr < document.lineCount; lineNr++) {
 			const line:vscode.TextLine = document.lineAt( lineNr )
@@ -27,7 +28,7 @@ export class BmxDocumentSymbolProvider implements vscode.DocumentSymbolProvider 
 			// Get a clean line to compare against
 			const lineCleanText:string = line.text
 			.slice( line.firstNonWhitespaceCharacterIndex )
-			.replace( '\t', '' )
+			.replace( '\t', ' ' )
 			//.trimRight()
 			//.toLowerCase()
 			
@@ -38,7 +39,9 @@ export class BmxDocumentSymbolProvider implements vscode.DocumentSymbolProvider 
 			
 			if (words.length > 1 && words[1].startsWith( "'" )) continue
 			
-			let firstWord:string = words[0].toLowerCase()
+			let firstWordOffset: number = 0
+			let firstWord: string = words[0].toLowerCase()
+			let firstWordLength: number = firstWord.length
 			if (firstWord == 'end' && words.length > 1){
 				
 				let foundWord:string | undefined
@@ -60,10 +63,21 @@ export class BmxDocumentSymbolProvider implements vscode.DocumentSymbolProvider 
 				continue
 			}else{
 				
-				if (firstWord == 'rem')
-				{
+				if (firstWord == 'rem') {
 					inRemBlock = !inRemBlock
 					continue
+				}
+			}
+			
+			// Skip some words
+			if (words.length > 1){
+				switch (firstWord) {
+					case 'public':
+					case 'private':
+						firstWordOffset += 1
+						firstWord = words[firstWordOffset].toLowerCase()
+						firstWordLength += firstWord.length
+						break
 				}
 			}
 			
@@ -137,17 +151,26 @@ export class BmxDocumentSymbolProvider implements vscode.DocumentSymbolProvider 
 				
 				// Detect same line multi define
 				if (supportsMultiDefine) {
-					let multiName:string = ''
-					let inString:boolean = false
-					let depth:number = 0
+					let multiName: string = ''
+					let inString: boolean = false
+					let depth: number = 0
+					let spaceAt: number = 0
 					
-					for (let chrNr = line.firstNonWhitespaceCharacterIndex + firstWord.length + 1;
-						chrNr < line.text.length; chrNr++) {
-						const chr = line.text[chrNr]
+					for (let chrNr = line.firstNonWhitespaceCharacterIndex + firstWordLength + 1;
+						chrNr <= line.text.length; chrNr++) {
+						let chr = ''
 						
-						if (chrNr == line.text.length - 1 ||
+						if (chrNr < line.text.length)
+							chr = line.text[chrNr]
+						
+						if (chrNr == line.text.length ||
 						((chr == ',' || chr == "'") && ( depth == 0 && !inString && multiName.length > 0))){
 							
+							if (spaceAt > 0)
+								multiName = multiName.slice( 0, spaceAt )
+							
+							spaceAt = 0
+								
 							if (multiName.includes( ':' ))
 								multiName = multiName.split( ':' )[0]
 							else if (multiName.includes( '%' ))
@@ -165,8 +188,14 @@ export class BmxDocumentSymbolProvider implements vscode.DocumentSymbolProvider 
 							if (chr == "'") break
 							multiName = ''
 						}else{
-						
+							
 							switch (chr) {
+								case '\t':
+								case ' ':
+									if (spaceAt <= 0)
+										spaceAt = multiName.length
+									break
+								
 								case '"':
 									inString = !inString
 									break
@@ -182,15 +211,21 @@ export class BmxDocumentSymbolProvider implements vscode.DocumentSymbolProvider 
 									break
 								
 								default:
-									if (depth == 0 && !inString && chr != ' ' && chr != '\t')
-									{
+									if (depth == 0 && !inString && chr != ' ' && chr != '\t') {
 										multiName += chr
 									}
 									break
 							}
 						}
 					}
-				}else names.push( words[1] )
+				} else {
+					while (words[firstWordOffset + 1] == ' ' ||
+						words[firstWordOffset + 1] == '\t' ||
+						words[firstWordOffset + 1] == '') {
+						firstWordOffset ++
+					}
+					names.push( words[firstWordOffset + 1].trimLeft() )
+				}
 				
 				for (let nameNr = 0; nameNr < names.length; nameNr++) {
 					let name = names[nameNr]
@@ -215,7 +250,7 @@ export class BmxDocumentSymbolProvider implements vscode.DocumentSymbolProvider 
 						if (containers.length > 0)
 							containers[containers.length - 1].children.push( symbol )
 						else
-							symbols.push( symbol )
+							BlitzMax._symbols.push( symbol )
 						
 						// Store this symbol as a container
 						if (isContainer)
@@ -225,6 +260,6 @@ export class BmxDocumentSymbolProvider implements vscode.DocumentSymbolProvider 
 			}
 		}
 		
-		return symbols
+		return BlitzMax._symbols
     }
 }

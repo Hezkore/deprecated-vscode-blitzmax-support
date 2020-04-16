@@ -11,6 +11,8 @@ export class BlitzMaxHandler{
 	_modules: Map<string, BmxModule> = new Map()
 	_commands: AnalyzeDoc[] = []
 	_autoCompletes: vscode.CompletionItem[] = []
+	_autoCompleteMethods: vscode.CompletionItem[] = []
+	_symbols: vscode.DocumentSymbol[] = []
 	
 	private _troubleshootString: string = 'More info at: https://marketplace.visualstudio.com/items?itemName=Hezkore.blitzmax#troubleshooting'
 	private _ready: boolean = false
@@ -242,7 +244,7 @@ export class BlitzMaxHandler{
 		return result
 	}
 	
-	getCommands( allowMethod: boolean = false): AnalyzeDoc[]{
+	getCommands( allowMethod: boolean = true ): AnalyzeDoc[]{
 		
 		if (!this.ready) return []
 		
@@ -261,19 +263,139 @@ export class BlitzMaxHandler{
 		}else{ return this._commands }	
 	}
 	
+	private _processAutoCompleteSymbol( symbol: vscode.DocumentSymbol, allowMethod: boolean, tree: vscode.DocumentSymbol[] ):  vscode.CompletionItem | undefined {
+		
+		if (!allowMethod){
+			switch (symbol.kind) {
+				case vscode.SymbolKind.Method:
+				case vscode.SymbolKind.Field:
+					return undefined
+			}
+		}
+		
+		if (allowMethod){
+			switch (symbol.kind) {
+				case vscode.SymbolKind.Class:
+					return undefined
+			}
+		}
+		
+		let kind: vscode.CompletionItemKind = vscode.CompletionItemKind.Text
+		let kindName: string = ''
+		
+		// Ugh how do I convert this automatically?!
+		switch (symbol.kind) {
+			case vscode.SymbolKind.Class:
+				kind = vscode.CompletionItemKind.Class
+				kindName = 'Type'
+				break
+				
+			case vscode.SymbolKind.Variable:
+				kind = vscode.CompletionItemKind.Variable
+				kindName = 'Variable'
+				break
+			
+			case vscode.SymbolKind.Method:
+				kind = vscode.CompletionItemKind.Method
+				kindName = 'Method'
+				break
+			
+			case vscode.SymbolKind.Function:
+				kind = vscode.CompletionItemKind.Function
+				kindName = 'Function'
+				break
+			
+			case vscode.SymbolKind.Interface:
+				kind = vscode.CompletionItemKind.Interface
+				kindName = 'Interface'
+				break
+			
+			case vscode.SymbolKind.Enum:
+				kind = vscode.CompletionItemKind.Enum
+				kindName = 'Enum'
+				break
+			
+			case vscode.SymbolKind.Struct:
+				kind = vscode.CompletionItemKind.Struct
+				kindName = 'Struct'
+				break
+			
+			case vscode.SymbolKind.Constant:
+				kind = vscode.CompletionItemKind.Constant
+				kindName = 'Const'
+				break
+			
+			case vscode.SymbolKind.Field:
+				kind = vscode.CompletionItemKind.Field
+				kindName = 'Field'
+				break
+		}
+		
+		// Construct item with our symbol
+		const item = new vscode.CompletionItem( symbol.name, kind )
+		item.documentation = new vscode.MarkdownString()
+		.appendCodeblock( kindName + ' ' + symbol.name, 'blitzmax' )
+		//.appendMarkdown( tree[0].name )
+		.appendMarkdown( '\r\r*' + `Line ${symbol.selectionRange.start.line + 1}` + '*' )
+		
+		// Prettify document insert data
+		item.insertText = new vscode.SnippetString( symbol.name )
+		switch (item.kind) {
+			case vscode.CompletionItemKind.Function:
+			case vscode.CompletionItemKind.Method:
+				item.insertText.appendText( '(' )
+				item.insertText.appendPlaceholder( '' )
+				item.insertText.appendText( ')' )
+				break
+		}
+		
+		return item
+	}
+	
+	private _processAutoCompleteSymbolChild( parent: vscode.DocumentSymbol[], output: vscode.CompletionItem[], allowMethod: boolean, tree: vscode.DocumentSymbol[] = [] ) {
+		
+		parent.forEach( child => {
+			
+			const item = this._processAutoCompleteSymbol( child, allowMethod, tree )
+			if (item) output.push( item )
+			
+			if (child.children)
+				this._processAutoCompleteSymbolChild( child.children, output, allowMethod, tree )
+		})
+	}
+	
+	getAutoCompleteSymbols( allowMethod: boolean ): vscode.CompletionItem[] {
+		
+		if (!this.ready) return []
+		
+		let autoSymbols: vscode.CompletionItem[] = []
+		this._processAutoCompleteSymbolChild( this._symbols, autoSymbols, allowMethod )		
+		return autoSymbols
+	}
+	
+	
 	getAutoCompletes(): vscode.CompletionItem[]{
 		
 		if (!this.ready) return []
 		
 		if (this._autoCompletes.length <= 0) this.generateAutoCompletes()
-		return this._autoCompletes
+		return this.getAutoCompleteSymbols( false ).concat( this._autoCompletes )
+	}
+	
+	getAutoCompleteMethods(): vscode.CompletionItem[]{
+		
+		if (!this.ready) return []
+		
+		// Not a typo! Use _autoCompletes for this as well
+		if (this._autoCompletes.length <= 0) this.generateAutoCompletes()
+		return this.getAutoCompleteSymbols( true ).concat( this._autoCompleteMethods )
 	}
 	
 	private generateAutoCompletes() {
 		
 		console.log( 'Generating auto completes' )
 		
-		const cmds = this.getCommands( false )
+		const cmds = this.getCommands()
 		for(var ci=0; ci<cmds.length; ci++){
 			
 			// Get the command
@@ -292,26 +414,26 @@ export class BlitzMaxHandler{
 					break
 					
 				case 'method':
-						kind = vscode.CompletionItemKind.Method
-						break
+					kind = vscode.CompletionItemKind.Method
+					break
 					
 				case 'type':
-						kind = vscode.CompletionItemKind.Class
-						break
+					kind = vscode.CompletionItemKind.Class
+					break
 					
 				case 'enum':
-						kind = vscode.CompletionItemKind.Enum
-						break
+					kind = vscode.CompletionItemKind.Enum
+					break
 					
 				case 'keyword':
-						kind = vscode.CompletionItemKind.Keyword
-						break
+					kind = vscode.CompletionItemKind.Keyword
+					break
 					
 				case 'local':
 				case 'global':
 				case 'const':
-						kind = vscode.CompletionItemKind.Variable
-						break
+					kind = vscode.CompletionItemKind.Variable
+					break
 			}
 			
 			// Construct item with our information
@@ -348,8 +470,11 @@ export class BlitzMaxHandler{
 					break
 			}
 			
-			// Push the complete item to our array
-			this._autoCompletes.push(item)				
+			// Push the complete item to the correct stack
+			if (cmd.regards.type == 'method')
+				this._autoCompleteMethods.push(item)
+			else
+				this._autoCompletes.push(item)			
 		}
 	}
 	

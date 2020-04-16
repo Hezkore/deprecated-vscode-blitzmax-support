@@ -1,5 +1,13 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.29.0
+* Outline items are now suggested as auto-complete.
+* Methods are now suggested as auto-complete.
+* Fixed several outline issues.
+* Fixed an conditional compiling highlight issue.
+* Fixed an hex and binary literals highlight issue.
+* Same line access modifiers partially supported.
+
 ## Version 1.28.0
 * 'Versions' added to view container.
 * 'Build Options' now has an edit button.

@@ -83,7 +83,7 @@ async function registerProviders( context: vscode.ExtensionContext ) {
 	// Completion item provider
 	context.subscriptions.push(
 		vscode.languages.registerCompletionItemProvider({ scheme: 'file', language: 'blitzmax' },
-			new BmxCompletionProvider()
+			new BmxCompletionProvider(), '.'
 		)
 	)
 	
