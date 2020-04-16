@@ -102,15 +102,18 @@
 			"view/item/context": [
 				{
 					"command": "blitzmax.addNewMultiPath",
-					"when": "view == blitzmax-multi"
-				},
-				{
-					"command": "blitzmax.removeMultiPath",
-					"when": "view == blitzmax-multi"
+					"when": "view == blitzmax-multi",
+					"group": "@multi0"
 				},
 				{
 					"command": "blitzmax.renameMultiPath",
-					"when": "view == blitzmax-multi"
+					"when": "view == blitzmax-multi",
+					"group": "@multi0"
+				},
+				{
+					"command": "blitzmax.removeMultiPath",
+					"when": "view == blitzmax-multi",
+					"group": "@multi1"
 				},
 				{
 					"command": "blitzmax.toggleBuildOption",

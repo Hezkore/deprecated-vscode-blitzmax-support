@@ -74,10 +74,41 @@ export class MultiBmxExplorer {
 	}
 }
 
+async function getMultiPath( name: string | undefined = undefined, path: string | undefined = undefined ): Promise<multiBmxPath | undefined> {
+	
+	return new Promise<multiBmxPath | undefined>( ( resolve, _reject ) => {
+		
+		if (!name && !path) return resolve()
+		if (name) name = name.toLowerCase()
+		
+		const paths: multiBmxPath[] | undefined = vscode.workspace.getConfiguration( 'blitzmax' ).get( 'multiBmxPath' )
+		if (!paths) return resolve()
+		
+		paths.forEach( pathItem => {
+			
+			if (name){
+				if (name == pathItem.name.toLowerCase()) return resolve( pathItem )
+			}
+			
+			if (path){
+				if (path == pathItem.path) return resolve( pathItem )
+			}
+		})
+		
+		return resolve()
+	})
+}
+
 export async function renameMultiPath( item: vscode.TreeItem ) {
 	
 	const selectedName = await vscode.window.showInputBox( {value: path.basename( item.label ? item.label : '' ), placeHolder: 'My BlitzMax Installation'} )
-	if (selectedName) {
+	if (selectedName && selectedName.toLowerCase() != item.label?.toLowerCase()) {
+		
+		if (await getMultiPath( selectedName )) {
+			vscode.window.showErrorMessage( 'This version name already exists' )
+			renameMultiPath( item )
+			return
+		}
 		
 		const paths: multiBmxPath[] | undefined = await vscode.workspace.getConfiguration( 'blitzmax' ).get( 'multiBmxPath' )
 		if (!paths) return
@@ -132,11 +163,48 @@ export async function addNewMultiPath() {
 		
 		if (fileUri && fileUri[0]) {
 			
-			const selectedName = await vscode.window.showInputBox( {value: path.basename( fileUri[0].fsPath ) ,placeHolder: 'My BlitzMax Installation'} )
+			// Check if this version already exists
+			const existingPath = await getMultiPath( undefined, fileUri[0].fsPath )
+			if (existingPath) {
+				vscode.window.showErrorMessage( 'The version ' + existingPath.name + ' already uses this path' )
+				return
+			}
+			
+			let selectedName = await vscode.window.showInputBox( {value: path.basename( fileUri[0].fsPath ), placeHolder: 'My BlitzMax Installation'} )
 			if (selectedName) {
+				
+				// Check if this name already exists
+				if (await getMultiPath( selectedName )) {
+					let index: number = 2
+					const origName: string = selectedName
+					while (await getMultiPath( selectedName )) {
+						selectedName = origName + index.toString()
+						index++
+					}
+					vscode.window.showErrorMessage( 'This version name already exists.\nRenaming to ' + selectedName )
+				}
 					
 				let paths: multiBmxPath[] | undefined = await vscode.workspace.getConfiguration( 'blitzmax' ).get( 'multiBmxPath' )
 				if (!paths) paths = []
+				
+				// Make sure to add current version
+				if (paths.length <= 0) {
+					if (fileUri[0].fsPath != BlitzMax.path) {
+						
+						await vscode.window.showInformationMessage( "Automatically add the BlitzMax version you're currently using?", 'Yes', 'No').then( selection => {
+							
+							if (paths && selectedName && selection?.toLowerCase() == 'yes') {
+								// Find a fitting default name
+								let curVerName: string = path.basename( BlitzMax.path )
+								if (curVerName.toLowerCase() == selectedName.toLowerCase())
+									curVerName = 'Default ' + curVerName
+								
+								paths.push( { name: curVerName, path: BlitzMax.path} )
+							}
+						})
+					}
+				}
+				
 				paths.push( { name: selectedName, path: fileUri[0].fsPath} )
 				await vscode.workspace.getConfiguration( 'blitzmax' ).update( 'multiBmxPath', paths, true )
 			}
