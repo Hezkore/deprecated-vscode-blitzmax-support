@@ -32,7 +32,7 @@
 	],
 	"activationEvents": [
 		"onView:blitzmax-build",
-		"onView:blitzmax-samples",
+		"onView:blitzmax-help",
 		"onView:blitzmax-multi",
 		"onCommand:blitzmax.generateProject",
 		"onLanguage:blitzmax"
@@ -75,8 +75,8 @@
 					"name": "Build Options"
 				},
 				{
-					"id": "blitzmax-samples",
-					"name": "Samples"
+					"id": "blitzmax-help",
+					"name": "Help"
 				},
 				{
 					"id": "blitzmax-multi",

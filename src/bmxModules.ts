@@ -238,7 +238,8 @@ export interface AnalyzeDoc{
 	returns?: string,
 	regards: AnalyzeItem,
 	searchName: string,
-	module: string
+	module: string,
+	examplePath?: string
 }
 enum AnalyzeBlock{
 	nothing,

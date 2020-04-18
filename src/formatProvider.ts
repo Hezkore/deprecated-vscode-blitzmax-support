@@ -392,7 +392,7 @@ function formatWord( word:string, previousWord:string | undefined, range:vscode.
 	}
 
 	// Look for a command straight from BlitzMax
-	let cmds = BlitzMax.getCommand( word )
+	let cmds = BlitzMax.searchCommands( word )
 	if (!cmds || cmds.length <= 0) return undefined
 	
 	// Find a command

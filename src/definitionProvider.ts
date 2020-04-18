@@ -14,10 +14,10 @@ export class BmxDefinitionProvider implements vscode.DefinitionProvider {
 		if (!word) return null
 		
 		// Attempt to get functions and normal commands
-		let cmds = BlitzMax.getCommand( word, false )
+		let cmds = BlitzMax.searchCommands( word, false )
 		
 		if (!cmds || cmds.length <= 0){
-			cmds = BlitzMax.getCommand( word, true )
+			cmds = BlitzMax.searchCommands( word, true )
 		}
 		
 		if (!cmds || cmds.length <= 0) return null

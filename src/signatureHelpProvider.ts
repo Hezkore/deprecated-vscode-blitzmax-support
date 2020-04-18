@@ -14,7 +14,7 @@ export class BmxSignatureHelpProvider implements vscode.SignatureHelpProvider {
 		const funcName = fileContents.slice(document.offsetAt(funcRange.start), document.offsetAt(funcRange.end))
 		const paramIndex = call.commas.length
 		
-		const cmds = BlitzMax.getCommand( funcName )
+		const cmds = BlitzMax.searchCommands( funcName )
 		if (!cmds || cmds.length <= 0) return null
 		
 		const sigStack = new vscode.SignatureHelp()

@@ -157,36 +157,61 @@ export function setSourceFile( file: vscode.Uri | undefined ){
 		vscode.window.showInformationMessage( filePath + ' has been set as the default task source' )
 }
 
-export function getWordAt( document: vscode.TextDocument, position: vscode.Position ): string{
+export function currentWord( position: vscode.Position | undefined = undefined, document: vscode.TextDocument | undefined = undefined, editor: vscode.TextEditor | undefined = undefined ): string{
 	
-	let wordRange = document.getWordRangeAtPosition(position)
-	if (!wordRange) { return '' }
-	
-	let highlight = document.getText(wordRange)
-	if (!highlight) { return '' }
-	
-	return highlight
-}
-
-export function currentWord(): string{
-	
-	const editor = vscode.window.activeTextEditor
+	// Use the current active editor if no editor was specified
+	if (!editor) editor = vscode.window.activeTextEditor
 	if (!editor) return ''
 	
-	let cursorPosition = editor.selection.start
-	if (!cursorPosition) return ''
+	// Use the cursor position if no position was specified
+	if (!position) position = editor.selection.start
+	if (!position) return ''
 	
-	let wordRange = editor.document.getWordRangeAtPosition( cursorPosition )
+	// Use the editor document if no document was specified
+	if (!document) document = editor.document
+	if (!document) return ''
+	
+	let wordRange = document.getWordRangeAtPosition( position )
 	if (!wordRange) return ''
 	
-	let highlight = editor.document.getText( wordRange )
-	if (!highlight) return ''
-	
-	return highlight
+	let word = document.getText( wordRange )
+	return word
 }
 
-export function capitalize( text:string ): string{
+export function currentWordTrigger( position: vscode.Position | undefined = undefined, document: vscode.TextDocument | undefined = undefined, editor: vscode.TextEditor | undefined = undefined ): string{
 	
+	// Use the current active editor if no editor was specified
+	if (!editor) editor = vscode.window.activeTextEditor
+	if (!editor) return ''
+	
+	// Use the cursor position if no position was specified
+	if (!position) position = editor.selection.start
+	if (!position) return ''
+	
+	// Use the editor document if no document was specified
+	if (!document) document = editor.document
+	if (!document) return ''
+	
+	let wordRange = document.getWordRangeAtPosition( position )
+	if (!wordRange) return ''
+	
+	let word = document.getText( wordRange )
+	if (!word) return ''
+	
+	let wordTrigger: string = ''
+	if (wordRange.start.character-1 >= 0) {
+		wordTrigger = document.getText(new vscode.Range(
+			new vscode.Position( wordRange.start.line, wordRange.start.character-1 ),
+			new vscode.Position( wordRange.start.line, wordRange.start.character)
+		))
+	}
+	
+	return wordTrigger
+}
+
+export function capitalize( text:string | undefined ): string{
+	
+	if (!text) return ''
 	return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase()
 }
 

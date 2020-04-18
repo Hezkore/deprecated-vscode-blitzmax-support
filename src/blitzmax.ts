@@ -200,9 +200,17 @@ export class BlitzMaxHandler{
 		})
 	}
 	
-	getModule( parent: string, name:string ): BmxModule | undefined {
+	getModule( name: string ): BmxModule | undefined {
 		
 		if (!this.ready) return undefined
+		
+		let parent: string = ''
+		name = name.toLowerCase()
+		
+		if (name.includes( '.' )) {
+			parent = name.split( '.' )[0] + '.mod'
+			name = name.split( '.' )[1] + '.mod'
+		}
 		
 		return this._modules.get( parent + "/" + name )
 	}
@@ -222,45 +230,57 @@ export class BlitzMaxHandler{
 		return modules
 	}
 	
-	getCommand( name:string, allowMethod: boolean = false ): AnalyzeDoc[] {
+	searchCommand( name: string, fromType: boolean = false, fromModules: string[] = [] ): AnalyzeDoc | undefined {
 		
-		if (!this.ready) return []
-		
+		if (!this.ready) return
 		name = name.toLowerCase()
 		
-		let result: AnalyzeDoc[] = []
-		let cmd: AnalyzeDoc
-		for(var i=0; i<this._commands.length; i++){
+		for (let i = 0; i < this._commands.length; i++) {
+			const cmd = this._commands[i]
 			
-			cmd = this._commands[i]
-			if (cmd.searchName == name){
-				
-				if (cmd.regards.inside){
-					if (allowMethod) result.push( cmd )
-				}else{ result.push( cmd ) }
+			// Apply module filter
+			if (fromModules.length > 0) {
+				if (!fromModules.includes( cmd.module )) continue
 			}
+			
+			// Apply type filter
+			if (!cmd.regards.inside == fromType) continue
+			
+			// Is this a match?
+			if (cmd.searchName == name) return cmd
+		}
+		
+		return
+	}
+	
+	searchCommands( name: string, fromType: boolean = false, fromModules: string[] = [] ): AnalyzeDoc[] {
+		
+		if (!this.ready) return []
+		name = name.toLowerCase()
+		let result: AnalyzeDoc[] = []
+		
+		for (let i = 0; i < this._commands.length; i++) {
+			const cmd = this._commands[i]
+			
+			// Apply module filter
+			if (fromModules.length > 0) {
+				if (!fromModules.includes( cmd.module )) continue
+			}
+			
+			// Apply type filter
+			if (!cmd.regards.inside == fromType) continue
+			
+			// Is this a match?
+			if (cmd.searchName == name) result.push( cmd )
 		}
 		
 		return result
 	}
 	
-	getCommands( allowMethod: boolean = true ): AnalyzeDoc[]{
+	getAllCommands(): AnalyzeDoc[]{
 		
 		if (!this.ready) return []
-		
-		if (!allowMethod){
-			
-			let result: AnalyzeDoc[] = []
-			
-			for(var i=0; i<this._commands.length; i++){
-				
-				if (!this._commands[i].regards.inside){
-					result.push( this._commands[i] )
-				}
-			}
-			
-			return result
-		}else{ return this._commands }	
+		return this._commands
 	}
 	
 	private _processAutoCompleteSymbol( symbol: vscode.DocumentSymbol, allowMethod: boolean, tree: vscode.DocumentSymbol[] ):  vscode.CompletionItem | undefined {
@@ -395,7 +415,7 @@ export class BlitzMaxHandler{
 		
 		console.log( 'Generating auto completes' )
 		
-		const cmds = this.getCommands()
+		const cmds = this.getAllCommands()
 		for(var ci=0; ci<cmds.length; ci++){
 			
 			// Get the command
@@ -556,25 +576,40 @@ export class BlitzMaxHandler{
 			
 			if (!this.ready){
 				vscode.window.showErrorMessage( 'BlitzMax not ready!' )
-				return reject()
+				return resolve()
 			}
 			
 			// File length must be greater than 4
 			// .bmx is 4 letters by itself!
-			if (!cmd || !cmd.regards || !cmd.regards.file || cmd.regards.file.length <= 4) return ''
+			if (!cmd || !cmd.regards || !cmd.regards.file || cmd.regards.file.length <= 4)
+				return resolve( '' )
 			
-			const exampleFolders = ['doc','examples','docs','example','test','tests']
-			
-			for (let i = 0; i < exampleFolders.length; i++) {
-				const examplePath = path.join( BlitzMax.path,
-					path.dirname( cmd.regards.file ),
-					exampleFolders[i],
-					cmd.searchName + '.bmx'
-				)
-				if (await exists( examplePath )) return resolve( examplePath )
+			// Check if we already have the path
+			if (!cmd.examplePath) {
+				
+				// Find the path
+				const exampleFolders = ['doc', 'docs', 'example', 'examples', 'test', 'tests']
+				
+				// Todo: This needs to be fixed up!
+				// NEVER assume that .bmx will be lowercase
+				
+				for (let i = 0; i < exampleFolders.length; i++) {
+					
+					const examplePath = path.join( BlitzMax.path,
+						path.dirname( cmd.regards.file ),
+						exampleFolders[i],
+						cmd.searchName + '.bmx'
+					)
+					
+					if (await exists( examplePath )) {
+						cmd.examplePath = examplePath
+						break
+					}
+				}
+				
 			}
 			
-			return resolve( '' )
+			return resolve( cmd.examplePath )
 		})
 	}
 	
@@ -587,12 +622,11 @@ export class BlitzMaxHandler{
 				return reject()
 			}
 			
-			let text = await readFile( await this.hasExample( cmd ) )
-			
-			return resolve( text )
+			return resolve( await readFile( await this.hasExample( cmd ) ) )
 		})
 	}
 	
+	/*
 	async showExample( cmd: AnalyzeDoc, showAbout: boolean ){
 		return new Promise<string>( async ( resolve, reject ) => {
 			
@@ -625,6 +659,7 @@ export class BlitzMaxHandler{
 			return resolve()
 		})
 	}
+	*/
 	
 	warnNotReadyToBuild(): boolean{
 		if (this.readyToBuild) return false

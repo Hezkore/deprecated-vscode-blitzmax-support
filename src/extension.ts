@@ -1,8 +1,10 @@
 'use strict'
 
 import * as vscode from 'vscode'
+import * as fs from 'fs'
+import * as path from 'path'
 import * as bmxDiagnostics from './diagnostics'
-import { setSourceFile, currentWord, currentBmx, log } from './common'
+import { setSourceFile, currentWord, currentBmx, log, currentWordTrigger } from './common'
 import { BmxDocumentSymbolProvider } from './documentSymbolProvider'
 import { BmxFormatProvider, BmxRangeFormatProvider, BmxOnTypeFormatProvider } from './formatProvider'
 import { BmxActionProvider } from './actionProvider'
@@ -18,11 +20,13 @@ import { AnalyzeDoc, scanModules } from './bmxModules'
 import { askToGenerateProject } from './generateProject'
 import { checkBlitzMaxUpdates } from './checkUpdates'
 import { BmxBuildTreeProvider } from './buildTree'
-import { BmxSamplesExplorer } from './samplesTree'
+import { BmxHelpExplorer } from './helpTree'
 import { MultiBmxExplorer, addNewMultiPath, switchMultiPath, removeMultiPath, renameMultiPath } from './multiBmxHandler'
+import { showModuleDocumentation, registerDocumentationContext } from './documentationHandler'
 
 export async function activate( context: vscode.ExtensionContext ) {
 	
+	registerDocumentationContext( context)
 	registerEvents( context )
 	registerCommands( context )
 	registerProviders( context )
@@ -33,6 +37,8 @@ export async function activate( context: vscode.ExtensionContext ) {
 	
 	if (!BlitzMax.problem && vscode.workspace.getConfiguration( 'blitzmax' ).get( 'checkForUpdates' ))
 		checkBlitzMaxUpdates( true )
+	
+	showModuleDocumentation( 'BrL.StAnDaRdIo', 'pRiNt' )
 }
 
 export function deactivate(): void {
@@ -40,8 +46,8 @@ export function deactivate(): void {
 
 async function registerPostMisc( context:vscode.ExtensionContext ) {
 	
-	// Samples tree provider
-	new BmxSamplesExplorer( context )
+	// Help tree provider
+	new BmxHelpExplorer( context )
 	
 	// Multi Bmx tree provider
 	new MultiBmxExplorer( context )
@@ -55,7 +61,7 @@ async function registerEvents( context:vscode.ExtensionContext ) {
 			
 			if (event.affectsConfiguration( 'blitzmax.bmxPath' )) {
 				BlitzMax.setup( context )
-				vscode.commands.executeCommand( 'blitzmax.refreshSamples' )
+				vscode.commands.executeCommand( 'blitzmax.refreshHelp' )
 				vscode.commands.executeCommand( 'blitzmax.refreshMultiBmx' )
 			}
 		})
@@ -144,6 +150,29 @@ async function registerProviders( context: vscode.ExtensionContext ) {
 async function registerCommands( context:vscode.ExtensionContext ) {
 	
 	context.subscriptions.push(
+		vscode.commands.registerCommand( 'blitzmax.openModule', (name: string, line: number) => {
+			
+			const mod = BlitzMax.getModule( name )
+			let range: vscode.Range | undefined
+			
+			if (line) {
+				range = new vscode.Range(
+					new vscode.Position( line, 0 ),
+					new vscode.Position( line, 0 )
+				)
+				
+			}
+			
+			if (mod) {
+				vscode.window.showTextDocument(
+					vscode.Uri.file( path.join( BlitzMax.modPath, mod.file ) ),
+					{ selection: range, preview: true }
+				)
+			}
+		})
+	)
+	
+	context.subscriptions.push(
 		vscode.commands.registerCommand( 'blitzmax.renameMultiPath', (context) => {
 			
 			renameMultiPath( context )
@@ -223,33 +252,18 @@ async function registerCommands( context:vscode.ExtensionContext ) {
 	)
 	
 	context.subscriptions.push(
-		vscode.commands.registerCommand( 'blitzmax.findHelp', async ( word: string ) => {
+		vscode.commands.registerCommand( 'blitzmax.findHelp', async ( word: string, fromType: boolean = false, fromModule: string[] ) => {
 			
 			if (BlitzMax.warnNotReady()) return
 			
-			let showAbout: boolean = true
-			// Okay this is a dirty hack, just sue me already!
-			// Or send a tip on how to pass a second param
-			// to a registered VSCode command
-			if (word && word.endsWith( '&false' )){
-				
-				word = word.slice( 0, -6 )
-				showAbout = false
+			if (!word) {
+				word = currentWord()
+				fromType = currentWordTrigger() == '.' ? true : false
+				fromModule = []
 			}
 			
-			let cmds: AnalyzeDoc[]
-			if (word)
-				cmds = BlitzMax.getCommand( word )
-			else
-				cmds = BlitzMax.getCommand( currentWord() )
-			
-			// Find a command
-			for(var i=0; i<cmds.length; i++){
-				const cmd = cmds[i]
-				
-				await BlitzMax.showExample( cmd, showAbout )
-				return
-			}
+			const cmd = BlitzMax.searchCommand( word, fromType, fromModule )
+			if (cmd) await showModuleDocumentation( cmd.module, cmd.regards.name ? cmd.regards.name : cmd.searchName )
 		})
 	)
 	
