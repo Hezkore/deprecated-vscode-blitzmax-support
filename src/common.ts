@@ -97,7 +97,7 @@ export async function readDir( path:string ): Promise<string[]> {
     })
 }
 
-export async function readFile( filename:string ): Promise<string> {
+export async function readFile( filename: string ): Promise<string> {
 	
 	return new Promise(function(resolve, reject) {
 		

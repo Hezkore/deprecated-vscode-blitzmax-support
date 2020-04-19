@@ -3,7 +3,8 @@ import * as path from 'path'
 import * as fs from 'fs'
 import { AnalyzeDoc, BmxModule } from './bmxModules'
 import { BlitzMax } from './blitzmax'
-import { capitalize, generateCommandText } from './common'
+import { capitalize, generateCommandText, readFile, exists } from './common'
+import { resolve } from 'dns'
 
 let webPanel: vscode.WebviewPanel | undefined
 let documentationContext: vscode.ExtensionContext
@@ -74,139 +75,227 @@ export async function showModuleDocumentation( name: string, command: string ){
 			)
 		}
 		
-		webPanel.webview.html = getWebviewContent( module, command )
+		webPanel.webview.html = await getWebviewContent( module, command )
 		
 		return resolve()
 	})
 }
 
-function getWebviewContent( module: BmxModule, command: string ): string {
+async function getWebviewContent( module: BmxModule, command: string ): Promise<string> {
 	
-	if (!module.cacheDocumentation) {
+	return new Promise<string>( async ( resolve, reject ) => {
 		
-		// Read the CSS styling
-		if (!cssStyle) cssStyle = fs.readFileSync( path.join(
-			documentationContext.extensionPath,
-			'media',
-			'style.css'
-		) ).toString()
-		
-		if (!headerStyle) {
-			headerStyle = `<!DOCTYPE html>
-			<html lang="en">
-			<head>
-			<meta charset="utf-8" />
-			<meta http-equiv="Content-Security-Policy" content="img-src ${webPanel?.webview.cspSource} http:;">
-			<style type="text/css">
-			`
-		}
-		
-		let html: string = headerStyle
-		html += cssStyle
-		html += footerStyle
-		
-		html += `
-		<body class="page-margins">
-			
-			<div id="sidebar" class="sidebar">
-				${generateSidebar( module )}
-			</div>
-			
-			<div id="main" class="main">
-				${generateMain( module )}
-			</div>
-			
-			<script>
-				function jumpTo(id){
-					var elmnt = document.getElementById(id);
-					elmnt.scrollIntoView();
-					var oldColor = elmnt.style.backgroundColor;
-					setTimeout(function() {
-						elmnt.style.backgroundColor = oldColor;
-					  }, 1000);
-					elmnt.style.backgroundColor = 'green';
-				}
-				
+		const endingScript = `
 				window.onload = function() {
 					jumpTo("${command}");
 				};
-			</script>
-		</body>`
+				</script>
+			</body>
+		</html>`
 		
-		module.cacheDocumentation = html + `</html>`
-	}
-	
-	return module.cacheDocumentation
-}
-
-function generateSidebar( module: BmxModule ): string {
-	
-	return `
-	<div style="height: 90px; display: block">
-		<table>
-			<td>
-				<img src="${webPanel?.webview.asWebviewUri(vscode.Uri.file(path.join(documentationContext.extensionPath, 'media')))}/icon.svg" height="76" width="76" alt="BlitzMax Logo" title="BlitzMax Logo" style="padding-right: 10px">
-			</td>
-			<td>
-			<div style="font-size: 20px; font-weight: 400; line-height: 24px">BlitzMax ${BlitzMax.version}<br>${module.name}</div>
-			</td>
-		</table>
-	</div>
-	
-    <hr>
-    <div style="height: 30px; display: block"></div>
-
-	<div style="padding-right: 10px; color: var(--vscode-foreground);">
-		${generateSidebarLinks( module )}
-    </div>`
-}
-
-function generateSidebarLinks( module: BmxModule ): string {
-	
-	if (!module || !module.commands) return ''
-	
-	let links: string = ''
-	
-	module.commands.sort().forEach( cmd => {
-		links += `<span>
-		<a onclick="jumpTo('${cmd.searchName}');" title="Jump to ${cmd.regards.name}">
-		${cmd.regards.name}
-		</a></span><br>`
+		if (!module.cacheDocumentation) {
+			await vscode.window.withProgress( {
+				location: vscode.ProgressLocation.Notification,
+				title:  'Generating documentation',
+				cancellable: false
+			}, (progress, token) => { return new Promise<boolean>( async ( resolve, reject ) => {
+				
+				progress.report( {message: module.name, increment: 25} )
+				
+				// Read the CSS styling
+				if (!cssStyle) {
+					
+					const cssPath = path.join(
+						documentationContext.extensionPath,
+						'media',
+						'style.css'
+					)
+					
+					cssStyle = await readFile( cssPath )
+				}
+				
+				progress.report( {increment: 25} )
+				
+				if (!headerStyle) {
+					headerStyle = `<!DOCTYPE html>
+					<html lang="en">
+					<head>
+					<meta charset="utf-8" />
+					<meta http-equiv="Content-Security-Policy" content="img-src ${webPanel?.webview.cspSource} http:;">
+					<style type="text/css">
+					`
+				}
+				
+				progress.report( {increment: 25} )
+				
+				let html: string = headerStyle
+				html += cssStyle
+				html += footerStyle
+				
+				html += `
+				<body class="page-margins">
+					
+					<div id="sidebar" class="sidebar">
+						${await generateSidebar( module )}
+					</div>
+					
+					<div id="main" class="main">
+						${await generateMain( module )}
+					</div>
+					
+					<script>
+						function jumpTo(id){
+							var elmnt = document.getElementById(id);
+							elmnt.scrollIntoView();
+							/*
+							var oldColor = elmnt.style.backgroundColor;
+							setTimeout(function() {
+								elmnt.style.backgroundColor = oldColor;
+							}, 1000);
+							elmnt.style.backgroundColor = 'green';
+							*/
+						}
+				`
+				
+				progress.report( {increment: 25} )
+				
+				module.cacheDocumentation = html
+				return resolve()
+			})})
+		}
+		
+		return resolve( module.cacheDocumentation + endingScript )
 	})
-	
-	return links
 }
 
-function generateMain( module: BmxModule ): string {
+async function generateSidebar( module: BmxModule ): Promise<string> {
 	
-	if (!module || !module.commands) return ''
-	
-	let main: string = generateMainTitle()
-	
-	module.commands.forEach( cmd => {
-		main += generateSection( cmd )
+	return new Promise<string>( async ( resolve, reject ) => {
+		return resolve( `
+		<div style="height: 90px; display: block">
+			<table>
+				<td>
+					<img src="${webPanel?.webview.asWebviewUri(vscode.Uri.file(path.join(documentationContext.extensionPath, 'media')))}/icon.svg" height="76" width="76" alt="BlitzMax Logo" title="BlitzMax Logo" style="padding-right: 10px">
+				</td>
+				<td>
+				<div style="font-size: 20px; font-weight: 400; line-height: 24px">BlitzMax ${BlitzMax.version}</div>
+				<div style="font-size: 16px; font-weight: 300; line-height: 24px">Version ${BlitzMax.releaseVersion.split( ' ' )}</div>
+				</td>
+			</table>
+		</div>
+		
+		<hr>
+		<div style="height: 30px; display: block"></div>
+
+		<div style="padding-right: 10px; color: var(--vscode-foreground);">
+			${await generateSidebarLinks( module )}
+		</div>` )
 	})
+}
+
+async function generateSidebarLinks( module: BmxModule ): Promise<string> {
 	
-	return main
+	return new Promise<string>( async ( resolve, reject ) => {
+		
+		if (!module || !module.commands) return resolve( '' )
+		
+		let links: string = ''
+		let previousItemSearchName: string = ''
+		
+		module.commands.sort().forEach( cmd => {
+			if (cmd.regards.name != module.name && cmd.searchName != previousItemSearchName) {
+				previousItemSearchName = cmd.searchName
+				links += `<span>
+				<a class="headerBtn" onclick="jumpTo('${cmd.searchName}');" title="Jump to ${cmd.regards.name}">
+				${cmd.regards.name}
+				</a></span><br>`
+			}
+		})
+		
+		return resolve( links )
+	})
 }
 
-function generateMainTitle(): string {
-	return `
-    <div style=" height: 90px; display: inline-block;">
-      <div class="main-title" data-loc-id="intellisense.configurations">IntelliSense Configurations</div>
-      <div style="color: var(--vscode-foreground);">
-        <span data-loc-id="intellisense.configurations.description">Use this editor to edit IntelliSense settings defined in the underlying <a href="command:C_Cpp.ConfigurationEditJSON" title="Edit configurations in JSON file" data-loc-id-title="edit.configurations.in.json">c_cpp_properties.json</a> file. Changes made in this editor only apply to the selected configuration. To edit multiple configurations at once go to <a href="command:C_Cpp.ConfigurationEditJSON" title="Edit configurations in JSON file" data-loc-id-title="edit.configurations.in.json">c_cpp_properties.json</a>.</span>
-      </div>
-    </div>`
+async function generateMain( module: BmxModule ): Promise<string> {
+	
+	return new Promise<string>( async ( resolve, reject ) => {
+		if (!module || !module.commands) return resolve( '' )
+		
+		let main: string = await generateMainTitle( module )
+		let previousSearchName: string | undefined = undefined
+		let similarCmds: AnalyzeDoc[] = []
+		
+		for (let i = 0; i < module.commands.length; i++) {
+			const cmd = module.commands[i]
+			
+			if (cmd.regards.name != module.name) {
+				if (previousSearchName == undefined)
+					previousSearchName = cmd.searchName
+				
+				if (previousSearchName != cmd.searchName || i == module.commands.length - 1) {
+					previousSearchName = cmd.searchName
+					main += await generateSection( similarCmds )
+					similarCmds = []
+				}
+				
+				similarCmds.push( cmd )
+			}
+		}
+		
+		return resolve( main )
+	})
 }
 
-function generateSection( cmd: AnalyzeDoc ): string {
-	return `
-	<div class="section">
-	<div id="${cmd.searchName}" class="section-title">${cmd.regards.name}</div>
-	<div class="section-text">${cmd.info}</div>
-	<div>
-	  <div class="section-note">${cmd.aboutStripped}</div>
-	</div>
-  </div>`
+async function generateMainTitle( module: BmxModule ): Promise<string> {
+	
+	return new Promise<string>( async ( resolve, reject ) => {
+		const bbintroPath: string = path.join( BlitzMax.modPath, module.parent, module.folderName, 'doc', 'intro.bbdoc' )
+		let bbintro: string = 'No information'
+		
+		if (await exists( bbintroPath ))
+			bbintro = await readFile( bbintroPath )
+		
+		return resolve(`
+		<div style="height: 90px; display: inline-block;">
+		<div class="main-title">${module.name}</div>
+		<div style="color: var(--vscode-foreground);">
+			<span>${bbintro}</span>
+		</div>
+		</div>`)
+	})
+}
+
+async function generateSection( cmds: AnalyzeDoc[] ): Promise<string> {
+	
+	return new Promise<string>( async ( resolve, reject ) => {
+		
+		const hasExample = await BlitzMax.hasExample( cmds[0] )
+		let example: string = ''
+		if (hasExample) {
+			example = await BlitzMax.getExample( cmds[0] )
+			if (example)
+				example = `<div class="section-example">
+					<pre><code>${example}</code></pre>
+				</div>`
+		}
+		
+		const title = `
+		<div id="${cmds[0].searchName}" class="section">
+		<div class="section-name">${cmds[0].regards.name}</div>
+		<div style="height: 12px; display: block"></div>`
+		
+		let detail: string = ''
+		
+		cmds.forEach( cmd => {
+			detail += `<div class="section-title">${cmd.regards.prettyData}</div>`
+		})
+		
+		return resolve( title + detail +
+		`<div class="section-text">${cmds[0].info}</div>
+			<div>
+				<div class="section-note">${cmds[0].aboutStripped ? cmds[0].aboutStripped : ''}</div>
+				${example}
+			</div>
+		</div>`)
+	})
 }

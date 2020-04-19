@@ -75,7 +75,20 @@
 }
 
 .section {
-	padding-bottom: 35px;
+	padding-bottom: 0px;
+	padding-top: 15px;
+}
+
+.section-name {
+	font-weight: 500;
+	font-size: 20px;
+	width: 100%;
+	color: var(--vscode-button-foreground);
+	background-color: var(--vscode-button-background);
+	border: solid 1px var(--vscode-contrastBorder);
+	padding-top: 6px;
+	padding-bottom: 8px;
+	padding-left: 8px;
 }
 
 .section-title {
@@ -87,6 +100,7 @@
 
 .section-text {
 	font-size: 14px;
+	padding-top: 12px;
 	padding-bottom: 8px;
 	color: var(--vscode-foreground);
 }
@@ -94,7 +108,11 @@
 .section-note {
 	font-size: 14px;
 	font-style: italic;
-	padding-bottom: 2px;
+	color: var(--vscode-foreground);
+}
+
+.section-example {
+	font-size: 15px;
 	color: var(--vscode-foreground);
 }
 
@@ -104,7 +122,6 @@
 	margin-top: 8px;
 	display: inline-block;
 	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
-	border-radius: 5px;
 }
 
 body {
