@@ -3,18 +3,12 @@ import * as path from 'path'
 import * as fs from 'fs'
 import { AnalyzeDoc, BmxModule } from './bmxModules'
 import { BlitzMax } from './blitzmax'
-import { capitalize } from './common'
+import { capitalize, generateCommandText } from './common'
 
 let webPanel: vscode.WebviewPanel | undefined
 let documentationContext: vscode.ExtensionContext
 let cssStyle: string
-let headerStyle: string = `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta http-equiv="Content-Security-Policy">
-<style type="text/css">
-`
+let headerStyle: string
 let footerStyle: string = `
 </style>
 </head>`
@@ -25,13 +19,13 @@ export function registerDocumentationContext( context: vscode.ExtensionContext )
 
 export async function showModuleDocumentation( name: string, command: string ){
 	
+	if (BlitzMax.warnNotReady()) return
+	
 	if (!name) return
 	name = name.toLowerCase()
 	if (command) command = command.toLowerCase()
 	
 	return new Promise<string>( async ( resolve, reject ) => {
-		
-		console.log( 'Show documentation for module ' + name + ' and jump to command ' + command )
 		
 		vscode.commands.executeCommand( 'blitzmax.helpExplorerSelect', name, command )
 		
@@ -42,13 +36,6 @@ export async function showModuleDocumentation( name: string, command: string ){
 			return resolve()
 		}
 		
-		// Read the CSS styling
-		if (!cssStyle) cssStyle = fs.readFileSync( path.join(
-			documentationContext.extensionPath,
-			'media',
-			'style.css'
-		) ).toString()
-		
 		// Show or create the web panel
 		if (webPanel) webPanel.reveal( vscode.ViewColumn.One )
 		else {
@@ -58,10 +45,11 @@ export async function showModuleDocumentation( name: string, command: string ){
 				'BlitzMax Help - ' + module.name,
 				vscode.ViewColumn.One,
 				{
+					retainContextWhenHidden: true,
 					enableScripts: true,
 					enableCommandUris: true,
 					enableFindWidget: true,
-					localResourceRoots: [vscode.Uri.file(path.join( documentationContext.extensionPath, 'media' ))]
+					localResourceRoots: [vscode.Uri.parse( path.join( documentationContext.extensionPath, 'media' ) )]
 				}
 			)
 			
@@ -86,92 +74,139 @@ export async function showModuleDocumentation( name: string, command: string ){
 			)
 		}
 		
-		// Is BlitzMax even ready?!
-		/*
-		if (!BlitzMax.ready){
-			vscode.window.showErrorMessage( 'BlitzMax not ready!' )
-			return reject()
-		}
+		webPanel.webview.html = getWebviewContent( module, command )
 		
-		let example: string | undefined
-		if (await BlitzMax.hasExample( cmd )) example = await BlitzMax.getExample( cmd )
-		webPanel.webview.html = getWebviewContent( cmd, example )
-		*/
-		
-		/*
-		let doc: vscode.TextDocument
-		
-		if (showAbout){
-			let text: string = 'rem ' + cmd.regards.name
-			text += '\n\ninfo: ' + cmd.info
-			if (cmd.aboutStripped ) text += '\n\nabout: ' + cmd.aboutStripped
-			text += '\nendrem\n'
-			
-			if (await BlitzMax.hasExample( cmd )){
-				text += '\n\' example:\n'
-				text += await BlitzMax.getExample( cmd )
-			}
-			
-			doc = await vscode.workspace.openTextDocument( { content: text, language: 'blitzmax' } )
-		}else{
-			const uri = vscode.Uri.parse( 'file:' + await BlitzMax.hasExample( cmd ) )
-			doc = await vscode.workspace.openTextDocument( uri )
-		}
-		
-		await vscode.window.showTextDocument( doc, { preview: true, viewColumn: vscode.ViewColumn.Active } )
-		*/
 		return resolve()
 	})
 }
 
-function getWebviewContent( cmd: AnalyzeDoc, example: string | undefined ) {
-	let html: string = headerStyle
-	html += cssStyle
-	html += footerStyle
+function getWebviewContent( module: BmxModule, command: string ): string {
 	
-	// Generate a pretty title
-	let cmdTitle: string = cmd.regards.prettyData ? cmd.regards.prettyData : 'Undefined'
-	
-	//let cmdLocation: string = capitalize( cmd.regards.type ) + //' from ' + cmd.module + " : " + cmd.line
-	let cmdLocation: string = `<span data-loc-id="end"> from <a href="command:blitzmax.findHelp" data="test" title="${cmd.module}" data-loc-id-title="end">${cmd.module}</a></span><br>`
-	
-	html += `
-	<body class="page-margins">
-		<!-- main -->
-		<div id="main" class="main">
-			
-			<!-- title -->
-			<div style=" height: 90px; display: inline-block;">
-				<div class="main-title"><code>${cmdTitle}</code></div>
-				<div style="color: var(--vscode-foreground);">
-					<span>${cmdLocation}</span>
-				</div>
-			</div>
-			
-			<hr>
-			<div style="height: 30px; display: block"></div>
-			
-			<!-- sections -->
-			<div class="section">
-				<div class="section-title" id="example">Example</div>
-				<div class="section-text" data-loc-id="configuration.name.description">
-					<pre><code>${example}</code></pre>
-				</div>
-			</div>
-			<!-- sections end -->
-		</div> <!-- main end -->	
+	if (!module.cacheDocumentation) {
 		
-		<script>
-			const vscode = acquireVsCodeApi();
-			window.onload = function() {
-				vscode.postMessage({
-					command: 'alert',
-					text: '🐛  on line '
-				})
-				console.log('Ready to accept data.');
-			};
-		</script>
-	</body>`
+		// Read the CSS styling
+		if (!cssStyle) cssStyle = fs.readFileSync( path.join(
+			documentationContext.extensionPath,
+			'media',
+			'style.css'
+		) ).toString()
+		
+		if (!headerStyle) {
+			headerStyle = `<!DOCTYPE html>
+			<html lang="en">
+			<head>
+			<meta charset="utf-8" />
+			<meta http-equiv="Content-Security-Policy" content="img-src ${webPanel?.webview.cspSource} http:;">
+			<style type="text/css">
+			`
+		}
+		
+		let html: string = headerStyle
+		html += cssStyle
+		html += footerStyle
+		
+		html += `
+		<body class="page-margins">
+			
+			<div id="sidebar" class="sidebar">
+				${generateSidebar( module )}
+			</div>
+			
+			<div id="main" class="main">
+				${generateMain( module )}
+			</div>
+			
+			<script>
+				function jumpTo(id){
+					var elmnt = document.getElementById(id);
+					elmnt.scrollIntoView();
+					var oldColor = elmnt.style.backgroundColor;
+					setTimeout(function() {
+						elmnt.style.backgroundColor = oldColor;
+					  }, 1000);
+					elmnt.style.backgroundColor = 'green';
+				}
+				
+				window.onload = function() {
+					jumpTo("${command}");
+				};
+			</script>
+		</body>`
+		
+		module.cacheDocumentation = html + `</html>`
+	}
 	
-	return html + `</html>`
+	return module.cacheDocumentation
+}
+
+function generateSidebar( module: BmxModule ): string {
+	
+	return `
+	<div style="height: 90px; display: block">
+		<table>
+			<td>
+				<img src="${webPanel?.webview.asWebviewUri(vscode.Uri.file(path.join(documentationContext.extensionPath, 'media')))}/icon.svg" height="76" width="76" alt="BlitzMax Logo" title="BlitzMax Logo" style="padding-right: 10px">
+			</td>
+			<td>
+			<div style="font-size: 20px; font-weight: 400; line-height: 24px">BlitzMax ${BlitzMax.version}<br>${module.name}</div>
+			</td>
+		</table>
+	</div>
+	
+    <hr>
+    <div style="height: 30px; display: block"></div>
+
+	<div style="padding-right: 10px; color: var(--vscode-foreground);">
+		${generateSidebarLinks( module )}
+    </div>`
+}
+
+function generateSidebarLinks( module: BmxModule ): string {
+	
+	if (!module || !module.commands) return ''
+	
+	let links: string = ''
+	
+	module.commands.sort().forEach( cmd => {
+		links += `<span>
+		<a onclick="jumpTo('${cmd.searchName}');" title="Jump to ${cmd.regards.name}">
+		${cmd.regards.name}
+		</a></span><br>`
+	})
+	
+	return links
+}
+
+function generateMain( module: BmxModule ): string {
+	
+	if (!module || !module.commands) return ''
+	
+	let main: string = generateMainTitle()
+	
+	module.commands.forEach( cmd => {
+		main += generateSection( cmd )
+	})
+	
+	return main
+}
+
+function generateMainTitle(): string {
+	return `
+    <div style=" height: 90px; display: inline-block;">
+      <div class="main-title" data-loc-id="intellisense.configurations">IntelliSense Configurations</div>
+      <div style="color: var(--vscode-foreground);">
+        <span data-loc-id="intellisense.configurations.description">Use this editor to edit IntelliSense settings defined in the underlying <a href="command:C_Cpp.ConfigurationEditJSON" title="Edit configurations in JSON file" data-loc-id-title="edit.configurations.in.json">c_cpp_properties.json</a> file. Changes made in this editor only apply to the selected configuration. To edit multiple configurations at once go to <a href="command:C_Cpp.ConfigurationEditJSON" title="Edit configurations in JSON file" data-loc-id-title="edit.configurations.in.json">c_cpp_properties.json</a>.</span>
+      </div>
+    </div>`
+}
+
+function generateSection( cmd: AnalyzeDoc ): string {
+	return `
+	<div class="section">
+	<div id="${cmd.searchName}" class="section-title">${cmd.regards.name}</div>
+	<div class="section-text">${cmd.info}</div>
+	<div>
+	  <div class="section-note">${cmd.aboutStripped}</div>
+	</div>
+  </div>`
 }

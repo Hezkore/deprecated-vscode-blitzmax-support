@@ -157,6 +157,10 @@ export function setSourceFile( file: vscode.Uri | undefined ){
 		vscode.window.showInformationMessage( filePath + ' has been set as the default task source' )
 }
 
+export function generateCommandText( command: string, args: any[] ) {
+	return `command:${command}?${encodeURIComponent(JSON.stringify(args))}`
+}
+
 export function currentWord( position: vscode.Position | undefined = undefined, document: vscode.TextDocument | undefined = undefined, editor: vscode.TextEditor | undefined = undefined ): string{
 	
 	// Use the current active editor if no editor was specified

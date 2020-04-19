@@ -38,7 +38,7 @@ export async function activate( context: vscode.ExtensionContext ) {
 	if (!BlitzMax.problem && vscode.workspace.getConfiguration( 'blitzmax' ).get( 'checkForUpdates' ))
 		checkBlitzMaxUpdates( true )
 	
-	showModuleDocumentation( 'BrL.StAnDaRdIo', 'pRiNt' )
+	showModuleDocumentation( 'BrL.bank', 'WriteBank' )
 }
 
 export function deactivate(): void {
@@ -262,8 +262,14 @@ async function registerCommands( context:vscode.ExtensionContext ) {
 				fromModule = []
 			}
 			
+			console.log( 'requesting  help for ' + word + ' fromtype ' + fromType + ' module ' + fromModule  )
+			
 			const cmd = BlitzMax.searchCommand( word, fromType, fromModule )
-			if (cmd) await showModuleDocumentation( cmd.module, cmd.regards.name ? cmd.regards.name : cmd.searchName )
+			if (cmd) {
+				vscode.window.setStatusBarMessage( 'Showing help for ' + cmd.regards.name + ' from module ' + cmd.module, 1000 * 4 )
+				await showModuleDocumentation( cmd.module, cmd.regards.name ? cmd.regards.name : cmd.searchName )
+			} else
+				vscode.window.setStatusBarMessage( 'No help found for ' + word, 1000 * 2 )
 		})
 	)
 	

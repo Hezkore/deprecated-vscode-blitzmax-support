@@ -3,7 +3,7 @@
 import * as vscode from 'vscode'
 import { BlitzMax } from './blitzmax'
 import { AnalyzeDoc } from './bmxModules'
-import { currentWord, currentWordTrigger } from './common'
+import { currentWord, currentWordTrigger, generateCommandText } from './common'
 
 export class BmxHoverProvider implements vscode.HoverProvider {
 	async provideHover( document: vscode.TextDocument, position: vscode.Position ): Promise<any> {
@@ -41,13 +41,8 @@ function generateHoverContent( cmd: AnalyzeDoc ): vscode.Hover {
 	contents.appendMarkdown( cmd.info )
 	if (cmd.about) contents.appendMarkdown( '\n\n' + cmd.about )
 	if (BlitzMax.hasExample( cmd )){
-		
 		let exampleLink = vscode.Uri.parse(
-			`command:blitzmax.findHelp?${encodeURIComponent(JSON.stringify([
-				cmd.searchName,
-				cmd.regards.inside,
-				[cmd.module]
-			]))}`
+			generateCommandText( 'blitzmax.findHelp', [cmd.searchName,cmd.regards.inside,[cmd.module]] )
 		)
 		contents.appendMarkdown( '\n\n[Example](' + exampleLink + ')')
 	}

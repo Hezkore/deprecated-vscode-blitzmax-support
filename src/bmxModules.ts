@@ -14,7 +14,8 @@ export interface BmxModule{
 	folderName: string,
 	file: string,
 	lastModified: number,
-	commands?: AnalyzeDoc[]
+	commands?: AnalyzeDoc[],
+	cacheDocumentation?: string
 }
 
 //let modules: Map<string, BmxModule> = new Map()
