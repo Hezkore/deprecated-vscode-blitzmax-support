@@ -201,14 +201,24 @@ async function generateSidebarLinks( module: BmxModule ): Promise<string> {
 		
 		let links: string = ''
 		let previousItemSearchName: string = ''
+		let previousItemType: string = ''
 		
 		module.commands.sort().forEach( cmd => {
-			if (cmd.regards.name != module.name && cmd.searchName != previousItemSearchName) {
-				previousItemSearchName = cmd.searchName
-				links += `<span>
-				<a class="headerBtn" onclick="jumpTo('${cmd.searchName}');" title="Jump to ${cmd.regards.name}">
-				${cmd.regards.name}
-				</a></span><br>`
+			
+			if (cmd.regards.name != module.name) {
+				
+				if (cmd.regards.type && cmd.regards.type != previousItemType) {
+					previousItemType = cmd.regards.type
+					links += `<br><span style="font-weight: 700">${capitalize( cmd.regards.type )}s</span><br>`
+				}
+				
+				if (cmd.searchName != previousItemSearchName) {
+					previousItemSearchName = cmd.searchName
+					links += `<span>
+					<a class="headerBtn" onclick="jumpTo('${cmd.searchName}');" title="Jump to ${cmd.regards.name}">
+					${cmd.regards.name}
+					</a></span><br>`
+				}
 			}
 		})
 		
@@ -227,18 +237,29 @@ async function generateMain( module: BmxModule ): Promise<string> {
 		
 		for (let i = 0; i < module.commands.length; i++) {
 			const cmd = module.commands[i]
+			const isLast = i >= module.commands.length - 1
 			
-			if (cmd.regards.name != module.name) {
-				if (previousSearchName == undefined)
-					previousSearchName = cmd.searchName
-				
-				if (previousSearchName != cmd.searchName || i == module.commands.length - 1) {
-					previousSearchName = cmd.searchName
-					main += await generateSection( similarCmds )
-					similarCmds = []
-				}
-				
+			// Skip the module itself
+			if (cmd.regards.name == module.name) continue
+			
+			if (!previousSearchName)
+				previousSearchName = cmd.searchName
+			
+			// If this a similar command we bunch them together
+			if (previousSearchName == cmd.searchName) {
 				similarCmds.push( cmd )
+			}
+			
+			// If this command is not the same!
+			if (previousSearchName != cmd.searchName) {
+				previousSearchName = cmd.searchName
+				main += await generateSection( module, similarCmds )
+				similarCmds = []
+				similarCmds.push( cmd )
+			}
+			
+			if (isLast) {
+				main += await generateSection( module, similarCmds )
 			}
 		}
 		
@@ -265,7 +286,7 @@ async function generateMainTitle( module: BmxModule ): Promise<string> {
 	})
 }
 
-async function generateSection( cmds: AnalyzeDoc[] ): Promise<string> {
+async function generateSection( module: BmxModule, cmds: AnalyzeDoc[] ): Promise<string> {
 	
 	return new Promise<string>( async ( resolve, reject ) => {
 		
@@ -280,18 +301,19 @@ async function generateSection( cmds: AnalyzeDoc[] ): Promise<string> {
 		}
 		
 		const title = `
-		<div id="${cmds[0].searchName}" class="section">
-		<div class="section-name">${cmds[0].regards.name}</div>
-		<div style="height: 12px; display: block"></div>`
+		<div class="section">
+		<div id="${cmds[0].searchName}" class="section-name">${cmds[0].regards.name}</div>
+		<div style="height: 12px; display: block"></div>
+		<dl>`
 		
 		let detail: string = ''
 		
 		cmds.forEach( cmd => {
-			detail += `<div class="section-title">${cmd.regards.prettyData}</div>`
+			detail += `<div class="section-title"><li><a href="${generateCommandText( 'blitzmax.openModule', [module.name, cmd.regards.line] )}" title="Go to ${module.name} line ${cmd.regards.line}">${cmd.regards.prettyData}</a></li></div>`
 		})
 		
 		return resolve( title + detail +
-		`<div class="section-text">${cmds[0].info}</div>
+		`</dl><div class="section-text">${cmds[0].info}</div>
 			<div>
 				<div class="section-note">${cmds[0].aboutStripped ? cmds[0].aboutStripped : ''}</div>
 				${example}

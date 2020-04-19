@@ -38,7 +38,7 @@ export async function activate( context: vscode.ExtensionContext ) {
 	if (!BlitzMax.problem && vscode.workspace.getConfiguration( 'blitzmax' ).get( 'checkForUpdates' ))
 		checkBlitzMaxUpdates( true )
 	
-	showModuleDocumentation( 'BrL.blitz', 'WriteBank' )
+	showModuleDocumentation( 'BrL.standardio', 'print' )
 }
 
 export function deactivate(): void {
