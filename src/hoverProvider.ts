@@ -10,7 +10,7 @@ export class BmxHoverProvider implements vscode.HoverProvider {
 		
 		// What word are we looking for?
 		let word  = currentWord( position, document )
-		if (!word) return
+		if (!word) return undefined
 		word = word.toLowerCase()
 		
 		// Try to figure out the "trigger"
@@ -26,7 +26,7 @@ export class BmxHoverProvider implements vscode.HoverProvider {
 		const cmd = BlitzMax.searchCommand( word, fromType, fromModules )
 		if (cmd) return generateHoverContent( cmd )
 		
-        return null
+        return undefined
       }
 }
 

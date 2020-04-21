@@ -295,7 +295,12 @@ async function generateSection( module: BmxModule, cmds: AnalyzeDoc[] ): Promise
 		if (hasExample) {
 			example = await BlitzMax.getExample( cmds[0] )
 			if (example)
-				example = `<div class="section-example">
+				example = `<br><span>
+					<a href="${generateCommandText( 'blitzmax.findHelp', ['print'] )}" title="Open example">
+						Example
+					</a>
+				</span>
+				<div class="section-example">
 					<pre><code>${example}</code></pre>
 				</div>`
 		}
@@ -304,7 +309,15 @@ async function generateSection( module: BmxModule, cmds: AnalyzeDoc[] ): Promise
 		<div class="section">
 		<div id="${cmds[0].searchName}" class="section-name">${cmds[0].regards.name}</div>
 		<div style="height: 12px; display: block"></div>
+		<div class="section-text">${cmds[0].info}</div>
 		<dl>`
+		
+		let aboutInfo: string = ''
+		if (cmds[0].aboutStripped && cmds[0].aboutStripped.length > 0) {
+			aboutInfo = `<div class="section-note">
+				${cmds[0].aboutStripped}
+			</div>`
+		}
 		
 		let detail: string = ''
 		
@@ -313,11 +326,9 @@ async function generateSection( module: BmxModule, cmds: AnalyzeDoc[] ): Promise
 		})
 		
 		return resolve( title + detail +
-		`</dl><div class="section-text">${cmds[0].info}</div>
-			<div>
-				<div class="section-note">${cmds[0].aboutStripped ? cmds[0].aboutStripped : ''}</div>
+		`</dl>
+				${aboutInfo}
 				${example}
-			</div>
 		</div>`)
 	})
 }

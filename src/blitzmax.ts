@@ -232,7 +232,7 @@ export class BlitzMaxHandler{
 	
 	searchCommand( name: string, fromType: boolean = false, fromModules: string[] = [] ): AnalyzeDoc | undefined {
 		
-		if (!this.ready) return
+		if (!this.ready) return undefined
 		name = name.toLowerCase()
 		
 		for (let i = 0; i < this._commands.length; i++) {
@@ -250,7 +250,7 @@ export class BlitzMaxHandler{
 			if (cmd.searchName == name) return cmd
 		}
 		
-		return
+		return undefined
 	}
 	
 	searchCommands( name: string, fromType: boolean = false, fromModules: string[] = [] ): AnalyzeDoc[] {
