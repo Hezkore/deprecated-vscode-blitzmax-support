@@ -1,23 +1,28 @@
 @media (max-width: 1140px) {
-
+	
+	#sidebar {
+		display: none;
+	}
+	
 	#main {
 		max-width: 800px;
-		padding: 0px 20px;
+		/*padding: 0px 20px;*/
 		margin: auto;
 	}
 }
 
 .page-margins {
 	vertical-align: top;
-	padding-top: 40px;
-	padding-bottom: 10px
+	/*padding-top: 40px;*/
+	/*padding-bottom: 10px*/
 }
 
 .sidebar {
-	width: 290px;
-	position: absolute;
-	z-index: 1;
 	left: 45px;
+	overflow-x: hidden;
+    height: 100%;
+	width: 290px;
+	position: fixed;
 }
 
 .error {
@@ -26,7 +31,7 @@
 	border: solid 1px var(--vscode-inputValidation-errorBorder);
 	white-space: pre-wrap;
 	display: none;
-	padding: 1px 4px 4px 4px;
+	/*padding: 1px 4px 4px 4px;*/
 }
 
 .headerBtn, .headerBtn:hover, .headerBtn:active {
@@ -34,7 +39,7 @@
 	color: var(--vscode-foreground);
 	background: var(--vscode-background);
 	border: 0px;
-	padding: 0px;
+	/*padding: 0px;*/
 	outline: none;
 }
 
@@ -64,19 +69,19 @@
 .main {
 	max-width: 800px;
 	margin-left: 320px;
-	padding: 0px 30px;
+	/*padding: 0px 30px;*/
 }
 
 .main-title {
 	font-weight: 500;
 	font-size: 22px;
-	padding-bottom: 6px;
+	/*padding-bottom: 6px;*/
 	color: var(--vscode-foreground);
 }
 
 .section {
-	padding-bottom: 0px;
-	padding-top: 15px;
+	/*padding-bottom: 0px;*/
+	/*padding-top: 15px;*/
 }
 
 .section-name {
@@ -85,7 +90,7 @@
 	width: 100%;
 	color: var(--vscode-button-foreground);
 	background-color: var(--vscode-button-background);
-	border: solid 1px var(--vscode-contrastBorder);
+	/*border: solid 1px var(--vscode-contrastBorder);*/
 	padding-top: 6px;
 	padding-bottom: 8px;
 	padding-left: 8px;
@@ -110,13 +115,12 @@
 }
 
 .section-example {
-	font-size: 15px;
-	color: var(--vscode-foreground);
+	font-size: 14px;
 }
 
 .codeblock {
 	vertical-align: middle;
-	padding: 2px 8px;
+	/*padding: 2px 8px;*/
 	margin-top: 8px;
 	display: inline-block;
 	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
@@ -152,7 +156,7 @@ hr {
 }
 
 h1 {
-	padding-bottom: .3em;
+	/*padding-bottom: .3em;*/
 }
 
 h1, h2, h3 {
@@ -169,7 +173,7 @@ a:hover {
 
 input {
 	height: 17px;
-	padding: 6px;
+	/*padding: 6px;*/
 	border: solid 1px;
 	font-size: 13px;
 	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
@@ -180,7 +184,7 @@ input {
 
 textarea {
 	white-space: nowrap;
-	padding: 4px, 4px;
+	/*padding: 4px, 4px;*/
 	font-size: 13px;
 	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
 	color: var(--vscode-settings-textInputForeground);
@@ -192,7 +196,7 @@ button {
 	color: var(--vscode-button-foreground);
 	background-color: var(--vscode-button-background);
 	border: solid 1px var(--vscode-contrastBorder);
-	padding: 6px 14px;
+	/*padding: 6px 14px;*/
 }
 
 button:hover {
@@ -206,6 +210,10 @@ button:focus {
 
 button:active {
 	outline: none;
+}
+
+table {
+	padding: 0px;
 }
 
 .select-default {
@@ -255,7 +263,7 @@ button:active {
 
 blockquote {
 	margin: 0 7px 0 5px;
-	padding: 0 16px 0 10px;
+	/*padding: 0 16px 0 10px;*/
 	border-left: 5px solid;
 }
 
@@ -272,6 +280,13 @@ code>div {
 	padding: 16px;
 	border-radius: 3px;
 	overflow: auto
+}
+
+pre {
+    display: block;
+    font-family: monospace;
+    white-space: pre-line;
+    margin: 0px;
 }
 
 .monaco-tokenized-source {
@@ -372,7 +387,7 @@ code>div {
 }
 
 .footer {
-	padding: 25px;
+	/*padding: 25px;*/
 	text-align: center
 }
 

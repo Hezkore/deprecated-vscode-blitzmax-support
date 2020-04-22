@@ -107,15 +107,15 @@ export class BmxHelpTreeProvider implements vscode.TreeDataProvider<Entry> {
 		})
 		
 		// Sort the commands list (this needs to be better imo.)
-		element.module.commands.sort((a, b): number => {
-			if (a.regards && a.regards.type && b.regards && b.regards.type){
-				if (a.regards.type> b.regards.type)
-					return 1
-				else
-					return -1
-			}
-			return 0
-		})
+		// element.module.commands.sort((a, b): number => {
+		// 	if (a.regards && a.regards.type && b.regards && b.regards.type){
+		// 		if (a.regards.type> b.regards.type)
+		// 			return 1
+		// 		else
+		// 			return -1
+		// 	}
+		// 	return 0
+		// })
 		
 		// Then we add all the commands
 		element.module.commands.forEach( cmd => {

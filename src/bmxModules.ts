@@ -131,6 +131,38 @@ export async function scanModules( context: vscode.ExtensionContext, forceUpdate
 								BlitzMax._commands.push( mod.commands[i3] )
 							}
 						}
+						
+						mod.commands.forEach(cmd => {
+							cmd.depthName = cmd.regards.name
+							let itemParent = cmd.regards.inside
+							while (itemParent && cmd.depthName) {
+								cmd.depthName = itemParent.name + '.' + cmd.depthName
+								if (itemParent.inside)
+									itemParent = itemParent.inside
+								else
+									itemParent = undefined
+							}
+						})
+						
+						// Sort the commands by name
+						mod.commands.sort((a, b): number => {
+							if (!a.depthName || !b.depthName) return 0
+							if (a.depthName < b.depthName)
+								return 1
+							else
+								return -1
+						})
+						
+						// Sort the commands by type
+						mod.commands.sort((a, b): number => {
+							if (a.regards && a.regards.type && b.regards && b.regards.type){
+								if (a.regards.type > b.regards.type)
+									return 1
+								else
+									return -1
+							}
+							return 0
+						})
 					}
 				}
 			}
@@ -239,6 +271,7 @@ export interface AnalyzeDoc{
 	returns?: string,
 	regards: AnalyzeItem,
 	searchName: string,
+	depthName?:string,
 	module: string,
 	examplePath?: string
 }
@@ -781,6 +814,11 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 						 	}
 						})
 						regardsParent = result.bbdoc[ result.bbdoc.length - 1 ]
+						
+						// Simple name for inside blocks
+						if (regardsParent.regards.inside) {
+							regardsParent.regards.inside.name = regardsParent.regards.inside.data.split( ' ' )[1]
+						}
 						
 						if (nextLine.replace( ' ', '' ) != 'endrem'){
 							bbdocTag = 'bbdoc'

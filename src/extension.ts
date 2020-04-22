@@ -16,7 +16,7 @@ import { BmxCompletionProvider } from './completionProvider'
 import { BmxSignatureHelpProvider } from './signatureHelpProvider'
 import { BmxHoverProvider } from './hoverProvider'
 import { BlitzMax } from './blitzmax'
-import { AnalyzeDoc, scanModules } from './bmxModules'
+import { AnalyzeDoc, scanModules, AnalyzeResult } from './bmxModules'
 import { askToGenerateProject } from './generateProject'
 import { checkBlitzMaxUpdates } from './checkUpdates'
 import { BmxBuildTreeProvider } from './buildTree'
@@ -148,6 +148,16 @@ async function registerProviders( context: vscode.ExtensionContext ) {
 }
 
 async function registerCommands( context:vscode.ExtensionContext ) {
+	
+	context.subscriptions.push(
+		vscode.commands.registerCommand( 'blitzmax.showExample', async (cmd: AnalyzeDoc) => {
+			
+			vscode.window.showTextDocument(
+				vscode.Uri.file( await BlitzMax.hasExample( cmd ) ),
+				{ preview: true }
+			)
+		})
+	)
 	
 	context.subscriptions.push(
 		vscode.commands.registerCommand( 'blitzmax.openModule', (name: string, line: number) => {

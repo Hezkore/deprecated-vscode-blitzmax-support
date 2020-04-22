@@ -1,7 +1,7 @@
 import * as vscode from 'vscode'
 import * as path from 'path'
 import * as fs from 'fs'
-import { AnalyzeDoc, BmxModule } from './bmxModules'
+import { AnalyzeDoc, BmxModule, AnalyzeItem } from './bmxModules'
 import { BlitzMax } from './blitzmax'
 import { capitalize, generateCommandText, readFile, exists } from './common'
 import { resolve } from 'dns'
@@ -82,6 +82,8 @@ export async function showModuleDocumentation( name: string, command: string ){
 }
 
 async function getWebviewContent( module: BmxModule, command: string ): Promise<string> {
+	
+	if (!module.commands || module.commands.length <= 0) return ''
 	
 	return new Promise<string>( async ( resolve, reject ) => {
 		
@@ -170,24 +172,25 @@ async function getWebviewContent( module: BmxModule, command: string ): Promise<
 
 async function generateSidebar( module: BmxModule ): Promise<string> {
 	
+	if (!module.commands || module.commands.length <= 0) return ''
+	
 	return new Promise<string>( async ( resolve, reject ) => {
 		return resolve( `
-		<div style="height: 90px; display: block">
+		<div>
 			<table>
 				<td>
-					<img src="${webPanel?.webview.asWebviewUri(vscode.Uri.file(path.join(documentationContext.extensionPath, 'media')))}/icon.svg" height="76" width="76" alt="BlitzMax Logo" title="BlitzMax Logo" style="padding-right: 10px">
+					<img src="${webPanel?.webview.asWebviewUri(vscode.Uri.file(path.join(documentationContext.extensionPath, 'media')))}/icon.svg" height="76" width="76" alt="BlitzMax Logo" title="BlitzMax Logo">
 				</td>
 				<td>
-				<div style="font-size: 20px; font-weight: 400; line-height: 24px">BlitzMax ${BlitzMax.version}</div>
-				<div style="font-size: 16px; font-weight: 300; line-height: 24px">Version ${BlitzMax.releaseVersion.split( ' ' )}</div>
+				<div>BlitzMax ${BlitzMax.version}</div>
+				<div>Version ${module.name}</div>
 				</td>
 			</table>
 		</div>
 		
 		<hr>
-		<div style="height: 30px; display: block"></div>
-
-		<div style="padding-right: 10px; color: var(--vscode-foreground);">
+		
+		<div>
 			${await generateSidebarLinks( module )}
 		</div>` )
 	})
@@ -195,30 +198,37 @@ async function generateSidebar( module: BmxModule ): Promise<string> {
 
 async function generateSidebarLinks( module: BmxModule ): Promise<string> {
 	
+	if (!module.commands || module.commands.length <= 0) return ''
+	
 	return new Promise<string>( async ( resolve, reject ) => {
 		
 		if (!module || !module.commands) return resolve( '' )
 		
 		let links: string = ''
 		let previousItemSearchName: string = ''
-		let previousItemType: string = ''
+		let previousItemInside: string | undefined
+		let previousItemType: string | undefined
 		
-		module.commands.sort().forEach( cmd => {
+		module.commands.forEach( cmd => {
 			
 			if (cmd.regards.name != module.name) {
 				
-				if (cmd.regards.type && cmd.regards.type != previousItemType) {
-					previousItemType = cmd.regards.type
-					links += `<br><span style="font-weight: 700">${capitalize( cmd.regards.type )}s</span><br>`
+				if (cmd.regards.type != previousItemType) {
+					links += `<span>${capitalize( cmd.regards.type )}s</span>`
 				}
 				
-				if (cmd.searchName != previousItemSearchName) {
-					previousItemSearchName = cmd.searchName
-					links += `<span>
-					<a class="headerBtn" onclick="jumpTo('${cmd.searchName}');" title="Jump to ${cmd.regards.name}">
-					${cmd.regards.name}
-					</a></span><br>`
+				if (cmd.searchName != previousItemSearchName ||
+					cmd.regards.inside?.name != previousItemInside ||
+					cmd.regards.type != previousItemType) {
+					links += `<div><span>
+					<a class="headerBtn" onclick="jumpTo('${cmd.depthName}');" title="Jump to ${cmd.depthName}">
+					${cmd.depthName}
+					</a></span></div>`
 				}
+				
+				previousItemSearchName = cmd.searchName
+				previousItemInside = cmd.regards.inside?.name
+				previousItemType = cmd.regards.type
 			}
 		})
 		
@@ -228,39 +238,56 @@ async function generateSidebarLinks( module: BmxModule ): Promise<string> {
 
 async function generateMain( module: BmxModule ): Promise<string> {
 	
+	if (!module.commands || module.commands.length <= 0) return ''
+	
 	return new Promise<string>( async ( resolve, reject ) => {
+		
 		if (!module || !module.commands) return resolve( '' )
 		
 		let main: string = await generateMainTitle( module )
 		let previousSearchName: string | undefined = undefined
+		let previousType: string | undefined = undefined
+		let previousInside: string | undefined = undefined
 		let similarCmds: AnalyzeDoc[] = []
 		
 		for (let i = 0; i < module.commands.length; i++) {
 			const cmd = module.commands[i]
 			const isLast = i >= module.commands.length - 1
+			let isSame: boolean = false
 			
 			// Skip the module itself
-			if (cmd.regards.name == module.name) continue
+			if (cmd.regards.name == module.name) {
+				if (isLast)
+					main += await generateSection( module, similarCmds )
+				continue
+			}
 			
-			if (!previousSearchName)
-				previousSearchName = cmd.searchName
+			if (!previousSearchName) {
+				isSame = true
+			} else {
+				isSame = previousSearchName == cmd.searchName
+				if (isSame) isSame = previousType == cmd.regards.type
+				if (isSame) isSame = previousInside == cmd.regards.inside?.name
+			}
 			
 			// If this a similar command we bunch them together
-			if (previousSearchName == cmd.searchName) {
-				similarCmds.push( cmd )
-			}
-			
-			// If this command is not the same!
-			if (previousSearchName != cmd.searchName) {
-				previousSearchName = cmd.searchName
+			if (!isSame) {
+				//console.log( 'Generated' )
 				main += await generateSection( module, similarCmds )
 				similarCmds = []
-				similarCmds.push( cmd )
 			}
 			
+			//console.log( 'Pushed ' + cmd.searchName )
+			similarCmds.push( cmd )
+			
 			if (isLast) {
+				//console.log( 'Generated by last' )
 				main += await generateSection( module, similarCmds )
 			}
+			
+			previousSearchName = cmd.searchName
+			previousInside = cmd.regards.inside?.name
+			previousType = cmd.regards.type
 		}
 		
 		return resolve( main )
@@ -277,9 +304,9 @@ async function generateMainTitle( module: BmxModule ): Promise<string> {
 			bbintro = await readFile( bbintroPath )
 		
 		return resolve(`
-		<div style="height: 90px; display: inline-block;">
+		<div>
 		<div class="main-title">${module.name}</div>
-		<div style="color: var(--vscode-foreground);">
+		<div>
 			<span>${bbintro}</span>
 		</div>
 		</div>`)
@@ -288,47 +315,52 @@ async function generateMainTitle( module: BmxModule ): Promise<string> {
 
 async function generateSection( module: BmxModule, cmds: AnalyzeDoc[] ): Promise<string> {
 	
+	if (!cmds || cmds.length < 0) return ''
+	
 	return new Promise<string>( async ( resolve, reject ) => {
 		
-		const hasExample = await BlitzMax.hasExample( cmds[0] )
-		let example: string = ''
-		if (hasExample) {
+		let example: string | undefined
+		if (await BlitzMax.hasExample( cmds[0] )) {
 			example = await BlitzMax.getExample( cmds[0] )
 			if (example)
-				example = `<br><span>
-					<a href="${generateCommandText( 'blitzmax.findHelp', ['print'] )}" title="Open example">
+				example = `
+					<a href="${generateCommandText( 'blitzmax.showExample', [cmds[0]] )}" title="Open example">
 						Example
 					</a>
-				</span>
-				<div class="section-example">
-					<pre><code>${example}</code></pre>
-				</div>`
+				<code>
+					<div class="section-example">
+					<pre>${example}</pre>
+					</div>
+				</code>`
 		}
 		
 		const title = `
 		<div class="section">
-		<div id="${cmds[0].searchName}" class="section-name">${cmds[0].regards.name}</div>
-		<div style="height: 12px; display: block"></div>
-		<div class="section-text">${cmds[0].info}</div>
-		<dl>`
+		<div id="${cmds[0].depthName}" class="section-name">${capitalize(cmds[0].regards.type)} ${cmds[0].depthName}</div>
+		<div class="section-text">${cmds[0].info}</div>`
 		
-		let aboutInfo: string = ''
+		let aboutInfo: string | undefined
 		if (cmds[0].aboutStripped && cmds[0].aboutStripped.length > 0) {
 			aboutInfo = `<div class="section-note">
 				${cmds[0].aboutStripped}
 			</div>`
 		}
 		
-		let detail: string = ''
+		let detail: string = '<div class="section-title">'
 		
 		cmds.forEach( cmd => {
-			detail += `<div class="section-title"><li><a href="${generateCommandText( 'blitzmax.openModule', [module.name, cmd.regards.line] )}" title="Go to ${module.name} line ${cmd.regards.line}">${cmd.regards.prettyData}</a></li></div>`
+			detail += `<a href="
+				${generateCommandText( 'blitzmax.openModule', [module.name, cmd.regards.line] )}"
+				title="Go to ${module.name} line ${cmd.regards.line}">
+				${cmd.regards.prettyData}</a><br>`
 		})
 		
-		return resolve( title + detail +
-		`</dl>
-				${aboutInfo}
-				${example}
-		</div>`)
+		detail += '</div>'
+		
+		let result = title + detail
+		if (aboutInfo) result += aboutInfo
+		if (example) result += example + '</div>'
+		
+		return resolve( result )
 	})
 }

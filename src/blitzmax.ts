@@ -626,41 +626,6 @@ export class BlitzMaxHandler{
 		})
 	}
 	
-	/*
-	async showExample( cmd: AnalyzeDoc, showAbout: boolean ){
-		return new Promise<string>( async ( resolve, reject ) => {
-			
-			if (!this.ready){
-				vscode.window.showErrorMessage( 'BlitzMax not ready!' )
-				return reject()
-			}
-			
-			let doc: vscode.TextDocument
-			
-			if (showAbout){
-				let text: string = 'rem ' + cmd.regards.name
-				text += '\n\ninfo: ' + cmd.info
-				if (cmd.aboutStripped ) text += '\n\nabout: ' + cmd.aboutStripped
-				text += '\nendrem\n'
-				
-				if (await this.hasExample( cmd )){
-					text += '\n\' example:\n'
-					text += await this.getExample( cmd )
-				}
-				
-				doc = await vscode.workspace.openTextDocument( { content: text, language: 'blitzmax' } )
-			}else{
-				const uri = vscode.Uri.parse( 'file:' + await this.hasExample( cmd ) )
-				doc = await vscode.workspace.openTextDocument( uri )
-			}
-			
-			await vscode.window.showTextDocument( doc, { preview: true, viewColumn: vscode.ViewColumn.Active } )
-			
-			return resolve()
-		})
-	}
-	*/
-	
 	warnNotReadyToBuild(): boolean{
 		if (this.readyToBuild) return false
 		
