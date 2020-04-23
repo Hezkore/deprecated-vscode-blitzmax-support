@@ -179,11 +179,11 @@ async function generateSidebar( module: BmxModule ): Promise<string> {
 		<div>
 			<table>
 				<td>
-					<img src="${webPanel?.webview.asWebviewUri(vscode.Uri.file(path.join(documentationContext.extensionPath, 'media')))}/icon.svg" height="76" width="76" alt="BlitzMax Logo" title="BlitzMax Logo">
+					<img src="${webPanel?.webview.asWebviewUri(vscode.Uri.file(path.join(documentationContext.extensionPath, 'media')))}/icon.png" height="76" width="76" alt="BlitzMax Logo" title="BlitzMax Logo">
 				</td>
 				<td>
 				<div>BlitzMax ${BlitzMax.version}</div>
-				<div>Version ${module.name}</div>
+				<div>${module.name}</div>
 				</td>
 			</table>
 		</div>
@@ -204,7 +204,7 @@ async function generateSidebarLinks( module: BmxModule ): Promise<string> {
 		
 		if (!module || !module.commands) return resolve( '' )
 		
-		let links: string = ''
+		let links: string = '<div>'
 		let previousItemSearchName: string = ''
 		let previousItemInside: string | undefined
 		let previousItemType: string | undefined
@@ -214,16 +214,16 @@ async function generateSidebarLinks( module: BmxModule ): Promise<string> {
 			if (cmd.regards.name != module.name) {
 				
 				if (cmd.regards.type != previousItemType) {
-					links += `<span>${capitalize( cmd.regards.type )}s</span>`
+					links += `<div class="sidebar-category">${capitalize( cmd.regards.type )}s</div>`
 				}
 				
 				if (cmd.searchName != previousItemSearchName ||
 					cmd.regards.inside?.name != previousItemInside ||
 					cmd.regards.type != previousItemType) {
-					links += `<div><span>
-					<a class="headerBtn" onclick="jumpTo('${cmd.depthName}');" title="Jump to ${cmd.depthName}">
+					links += `<div class="sidebar-item">
+					<a onclick="jumpTo('${cmd.depthName}');" title="Jump to ${cmd.depthName}">
 					${cmd.depthName}
-					</a></span></div>`
+					</a></div>`
 				}
 				
 				previousItemSearchName = cmd.searchName
@@ -231,6 +231,8 @@ async function generateSidebarLinks( module: BmxModule ): Promise<string> {
 				previousItemType = cmd.regards.type
 			}
 		})
+		
+		links += '</div>'
 		
 		return resolve( links )
 	})

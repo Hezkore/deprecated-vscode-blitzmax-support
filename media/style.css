@@ -5,7 +5,7 @@
 	}
 	
 	#main {
-		max-width: 800px;
+		/*max-width: 800px;*/
 		/*padding: 0px 20px;*/
 		margin: auto;
 	}
@@ -13,7 +13,7 @@
 
 .page-margins {
 	vertical-align: top;
-	/*padding-top: 40px;*/
+	padding-top: 40px
 	/*padding-bottom: 10px*/
 }
 
@@ -21,8 +21,15 @@
 	left: 45px;
 	overflow-x: hidden;
     height: 100%;
-	width: 290px;
+	width: 190px;
 	position: fixed;
+}
+
+.sidebar-category {
+	padding-top: 12px;
+}
+
+.sidebar-item {
 }
 
 .error {
@@ -68,14 +75,14 @@
 
 .main {
 	max-width: 800px;
-	margin-left: 320px;
-	/*padding: 0px 30px;*/
+	margin-left: 220px;
+	padding: 0px 30px;
 }
 
 .main-title {
 	font-weight: 500;
 	font-size: 22px;
-	/*padding-bottom: 6px;*/
+	padding-bottom: 6px;
 	color: var(--vscode-foreground);
 }
 
