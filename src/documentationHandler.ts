@@ -18,22 +18,21 @@ export function registerDocumentationContext( context: vscode.ExtensionContext )
 	documentationContext = context
 }
 
-export async function showModuleDocumentation( name: string, command: string ){
+export async function showModuleDocumentation( moduleName: string, command: string ){
 	
 	if (BlitzMax.warnNotReady()) return
 	
-	if (!name) return
-	name = name.toLowerCase()
-	if (command) command = command.toLowerCase()
+	if (!moduleName) return
+	moduleName = moduleName.toLowerCase()
 	
 	return new Promise<string>( async ( resolve, reject ) => {
 		
-		vscode.commands.executeCommand( 'blitzmax.helpExplorerSelect', name, command )
+		vscode.commands.executeCommand( 'blitzmax.helpExplorerSelect', moduleName, command )
 		
 		// Find the actual module
-		const module: BmxModule | undefined = BlitzMax.getModule( name )
+		const module: BmxModule | undefined = BlitzMax.getModule( moduleName )
 		if (!module) {
-			vscode.window.showErrorMessage( name + ' is not a known module' )
+			vscode.window.showErrorMessage( moduleName + ' is not a known module' )
 			return resolve()
 		}
 		
@@ -56,7 +55,7 @@ export async function showModuleDocumentation( name: string, command: string ){
 			
 			// Handle messages from the webview
 			webPanel.webview.onDidReceiveMessage( message => {
-				console.log('YE?=!')
+				console.log('Got message from webpanel')
 				switch (message.command) {
 						case 'alert':
 						vscode.window.showErrorMessage(message.text);
@@ -89,7 +88,8 @@ async function getWebviewContent( module: BmxModule, command: string ): Promise<
 		
 		const endingScript = `
 				window.onload = function() {
-					jumpTo("${command}");
+					jumpTo('${command}');
+					setTimeout(function(){ jumpTo('${command}'); }, 50);
 				};
 				</script>
 			</body>
@@ -148,14 +148,7 @@ async function getWebviewContent( module: BmxModule, command: string ): Promise<
 					<script>
 						function jumpTo(id){
 							var elmnt = document.getElementById(id);
-							elmnt.scrollIntoView();
-							/*
-							var oldColor = elmnt.style.backgroundColor;
-							setTimeout(function() {
-								elmnt.style.backgroundColor = oldColor;
-							}, 1000);
-							elmnt.style.backgroundColor = 'green';
-							*/
+							if (elmnt) elmnt.scrollIntoView(true);
 						}
 				`
 				
@@ -176,23 +169,27 @@ async function generateSidebar( module: BmxModule ): Promise<string> {
 	
 	return new Promise<string>( async ( resolve, reject ) => {
 		return resolve( `
-		<div>
-			<table>
-				<td>
-					<img src="${webPanel?.webview.asWebviewUri(vscode.Uri.file(path.join(documentationContext.extensionPath, 'media')))}/icon.png" height="76" width="76" alt="BlitzMax Logo" title="BlitzMax Logo">
-				</td>
-				<td>
-				<div>BlitzMax ${BlitzMax.version}</div>
-				<div>${module.name}</div>
-				</td>
-			</table>
-		</div>
-		
-		<hr>
-		
-		<div>
-			${await generateSidebarLinks( module )}
-		</div>` )
+		<div class="sidebar-content">
+			<div>
+				<table>
+				<!--
+					<td>
+						<img src="${webPanel?.webview.asWebviewUri(vscode.Uri.file(path.join(documentationContext.extensionPath, 'media')))}/icon.png" height="76" width="76" alt="BlitzMax Logo" title="BlitzMax Logo">
+					</td>
+				-->
+					<td>
+					<div class="sidebar-module">${module.name}</div>
+					<div class="sidebar-bmx">BlitzMax ${BlitzMax.version}</div>
+					</td>
+				</table>
+			</div>
+			
+			<hr>
+			
+			<div>
+				${await generateSidebarLinks( module )}
+			</div>
+		</div>`)
 	})
 }
 
@@ -218,8 +215,8 @@ async function generateSidebarLinks( module: BmxModule ): Promise<string> {
 				}
 				
 				if (cmd.searchName != previousItemSearchName ||
-					cmd.regards.inside?.name != previousItemInside ||
-					cmd.regards.type != previousItemType) {
+				cmd.regards.inside?.name != previousItemInside ||
+				cmd.regards.type != previousItemType) {
 					links += `<div class="sidebar-item">
 					<a onclick="jumpTo('${cmd.depthName}');" title="Jump to ${cmd.depthName}">
 					${cmd.depthName}
@@ -246,7 +243,7 @@ async function generateMain( module: BmxModule ): Promise<string> {
 		
 		if (!module || !module.commands) return resolve( '' )
 		
-		let main: string = await generateMainTitle( module )
+		let main: string = `<div class="main-content">` + await generateMainTitle( module )
 		let previousSearchName: string | undefined = undefined
 		let previousType: string | undefined = undefined
 		let previousInside: string | undefined = undefined
@@ -292,7 +289,7 @@ async function generateMain( module: BmxModule ): Promise<string> {
 			previousType = cmd.regards.type
 		}
 		
-		return resolve( main )
+		return resolve( main + "</div>" )
 	})
 }
 
@@ -306,12 +303,8 @@ async function generateMainTitle( module: BmxModule ): Promise<string> {
 			bbintro = await readFile( bbintroPath )
 		
 		return resolve(`
-		<div>
 		<div class="main-title">${module.name}</div>
-		<div>
-			<span>${bbintro}</span>
-		</div>
-		</div>`)
+		<div class="main-info">${bbintro}</div>`)
 	})
 }
 
@@ -326,43 +319,44 @@ async function generateSection( module: BmxModule, cmds: AnalyzeDoc[] ): Promise
 			example = await BlitzMax.getExample( cmds[0] )
 			if (example)
 				example = `
-					<a href="${generateCommandText( 'blitzmax.showExample', [cmds[0]] )}" title="Open example">
-						Example
-					</a>
-				<code>
 					<div class="section-example">
+						<a href="${generateCommandText( 'blitzmax.showExample', [cmds[0]] )}" title="Open example">
+							Example
+						</a>
+					</div>
+				<code>
+					<div>
 					<pre>${example}</pre>
 					</div>
 				</code>`
 		}
-		
 		const title = `
 		<div class="section">
 		<div id="${cmds[0].depthName}" class="section-name">${capitalize(cmds[0].regards.type)} ${cmds[0].depthName}</div>
-		<div class="section-text">${cmds[0].info}</div>`
+		<div class="section-description">${cmds[0].info}</div>`
 		
 		let aboutInfo: string | undefined
 		if (cmds[0].aboutStripped && cmds[0].aboutStripped.length > 0) {
-			aboutInfo = `<div class="section-note">
+			aboutInfo = `<div class="section-information">
 				${cmds[0].aboutStripped}
 			</div>`
 		}
 		
-		let detail: string = '<div class="section-title">'
+		let alts: string = '<div class="section-alts">'
 		
 		cmds.forEach( cmd => {
-			detail += `<a href="
+			alts += `<a href="
 				${generateCommandText( 'blitzmax.openModule', [module.name, cmd.regards.line] )}"
 				title="Go to ${module.name} line ${cmd.regards.line}">
 				${cmd.regards.prettyData}</a><br>`
 		})
 		
-		detail += '</div>'
+		alts += '</div>'
 		
-		let result = title + detail
+		let result = title + alts
 		if (aboutInfo) result += aboutInfo
-		if (example) result += example + '</div>'
+		if (example) result += example
 		
-		return resolve( result )
+		return resolve( result + '</div>' )
 	})
 }

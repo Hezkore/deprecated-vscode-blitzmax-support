@@ -24,13 +24,13 @@ export class BmxHoverProvider implements vscode.HoverProvider {
 		
 		// Find the word in our command list
 		const cmd = BlitzMax.searchCommand( word, fromType, fromModules )
-		if (cmd) return generateHoverContent( cmd )
+		if (cmd) return await generateHoverContent( cmd )
 		
         return undefined
       }
 }
 
-function generateHoverContent( cmd: AnalyzeDoc ): vscode.Hover {
+async function generateHoverContent( cmd: AnalyzeDoc ): Promise<vscode.Hover> {
 	
 	const contents = new vscode.MarkdownString()
 			
@@ -40,12 +40,14 @@ function generateHoverContent( cmd: AnalyzeDoc ): vscode.Hover {
 	contents.appendCodeblock( dataLine, 'blitzmax' )
 	contents.appendMarkdown( cmd.info )
 	if (cmd.about) contents.appendMarkdown( '\n\n' + cmd.about )
-	if (BlitzMax.hasExample( cmd )){
-		let exampleLink = vscode.Uri.parse(
-			generateCommandText( 'blitzmax.findHelp', [cmd.searchName,cmd.regards.inside,[cmd.module]] )
-		)
+	
+	let exampleLink = generateCommandText( 'blitzmax.findHelp',
+	[cmd.searchName,cmd.regards.inside,[cmd.module]] )
+	
+	if (await BlitzMax.hasExample( cmd ))
 		contents.appendMarkdown( '\n\n[Example](' + exampleLink + ')')
-	}
+	else
+		contents.appendMarkdown( '\n\n[Help](' + exampleLink + ')')
 	
 	let moduleLink = vscode.Uri.parse(
 		`command:blitzmax.openModule?${encodeURIComponent(JSON.stringify([

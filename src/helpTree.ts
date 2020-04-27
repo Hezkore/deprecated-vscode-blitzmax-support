@@ -11,7 +11,8 @@ enum HelpType{
 	File,
 	ModulesRoot,
 	Module,
-	Documentation
+	Documentation,
+	Introduction
 }
 
 interface Entry {
@@ -82,7 +83,7 @@ export class BmxHelpTreeProvider implements vscode.TreeDataProvider<Entry> {
 				
 				root.push( {
 					path: element.path,
-					type: HelpType.Documentation,
+					type: HelpType.Introduction,
 					name: 'Introduction',
 					command: cmd,
 					desc: cmd.regards.type
@@ -105,17 +106,6 @@ export class BmxHelpTreeProvider implements vscode.TreeDataProvider<Entry> {
 				})
 			}
 		})
-		
-		// Sort the commands list (this needs to be better imo.)
-		// element.module.commands.sort((a, b): number => {
-		// 	if (a.regards && a.regards.type && b.regards && b.regards.type){
-		// 		if (a.regards.type> b.regards.type)
-		// 			return 1
-		// 		else
-		// 			return -1
-		// 	}
-		// 	return 0
-		// })
 		
 		// Then we add all the commands
 		element.module.commands.forEach( cmd => {
@@ -200,17 +190,24 @@ export class BmxHelpTreeProvider implements vscode.TreeDataProvider<Entry> {
 	}
 	
 	getTreeItem( element: Entry ): vscode.TreeItem {
-		const treeItem = new vscode.TreeItem(element.name, (element.type === HelpType.File || element.type === HelpType.Documentation) ? vscode.TreeItemCollapsibleState.None : vscode.TreeItemCollapsibleState.Collapsed)
+		const treeItem = new vscode.TreeItem(element.name, (element.type === HelpType.File || element.type === HelpType.Documentation || element.type === HelpType.Introduction) ? vscode.TreeItemCollapsibleState.None : vscode.TreeItemCollapsibleState.Collapsed)
 		treeItem.description = element.desc
 		treeItem.tooltip = element.path
 		treeItem.resourceUri = vscode.Uri.parse( element.path )
+		
 		if (element.type === HelpType.File) {
 			treeItem.command = { command: 'blitzmax.helpExplorerOpenFile', title: "Open File", arguments: [element.path], }
 			treeItem.contextValue = 'file'
 		}
+		
 		if (element.type === HelpType.Documentation) {
 			treeItem.command = { command: 'blitzmax.helpExplorerOpenDocumentation', title: "Open Documentation", arguments: [element.command], }
 			treeItem.contextValue = 'documentation'
+		}
+		
+		if (element.type === HelpType.Introduction) {
+			treeItem.command = { command: 'blitzmax.moduleHelp', title: "Module Introduction", arguments: [element.module?.name], }
+			treeItem.contextValue = 'introduction'
 		}
 		
 		this._allItems.push( treeItem )
