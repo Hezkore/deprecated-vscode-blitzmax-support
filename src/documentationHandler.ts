@@ -1,10 +1,8 @@
 import * as vscode from 'vscode'
 import * as path from 'path'
-import * as fs from 'fs'
 import { AnalyzeDoc, BmxModule, AnalyzeItem } from './bmxModules'
 import { BlitzMax } from './blitzmax'
 import { capitalize, generateCommandText, readFile, exists } from './common'
-import { resolve } from 'dns'
 
 let webPanel: vscode.WebviewPanel | undefined
 let documentationContext: vscode.ExtensionContext
@@ -303,14 +301,14 @@ async function generateMainTitle( module: BmxModule ): Promise<string> {
 			bbintro = await readFile( bbintroPath )
 		
 		return resolve(`
-		<div class="main-title">${module.name}</div>
-		<div class="main-info">${bbintro}</div>`)
+		<a href="${generateCommandText( 'blitzmax.openModule', [module.name] )}" class="main-title">${module.name}</a>
+		<div class="main-info">${formatText(bbintro)}</div>`)
 	})
 }
 
 async function generateSection( module: BmxModule, cmds: AnalyzeDoc[] ): Promise<string> {
 	
-	if (!cmds || cmds.length < 0) return ''
+	if (!cmds || cmds.length <= 0) return ''
 	
 	return new Promise<string>( async ( resolve, reject ) => {
 		
@@ -333,12 +331,12 @@ async function generateSection( module: BmxModule, cmds: AnalyzeDoc[] ): Promise
 		const title = `
 		<div class="section">
 		<div id="${cmds[0].depthName}" class="section-name">${capitalize(cmds[0].regards.type)} ${cmds[0].depthName}</div>
-		<div class="section-description">${cmds[0].info}</div>`
+		<div class="section-description">${formatText(cmds[0].info)}</div>`
 		
 		let aboutInfo: string | undefined
 		if (cmds[0].aboutStripped && cmds[0].aboutStripped.length > 0) {
 			aboutInfo = `<div class="section-information">
-				${cmds[0].aboutStripped}
+				${formatText(cmds[0].aboutStripped)}
 			</div>`
 		}
 		
@@ -359,4 +357,58 @@ async function generateSection( module: BmxModule, cmds: AnalyzeDoc[] ): Promise
 		
 		return resolve( result + '</div>' )
 	})
+}
+
+function formatText( text:string ): string {
+	
+	let result: string = ''
+	let state: FormatType = 0
+	let word: string = ''
+	
+	for (let chrNr = 0; chrNr < text.length; chrNr++) {
+		const chr = text[chrNr]
+		
+		switch (state) {
+			case FormatType.None:
+				switch (chr) {
+					case '@':
+						state = FormatType.CreatingHighlight
+						break
+					
+					case '#':
+						state = FormatType.CreatingLink
+						break
+				
+					default:
+						result += chr
+						break
+				}
+				break
+				
+			default:
+				if (chr != ' ') {
+					word += chr
+				} else if (word) {
+					result += formatWord( word, state ) + ' '
+					word = ''
+					state = FormatType.None
+				}
+				break
+		}
+	}
+	
+	return result
+}
+
+function formatWord( word:string, type: FormatType): string {
+	
+	console.log( word )
+	
+	return word
+}
+
+enum FormatType {
+	None,
+	CreatingLink,
+	CreatingHighlight
 }

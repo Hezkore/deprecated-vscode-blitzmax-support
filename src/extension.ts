@@ -1,7 +1,6 @@
 'use strict'
 
 import * as vscode from 'vscode'
-import * as fs from 'fs'
 import * as path from 'path'
 import * as bmxDiagnostics from './diagnostics'
 import { setSourceFile, currentWord, currentBmx, log, currentWordTrigger } from './common'
@@ -38,7 +37,7 @@ export async function activate( context: vscode.ExtensionContext ) {
 	if (!BlitzMax.problem && vscode.workspace.getConfiguration( 'blitzmax' ).get( 'checkForUpdates' ))
 		checkBlitzMaxUpdates( true )
 	
-	showModuleDocumentation( 'BrL.bank', 'TBank' )
+	showModuleDocumentation( 'BrL.bank', '' )
 }
 
 export function deactivate(): void {
@@ -170,7 +169,11 @@ async function registerCommands( context:vscode.ExtensionContext ) {
 					new vscode.Position( line, 0 ),
 					new vscode.Position( line, 0 )
 				)
-				
+			} else {
+				range = new vscode.Range(
+					new vscode.Position( 0, 0 ),
+					new vscode.Position( 0, 0 )
+				)
 			}
 			
 			if (mod) {

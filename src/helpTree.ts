@@ -76,6 +76,7 @@ export class BmxHelpTreeProvider implements vscode.TreeDataProvider<Entry> {
 		let root: Entry[] = []
 		
 		// First we add the introduction to the module
+		/*
 		for (let i = 0; i < element.module.commands.length; i++) {
 			const cmd: AnalyzeDoc = element.module.commands[i]
 			
@@ -86,12 +87,31 @@ export class BmxHelpTreeProvider implements vscode.TreeDataProvider<Entry> {
 					type: HelpType.Introduction,
 					name: 'Introduction',
 					command: cmd,
-					desc: cmd.regards.type
+					desc: cmd.regards.type,
+					module: element.module
 				} )
 				
 				break
 			}
-		}
+		}*/
+		/*
+		if (element.module.commands.length > 0) {
+			
+			if (element.module.commands.length == 1 && 
+				element.module.commands[0].regards.name == element.module.name) {
+				// There is only the module itself!
+			} else {
+		*/		
+				root.push( {
+					path: element.path,
+					type: HelpType.Introduction,
+					name: 'Introduction',
+					command: undefined,
+					desc: undefined,
+					module: element.module
+				} )
+		/*	}
+		}*/
 		
 		// Then we add the examples
 		const subFolders = fs.readdirSync( element.path )
@@ -115,6 +135,7 @@ export class BmxHelpTreeProvider implements vscode.TreeDataProvider<Entry> {
 				let desc = ''
 				
 				// Make things pretty!
+				/*
 				if (cmd.regards.returns) desc += cmd.regards.returns
 				if (cmd.regards.type == 'function' || cmd.regards.type == 'method') desc += '('
 				if (cmd.regards.args){
@@ -132,12 +153,20 @@ export class BmxHelpTreeProvider implements vscode.TreeDataProvider<Entry> {
 					type: HelpType.Documentation,
 					name: cmd.regards.name ? cmd.regards.name : 'Undefined',
 					command: cmd,
-					desc: desc.length > 0 ? desc : cmd.regards.type
+					desc: desc.length > 0 ? desc : cmd.regards.type,
+					module: element.module
+				})*/
+				
+				root.push( {
+					path: path.join( BlitzMax.modPath, element.module.file ),
+					type: HelpType.Documentation,
+					name: cmd.depthName ? cmd.depthName : 'Undefined',
+					command: cmd,
+					desc: desc.length > 0 ? desc : cmd.regards.type,
+					module: element.module
 				})
 			}
 		})
-		
-		
 		
 		return root
 	}
@@ -242,6 +271,7 @@ export class BmxHelpTreeProvider implements vscode.TreeDataProvider<Entry> {
 				if (!extName) continue
 				if (extName == '.exe') continue
 				if (extName == '.bak') continue
+				if (extName == '.bbdoc') continue
 			} else {
 				if (child.startsWith( '.' )) continue
 				const subFolder = fs.readdirSync( path.join( uri.fsPath, child ) )
@@ -267,7 +297,7 @@ export class BmxHelpExplorer {
 	}
 	
 	private openDocumentation( command: AnalyzeDoc ): void {
-		showModuleDocumentation( command.module, command.regards.name ? command.regards.name : command.searchName )
+		showModuleDocumentation( command.module, command.depthName ? command.depthName : command.searchName )
 	}
 	
 	private openResource( resource: string ): void {

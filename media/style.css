@@ -38,14 +38,15 @@
 
 .sidebar-module {
 	font-weight: 500;
-	font-size: 22px;
-	padding-bottom: 6px;
+	font-size: 14px;
+	color: var(--vscode-foreground);
 }
 
 .sidebar-bmx {
 	font-weight: 400;
-	font-size: 16px;
+	font-size: 13px;
 	padding-bottom: 12px;
+	color: var(--vscode-foreground);
 }
 
 .error {
@@ -93,6 +94,7 @@
 	/* max-width: 800px; */
 	margin-left: 220px;
 	padding: 0px 20px;
+	color: var(--vscode-foreground);
 }
 
 .main-content {
