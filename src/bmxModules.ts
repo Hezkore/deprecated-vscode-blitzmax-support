@@ -267,7 +267,7 @@ export interface AnalyzeDoc{
 	info: string,
 	line: number,
 	about?: string,
-	aboutStripped?: string,
+	//aboutStripped?: string,
 	returns?: string,
 	regards: AnalyzeItem,
 	searchName: string,
@@ -289,6 +289,7 @@ enum ItemProcessPart{
 	argDefault
 }
 
+/*
 function cleanAboutInfo( item: AnalyzeDoc ): Promise<AnalyzeDoc>{
 	return new Promise( async function( resolve ) {		
 		if (!item.about) return resolve( item )
@@ -350,6 +351,7 @@ function cleanAboutInfo( item: AnalyzeDoc ): Promise<AnalyzeDoc>{
 		return resolve( item )
 	})
 }
+*/
 
 async function cleanAnalyzeItem( item: AnalyzeItem ): Promise<AnalyzeItem>{
 	return new Promise( async function( resolve ) {
@@ -707,7 +709,7 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 				if (regardsParent.regards.name){
 					regardsParent.searchName = regardsParent.regards.name.toLowerCase()
 				}
-				regardsParent = await cleanAboutInfo( regardsParent )
+				// regardsParent = await cleanAboutInfo( regardsParent )
 				
 				regardsParent = undefined
 			}
@@ -901,7 +903,7 @@ async function analyzeBmx( options: AnalyzeOptions ): Promise<AnalyzeResult>{
 							
 							regardsParent.searchName = 	sliceLine.trim().slice( 1, -1 ).toLowerCase()
 							regardsParent.regards = await cleanAnalyzeItem( regardsParent.regards )
-							regardsParent = await cleanAboutInfo( regardsParent )
+							// regardsParent = await cleanAboutInfo( regardsParent )
 							
 							break
 					

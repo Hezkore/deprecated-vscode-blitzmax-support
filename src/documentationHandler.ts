@@ -3,6 +3,7 @@ import * as path from 'path'
 import { AnalyzeDoc, BmxModule, AnalyzeItem } from './bmxModules'
 import { BlitzMax } from './blitzmax'
 import { capitalize, generateCommandText, readFile, exists } from './common'
+import { formatBBDocText, FormatSettings } from './bbdocFormat'
 
 let webPanel: vscode.WebviewPanel | undefined
 let documentationContext: vscode.ExtensionContext
@@ -11,6 +12,11 @@ let headerStyle: string
 let footerStyle: string = `
 </style>
 </head>`
+let bbdocFormatSettings: FormatSettings = {
+	referenceText: `<a onclick="jumpTo('{{word}}');" title="Jump to {{word}}">{{word}}</a>`,
+	highlightText: '<strong>{{word}}</strong>',
+	externalText: 'EXT[{{word}}]'
+}
 
 export function registerDocumentationContext( context: vscode.ExtensionContext ) {
 	documentationContext = context
@@ -302,7 +308,7 @@ async function generateMainTitle( module: BmxModule ): Promise<string> {
 		
 		return resolve(`
 		<a href="${generateCommandText( 'blitzmax.openModule', [module.name] )}" class="main-title">${module.name}</a>
-		<div class="main-info">${formatText(bbintro)}</div>`)
+		<div class="main-info">${formatBBDocText(bbintro, bbdocFormatSettings)}</div>`)
 	})
 }
 
@@ -331,12 +337,12 @@ async function generateSection( module: BmxModule, cmds: AnalyzeDoc[] ): Promise
 		const title = `
 		<div class="section">
 		<div id="${cmds[0].depthName}" class="section-name">${capitalize(cmds[0].regards.type)} ${cmds[0].depthName}</div>
-		<div class="section-description">${formatText(cmds[0].info)}</div>`
+		<div class="section-description">${formatBBDocText(cmds[0].info, bbdocFormatSettings)}</div>`
 		
 		let aboutInfo: string | undefined
-		if (cmds[0].aboutStripped && cmds[0].aboutStripped.length > 0) {
+		if (cmds[0].about && cmds[0].about.length > 0) {
 			aboutInfo = `<div class="section-information">
-				${formatText(cmds[0].aboutStripped)}
+				${formatBBDocText(cmds[0].about, bbdocFormatSettings)}
 			</div>`
 		}
 		
@@ -357,58 +363,4 @@ async function generateSection( module: BmxModule, cmds: AnalyzeDoc[] ): Promise
 		
 		return resolve( result + '</div>' )
 	})
-}
-
-function formatText( text:string ): string {
-	
-	let result: string = ''
-	let state: FormatType = 0
-	let word: string = ''
-	
-	for (let chrNr = 0; chrNr < text.length; chrNr++) {
-		const chr = text[chrNr]
-		
-		switch (state) {
-			case FormatType.None:
-				switch (chr) {
-					case '@':
-						state = FormatType.CreatingHighlight
-						break
-					
-					case '#':
-						state = FormatType.CreatingLink
-						break
-				
-					default:
-						result += chr
-						break
-				}
-				break
-				
-			default:
-				if (chr != ' ') {
-					word += chr
-				} else if (word) {
-					result += formatWord( word, state ) + ' '
-					word = ''
-					state = FormatType.None
-				}
-				break
-		}
-	}
-	
-	return result
-}
-
-function formatWord( word:string, type: FormatType): string {
-	
-	console.log( word )
-	
-	return word
-}
-
-enum FormatType {
-	None,
-	CreatingLink,
-	CreatingHighlight
 }
