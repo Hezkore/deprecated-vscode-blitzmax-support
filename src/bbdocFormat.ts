@@ -1,17 +1,19 @@
-enum FormatType {
+export enum FormatType {
 	None,
 	Reference,
 	Highlight,
 	External
 }
 
+/*
 export interface FormatSettings {
 	referenceText: string,
 	highlightText: string,
 	externalText: string
 }
+*/
 
-export function formatBBDocText( text: string, settings: FormatSettings ): string {
+export function formatBBDocText( text: string, formater: Function ): string {
 	
 	let result: string = ''
 	let state = FormatType.None

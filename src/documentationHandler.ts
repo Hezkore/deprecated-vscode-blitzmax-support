@@ -3,7 +3,7 @@ import * as path from 'path'
 import { AnalyzeDoc, BmxModule, AnalyzeItem } from './bmxModules'
 import { BlitzMax } from './blitzmax'
 import { capitalize, generateCommandText, readFile, exists } from './common'
-import { formatBBDocText, FormatSettings } from './bbdocFormat'
+import { formatBBDocText, FormatType, FormatSettings } from './bbdocFormat'
 
 let webPanel: vscode.WebviewPanel | undefined
 let documentationContext: vscode.ExtensionContext
@@ -308,7 +308,7 @@ async function generateMainTitle( module: BmxModule ): Promise<string> {
 		
 		return resolve(`
 		<a href="${generateCommandText( 'blitzmax.openModule', [module.name] )}" class="main-title">${module.name}</a>
-		<div class="main-info">${formatBBDocText(bbintro, bbdocFormatSettings)}</div>`)
+		<div class="main-info"><pre>${formatBBDocText(bbintro, bbdocFormatSettings)}</pre></div>`)
 	})
 }
 
@@ -330,7 +330,7 @@ async function generateSection( module: BmxModule, cmds: AnalyzeDoc[] ): Promise
 					</div>
 				<code>
 					<div>
-					<pre>${example}</pre>
+						<pre>${example}</pre>
 					</div>
 				</code>`
 		}
@@ -363,4 +363,8 @@ async function generateSection( module: BmxModule, cmds: AnalyzeDoc[] ): Promise
 		
 		return resolve( result + '</div>' )
 	})
+}
+
+function formatForDocs( word:string, type: FormatType ) {
+	
 }

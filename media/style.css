@@ -108,9 +108,12 @@
 	color: var(--vscode-foreground);
 }
 
-.main-info {
+.main-info>pre {
 	padding-bottom: 30px;
+	font-family: inherit;
+	font-weight: 500;
 	color: var(--vscode-foreground);
+	white-space: pre-line;
 }
 
 .section {
@@ -316,14 +319,10 @@ code {
 code>div {
 	padding: 16px;
 	border-radius: 3px;
-	overflow: auto
-}
-
-pre {
-    display: block;
-    font-family: monospace;
+	overflow: auto;
+	font-family: monospace;
+	display: block;
     white-space: pre-line;
-    margin: 0px;
 }
 
 .monaco-tokenized-source {
