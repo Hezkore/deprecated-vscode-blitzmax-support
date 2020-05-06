@@ -3,7 +3,7 @@ import * as path from 'path'
 import { AnalyzeDoc, BmxModule, AnalyzeItem } from './bmxModules'
 import { BlitzMax } from './blitzmax'
 import { capitalize, generateCommandText, readFile, exists } from './common'
-import { formatBBDocText, FormatType, FormatSettings } from './bbdocFormat'
+import { formatBBDocText, FormatType, FormatResult } from './bbdocFormat'
 
 let webPanel: vscode.WebviewPanel | undefined
 let documentationContext: vscode.ExtensionContext
@@ -12,11 +12,7 @@ let headerStyle: string
 let footerStyle: string = `
 </style>
 </head>`
-let bbdocFormatSettings: FormatSettings = {
-	referenceText: `<a onclick="jumpTo('{{word}}');" title="Jump to {{word}}">{{word}}</a>`,
-	highlightText: '<strong>{{word}}</strong>',
-	externalText: 'EXT[{{word}}]'
-}
+let currentModule: BmxModule | undefined
 
 export function registerDocumentationContext( context: vscode.ExtensionContext ) {
 	documentationContext = context
@@ -34,8 +30,8 @@ export async function showModuleDocumentation( moduleName: string, command: stri
 		vscode.commands.executeCommand( 'blitzmax.helpExplorerSelect', moduleName, command )
 		
 		// Find the actual module
-		const module: BmxModule | undefined = BlitzMax.getModule( moduleName )
-		if (!module) {
+		currentModule = BlitzMax.getModule( moduleName )
+		if (!currentModule) {
 			vscode.window.showErrorMessage( moduleName + ' is not a known module' )
 			return resolve()
 		}
@@ -46,7 +42,7 @@ export async function showModuleDocumentation( moduleName: string, command: stri
 			// Create web panel
 			webPanel = vscode.window.createWebviewPanel(
 				'bmxHelp',
-				'BlitzMax Help - ' + module.name,
+				'BlitzMax Help - ' + currentModule.name,
 				vscode.ViewColumn.One,
 				{
 					retainContextWhenHidden: true,
@@ -78,7 +74,7 @@ export async function showModuleDocumentation( moduleName: string, command: stri
 			)
 		}
 		
-		webPanel.webview.html = await getWebviewContent( module, command )
+		webPanel.webview.html = await getWebviewContent( currentModule, command )
 		
 		return resolve()
 	})
@@ -150,6 +146,21 @@ async function getWebviewContent( module: BmxModule, command: string ): Promise<
 					</div>
 					
 					<script>
+						var coll = document.getElementsByClassName("section-name");
+						var i;
+						
+						for (i = 0; i < coll.length; i++) {
+							coll[i].addEventListener("click", function() {
+								this.classList.toggle("active");
+								var content = this.nextElementSibling;
+								if (content.style.maxHeight){
+								content.style.maxHeight = null;
+								} else {
+								content.style.maxHeight = content.scrollHeight + "px";
+								}
+							});
+						}
+						
 						function jumpTo(id){
 							var elmnt = document.getElementById(id);
 							if (elmnt) elmnt.scrollIntoView(true);
@@ -303,12 +314,13 @@ async function generateMainTitle( module: BmxModule ): Promise<string> {
 		const bbintroPath: string = path.join( BlitzMax.modPath, module.parent, module.folderName, 'doc', 'intro.bbdoc' )
 		let bbintro: string = 'No information'
 		
-		if (await exists( bbintroPath ))
+		if (await exists( bbintroPath )) {
 			bbintro = await readFile( bbintroPath )
+		}
 		
 		return resolve(`
 		<a href="${generateCommandText( 'blitzmax.openModule', [module.name] )}" class="main-title">${module.name}</a>
-		<div class="main-info"><pre>${formatBBDocText(bbintro, bbdocFormatSettings)}</pre></div>`)
+		<div class="main-info"><pre>${formatBBDocText(bbintro, formatForDocs)}</pre></div>`)
 	})
 }
 
@@ -325,46 +337,103 @@ async function generateSection( module: BmxModule, cmds: AnalyzeDoc[] ): Promise
 				example = `
 					<div class="section-example">
 						<a href="${generateCommandText( 'blitzmax.showExample', [cmds[0]] )}" title="Open example">
-							Example
+							${cmds[0].regards.name} Example
 						</a>
 					</div>
 				<code>
-					<div>
-						<pre>${example}</pre>
-					</div>
+					<div class="section-example"><pre>${example}</pre></div>
 				</code>`
 		}
-		const title = `
-		<div class="section">
-		<div id="${cmds[0].depthName}" class="section-name">${capitalize(cmds[0].regards.type)} ${cmds[0].depthName}</div>
-		<div class="section-description">${formatBBDocText(cmds[0].info, bbdocFormatSettings)}</div>`
 		
-		let aboutInfo: string | undefined
-		if (cmds[0].about && cmds[0].about.length > 0) {
-			aboutInfo = `<div class="section-information">
-				${formatBBDocText(cmds[0].about, bbdocFormatSettings)}
+		let section = '<div class="section">'
+		
+		let alts: string = '<div>'
+		
+		for (let i = 0; i < cmds.length; i++) {
+			const cmd = cmds[i]
+			
+			// First we add a button for the command itself
+			alts += `<button id="${cmds[0].depthName}" type="button" class="section-name">${cmd.regards.prettyData}</button>`
+			
+			// Add its content
+			if (!i)
+				alts += '<div style="max-height:100%;" class="content">'
+			else
+				alts += '<div class="content">'
+			
+			if (cmd.info)
+				alts += `<div class="section-information">
+					<pre>${formatBBDocText(cmd.info, formatForDocs)}</pre>
+				</div>`
+			
+			if (cmd.about)
+				alts += `<div class="section-about">
+					<pre>${formatBBDocText(cmd.about, formatForDocs)}</pre>
+				</div>`
+			
+			if (cmd.returns)
+			alts += `<div class="section-returns">
+				<pre>${formatBBDocText(cmd.returns, formatForDocs)}</pre>
 			</div>`
+			
+			alts += '</div>' // Close content
 		}
-		
-		let alts: string = '<div class="section-alts">'
-		
-		cmds.forEach( cmd => {
-			alts += `<a href="
-				${generateCommandText( 'blitzmax.openModule', [module.name, cmd.regards.line] )}"
-				title="Go to ${module.name} line ${cmd.regards.line}">
-				${cmd.regards.prettyData}</a><br>`
-		})
 		
 		alts += '</div>'
 		
-		let result = title + alts
-		if (aboutInfo) result += aboutInfo
+		let result = section + alts
 		if (example) result += example
+		result += '</div>' // Close section
 		
-		return resolve( result + '</div>' )
+		return resolve( result )
 	})
 }
 
-function formatForDocs( word:string, type: FormatType ) {
+export function formatForDocs( result: FormatResult ): string {
 	
+	switch (result.Type) {
+		case FormatType.Reference:
+			if (!currentModule || !currentModule.commands) return result.Words[0]
+			
+			// First we attempt to get a matching command from this module
+			for (let i = 0; i < currentModule.commands.length; i++) {
+				const cmd = currentModule.commands[i]
+				if (cmd.depthName == result.Words[0])
+					return `<a class="section-link" onclick="jumpTo('${cmd.depthName}');" title="Jump to ${cmd.depthName}">${result.Words[0]}</a>`
+			}
+			
+			// Attempt to get a matching command without the depth!
+			for (let i = 0; i < currentModule.commands.length; i++) {
+				const cmd = currentModule.commands[i]
+				if (cmd.searchName == result.Words[0].toLowerCase())
+					return `<a class="section-link" onclick="jumpTo('${cmd.depthName}');" title="Jump to ${cmd.depthName}">${result.Words[0]}</a>`
+			}
+			
+			// Otherwise we do a global search
+			return `<a class="section-link" href="${generateCommandText( 'blitzmax.findHelp', [result.Words[0]] )}" title="Find ${result.Words[0]}">${result.Words[0]}</a>`
+		
+		case FormatType.Highlight:
+			return `<strong>${result.Words[0]}</strong>`
+		
+		case FormatType.Html:
+			return `<a class="section-link" href="${result.HtmlData}">${result.HtmlTag}</a>`
+		
+		case FormatType.Table:
+			if (!result.Table) return 'No Table Data!'
+			
+			let text: string = '<div class="section-information"><table>\n'
+			
+			for (let y = 0; y < result.Table.height; y++) {
+				text += '<tr>\n'
+				for (let x = 0; x < result.Table.width; x++) {
+					text += '<td>' + result.Table.items[x][y] + '</td>'
+				}
+				text += '</tr>\n'
+			}
+			
+			text += '</table></div>\n'
+			return text
+	}
+	
+	return result.Words[0]
 }

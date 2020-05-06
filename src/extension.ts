@@ -37,7 +37,7 @@ export async function activate( context: vscode.ExtensionContext ) {
 	if (!BlitzMax.problem && vscode.workspace.getConfiguration( 'blitzmax' ).get( 'checkForUpdates' ))
 		checkBlitzMaxUpdates( true )
 	
-	showModuleDocumentation( 'pub.lua', '' )
+	showModuleDocumentation( 'brl.bank', '' )
 }
 
 export function deactivate(): void {
