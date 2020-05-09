@@ -1,9 +1,17 @@
 export enum FormatType {
 	None,
-	Reference,
 	Highlight,
 	Html,
-	Table
+	Table,
+	Reference,
+	Header1,
+	Header2,
+	Header3,
+	Header4,
+	Header5,
+	Header6,
+	Italic,
+	Code
 }
 
 export interface FormatResult {
@@ -30,13 +38,23 @@ export function formatBBDocText( text: string, formater: Function, clearNewLines
 	let htmlData: string = ''
 	let htmlDataStart: string | undefined
 	let htmlDataEnd: string | undefined
-	let lastHtmlTag: string = ''
+	let codeMultiLine: boolean = false
+	let codeMultiLineLanguage: string = ''
+	let codeMultiLineLanguageDone: boolean = false
 	
 	const ChrEnd = [' ', '.', ',', '\n', '\t', ')', ']']
 	
 	for (let chrNr = 0; chrNr < text.length; chrNr++) {
 		const chr = text[chrNr]
 		if (clearNewLines && (chr == '\n' || chr == '\r')) continue
+		
+		const nextChr: string[] = [
+			chrNr + 1 < text.length ? text[chrNr + 1] : '',
+			chrNr + 2 < text.length ? text[chrNr + 2] : '',
+			chrNr + 3 < text.length ? text[chrNr + 3] : '',
+			chrNr + 4 < text.length ? text[chrNr + 4] : '',
+			chrNr + 5 < text.length ? text[chrNr + 5] : ''
+		]
 		
 		switch (state) {
 			case FormatType.None:
@@ -50,12 +68,53 @@ export function formatBBDocText( text: string, formater: Function, clearNewLines
 						htmlData = ''
 						continue
 					
+					case '*':
+						state = FormatType.Italic
+						break
+					
 					case '@':
 						state = FormatType.Highlight
 						break
 					
+					case '`':
+						state = FormatType.Code
+						codeMultiLine = false
+						if (nextChr[0] == chr && nextChr[1] == chr) {
+							chrNr += 2
+							codeMultiLineLanguage = ''
+							codeMultiLineLanguageDone = false
+							codeMultiLine = true
+						}
+						break
+					
 					case '#':
-						state = FormatType.Reference
+						
+						// First we check if this is size 1 header
+						if (nextChr[0] == ' ') {
+							chrNr += 1
+							state = FormatType.Header1
+							break
+						}
+						
+						// Okay not a header 1, but perhaps a bigger header?
+						let headerSize = 0
+						if (nextChr[0] == chr) {
+							headerSize = 2
+						}
+						
+						// If this is a bigger header; figure out the size
+						if (headerSize > 0) {
+							for (let i = 1; i < nextChr.length; i++) {
+								const c = nextChr[i]
+								if (c == chr)
+									headerSize++
+								else
+									break
+							}
+						}
+						
+						state = FormatType.Reference + headerSize
+						if (headerSize) chrNr += headerSize
 						break
 					
 					default:
@@ -104,8 +163,7 @@ export function formatBBDocText( text: string, formater: Function, clearNewLines
 								case '/br':
 								case 'br/':
 								case 'br':
-									//if (lastHtmlTag.toLowerCase() != htmlTag.toLowerCase())
-									//	result += '\n'
+									if (nextChr[0] != '\n') result += '\n'
 									break
 							
 								default:
@@ -116,7 +174,7 @@ export function formatBBDocText( text: string, formater: Function, clearNewLines
 						state = FormatType.None
 						htmlDataStart = undefined
 						htmlDataEnd = undefined
-						lastHtmlTag = htmlTag
+						//lastHtmlTag = htmlTag
 						htmlTag = ''
 						htmlTagEnd = undefined
 					}
@@ -143,8 +201,76 @@ export function formatBBDocText( text: string, formater: Function, clearNewLines
 				} else htmlTag += chr
 				break
 				
+			case FormatType.Header1:
+			case FormatType.Header2:
+			case FormatType.Header3:
+			case FormatType.Header4:
+			case FormatType.Header5:
+			case FormatType.Header6:
+				if (chr == '\n' || chr == '\r' || chrNr >= text.length - 1) {
+					if (chrNr >= text.length - 1) word += chr
+					let formatResult = {
+						Type: state,
+						Words: [word]
+					}
+					result += formater( formatResult )
+					word = ''
+					state = FormatType.None
+				} else word += chr
+				break
+				
+			case FormatType.Italic:
+				if (chr == '*' || chrNr >= text.length - 1) {
+					if (chrNr >= text.length - 1) word += chr
+					let formatResult = {
+						Type: state,
+						Words: [word]
+					}
+					result += formater( formatResult )
+					word = ''
+					state = FormatType.None
+				} else word += chr
+				break
+			
+			case FormatType.Code:
+				if (codeMultiLine) {
+					if (chrNr >= text.length - 1 ||
+					(chr == '`' && nextChr[0] == '`' && nextChr[1] == '`')) {
+						let formatResult = {
+							Type: state,
+							Words: [word]
+						}
+						result += formater( formatResult )
+						word = ''
+						state = FormatType.None
+						chrNr += 2
+					} else {
+						if (codeMultiLineLanguageDone) {
+							word += chr
+						} else {
+							if (chr == '\n' || chr == '\r') {
+								codeMultiLineLanguageDone = true
+							} else codeMultiLineLanguage += chr
+						}
+					}
+				} else {
+					if (chr == '`' || chrNr >= text.length - 1) {
+						let formatResult = {
+							Type: state,
+							Words: [word]
+						}
+						result += formater( formatResult )
+						word = ''
+						state = FormatType.None
+					} else word += chr
+				}
+				break
+			
 			default:
 				word += chr
+				if (chr == '.' && (nextChr[0].match(/[a-z]/i))) {
+					break
+				}
 				
 				if (ChrEnd.includes( chr ) || chrNr >= text.length - 1) {
 					if (ChrEnd.includes( chr )) word = word.slice( 0, -1 )

@@ -102,7 +102,7 @@
 .main-info>pre {
 	padding-bottom: 30px;
 	font-family: inherit;
-	font-weight: 500;
+	font-weight: 400;
 	color: var(--vscode-foreground);
 	white-space: pre-line;
 }
@@ -197,11 +197,11 @@
 	border-radius: 0px 0px 3px 3px;
 }
 
-.section-example {
+.example {
 	padding: 12px 0px 6px 0px;
 }
 
-.section-example>pre {
+.example>pre {
 	padding-top: 6px;
 	padding-left: 6px;
 	white-space: pre-wrap;

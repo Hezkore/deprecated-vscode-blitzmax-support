@@ -335,13 +335,13 @@ async function generateSection( module: BmxModule, cmds: AnalyzeDoc[] ): Promise
 			example = await BlitzMax.getExample( cmds[0] )
 			if (example)
 				example = `
-					<div class="section-example">
+					<div class="example">
 						<a href="${generateCommandText( 'blitzmax.showExample', [cmds[0]] )}" title="Open example">
 							${cmds[0].regards.name} Example
 						</a>
 					</div>
 				<code>
-					<div class="section-example"><pre>${example}</pre></div>
+					<div class="example"><pre>${example}</pre></div>
 				</code>`
 		}
 		
@@ -395,6 +395,12 @@ export function formatForDocs( result: FormatResult ): string {
 		case FormatType.Reference:
 			if (!currentModule || !currentModule.commands) return result.Words[0]
 			
+			// Is this just straight up a module?
+			const mod = BlitzMax.getModule( result.Words[0] )
+			if (mod) {
+				
+			}
+			
 			// First we attempt to get a matching command from this module
 			for (let i = 0; i < currentModule.commands.length; i++) {
 				const cmd = currentModule.commands[i]
@@ -411,10 +417,36 @@ export function formatForDocs( result: FormatResult ): string {
 			
 			// Otherwise we do a global search
 			return `<a class="section-link" href="${generateCommandText( 'blitzmax.findHelp', [result.Words[0]] )}" title="Find ${result.Words[0]}">${result.Words[0]}</a>`
-		
+			
 		case FormatType.Highlight:
 			return `<strong>${result.Words[0]}</strong>`
-		
+			
+		case FormatType.Header1:
+			return `<strong style="font-size:140%">${result.Words[0]}</strong>`
+			
+		case FormatType.Header2:
+			return `<strong style="font-size:110%">${result.Words[0]}</strong>`
+			
+		case FormatType.Header3:
+			return `<strong style="font-size:100%">${result.Words[0]}</strong>`
+			
+		case FormatType.Header4:
+			return `<strong style="font-size:90%">${result.Words[0]}</strong>`
+			
+		case FormatType.Header5:
+			return `<strong style="font-size:70%">${result.Words[0]}</strong>`
+			
+		case FormatType.Header6:
+			return `<strong style="font-size:50%">${result.Words[0]}</strong>`
+			
+		case FormatType.Italic:
+			return `<i>${result.Words[0]}</i>`
+			
+		case FormatType.Code:
+			return `<code>
+				<div class="example"><pre>${result.Words[0]}</pre></div>
+			</code>`
+			
 		case FormatType.Html:
 			return `<a class="section-link" href="${result.HtmlData}">${result.HtmlTag}</a>`
 		
