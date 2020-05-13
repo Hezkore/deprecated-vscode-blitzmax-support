@@ -2,8 +2,11 @@
 
 import * as vscode from 'vscode'
 import { BlitzMax } from './blitzmax'
-import { AnalyzeDoc } from './bmxModules'
+import { AnalyzeDoc, BmxModule } from './bmxModules'
 import { currentWord, currentWordTrigger, generateCommandText } from './common'
+import { formatBBDocText, FormatType, FormatResult } from './bbdocFormat'
+
+let currentModule: BmxModule | undefined
 
 export class BmxHoverProvider implements vscode.HoverProvider {
 	async provideHover( document: vscode.TextDocument, position: vscode.Position ): Promise<any> {
@@ -38,16 +41,16 @@ async function generateHoverContent( cmd: AnalyzeDoc ): Promise<vscode.Hover> {
 	if (!dataLine) dataLine = cmd.regards.data
 	
 	contents.appendCodeblock( dataLine, 'blitzmax' )
-	contents.appendMarkdown( cmd.info )
-	if (cmd.about) contents.appendMarkdown( '\n\n' + cmd.about )
+	contents.appendMarkdown( formatBBDocText(cmd.info, formatForHover) )
+	//if (cmd.about) contents.appendMarkdown( '\n\n' + cmd.about )
 	
 	let exampleLink = generateCommandText( 'blitzmax.findHelp',
 	[cmd.searchName,cmd.regards.inside,[cmd.module]] )
 	
 	if (await BlitzMax.hasExample( cmd ))
-		contents.appendMarkdown( '\n\n[Example](' + exampleLink + ')')
+		contents.appendMarkdown( '\n\n[More Info & Example](' + exampleLink + ')')
 	else
-		contents.appendMarkdown( '\n\n[Help](' + exampleLink + ')')
+		contents.appendMarkdown( '\n\n[More Info](' + exampleLink + ')')
 	
 	let moduleLink = vscode.Uri.parse(
 		`command:blitzmax.openModule?${encodeURIComponent(JSON.stringify([
@@ -59,5 +62,59 @@ async function generateHoverContent( cmd: AnalyzeDoc ): Promise<vscode.Hover> {
 	
 	contents.isTrusted = true
 	
+	currentModule = BlitzMax.getModule( cmd.module )
+	
 	return new vscode.Hover( contents )
+}
+
+export function formatForHover( result: FormatResult ): string {
+	
+	switch (result.Type) {
+		case FormatType.Reference:
+			// Is this just straight up a module?
+			const mod = BlitzMax.getModule( result.Words[0] )
+			if (mod)
+				return `[${result.Words[0]}](${generateCommandText( 'blitzmax.moduleHelp', [mod.name] )})`
+			
+			// Otherwise we do a global search
+			return `[${result.Words[0]}](${generateCommandText( 'blitzmax.findHelp', [result.Words[0], currentModule?.name] )})`
+			
+		case FormatType.Highlight:
+			return `**${result.Words[0]}**`
+			
+		case FormatType.Header1:
+			return `#${result.Words[0]}`
+			
+		case FormatType.Header2:
+			return `##${result.Words[0]}`
+			
+		case FormatType.Header3:
+			return `###${result.Words[0]}`
+			
+		case FormatType.Header4:
+			return `####${result.Words[0]}`
+			
+		case FormatType.Header5:
+			return `#####${result.Words[0]}`
+			
+		case FormatType.Header6:
+			return `######${result.Words[0]}`
+			
+		case FormatType.Italic:
+			return `*${result.Words[0]}*`
+			
+		case FormatType.CodeMultiLine:
+			return '```blitzmax\n' + result.Words[0] + '```'
+		
+		case FormatType.Code:
+			return '`' + result.Words[0] + '`'
+		
+		case FormatType.Html:
+			return `[${result.HtmlTag}](${result.HtmlData})`
+		
+		case FormatType.Table:
+			return result.Words[0]
+	}
+	
+	return result.Words[0]
 }

@@ -39,6 +39,12 @@ export async function checkBlitzMaxUpdates( isAuto: boolean = false ) {
 		
 		log( '.', false )
 		
+		if (!json) {
+			log( '.', false )
+			log( 'Unable to fetch new BlitzMax versions' )
+			return
+		}
+		
 		json.forEach( release => {
 			
 			releaseVersionNumber = versionToNumber( release.tag_name )

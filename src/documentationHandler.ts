@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 import * as path from 'path'
-import { AnalyzeDoc, BmxModule, AnalyzeItem } from './bmxModules'
+import { AnalyzeDoc, BmxModule } from './bmxModules'
 import { BlitzMax } from './blitzmax'
 import { capitalize, generateCommandText, readFile, exists } from './common'
 import { formatBBDocText, FormatType, FormatResult } from './bbdocFormat'
@@ -37,8 +37,10 @@ export async function showModuleDocumentation( moduleName: string, command: stri
 		}
 		
 		// Show or create the web panel
-		if (webPanel) webPanel.reveal( vscode.ViewColumn.One )
-		else {
+		if (webPanel) {
+			webPanel.title = 'BlitzMax Help - ' + currentModule.name
+			webPanel.reveal( vscode.ViewColumn.One )
+		} else {
 			// Create web panel
 			webPanel = vscode.window.createWebviewPanel(
 				'bmxHelp',
@@ -137,6 +139,8 @@ async function getWebviewContent( module: BmxModule, command: string ): Promise<
 				html += `
 				<body class="page-margins">
 					
+					<button onclick="topFunction()" id="scrollToTop" title="Go to top">Top</button>
+					
 					<div id="sidebar" class="sidebar">
 						${await generateSidebar( module )}
 					</div>
@@ -165,6 +169,26 @@ async function getWebviewContent( module: BmxModule, command: string ): Promise<
 							var elmnt = document.getElementById(id);
 							if (elmnt) elmnt.scrollIntoView(true);
 						}
+						
+						//Get the button
+						var topButton = document.getElementById("scrollToTop");
+						
+						// When the user scrolls down 20px from the top of the document, show the button
+						window.onscroll = function() {scrollFunction()};
+						
+						function scrollFunction() {
+						if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+							topButton.style.display = "block";
+						} else {
+							topButton.style.display = "none";
+						}
+						}
+						
+						// When the user clicks on the button, scroll to the top of the document
+						function topFunction() {
+							document.body.scrollTop = 0;
+							document.documentElement.scrollTop = 0;
+						}
 				`
 				
 				progress.report( {increment: 25} )
@@ -192,10 +216,8 @@ async function generateSidebar( module: BmxModule ): Promise<string> {
 						<img src="${webPanel?.webview.asWebviewUri(vscode.Uri.file(path.join(documentationContext.extensionPath, 'media')))}/icon.png" height="76" width="76" alt="BlitzMax Logo" title="BlitzMax Logo">
 					</td>
 				-->
-					<td>
 					<div class="sidebar-module">${module.name}</div>
 					<div class="sidebar-bmx">BlitzMax ${BlitzMax.version}</div>
-					</td>
 				</table>
 			</div>
 			
@@ -335,14 +357,12 @@ async function generateSection( module: BmxModule, cmds: AnalyzeDoc[] ): Promise
 			example = await BlitzMax.getExample( cmds[0] )
 			if (example)
 				example = `
-					<div class="example">
+					<div class="example-link">
 						<a href="${generateCommandText( 'blitzmax.showExample', [cmds[0]] )}" title="Open example">
 							${cmds[0].regards.name} Example
 						</a>
 					</div>
-				<code>
-					<div class="example"><pre>${example}</pre></div>
-				</code>`
+				<code><div class="example"><pre>${example}</pre></div></code>`
 		}
 		
 		let section = '<div class="section">'
@@ -363,17 +383,17 @@ async function generateSection( module: BmxModule, cmds: AnalyzeDoc[] ): Promise
 			
 			if (cmd.info)
 				alts += `<div class="section-information">
-					<pre>${formatBBDocText(cmd.info, formatForDocs)}</pre>
+					<pre><strong>Information: </strong>${formatBBDocText(cmd.info, formatForDocs)}</pre>
 				</div>`
 			
 			if (cmd.about)
 				alts += `<div class="section-about">
-					<pre>${formatBBDocText(cmd.about, formatForDocs)}</pre>
+					<pre><strong>About: </strong>${formatBBDocText(cmd.about, formatForDocs)}</pre>
 				</div>`
 			
 			if (cmd.returns)
 			alts += `<div class="section-returns">
-				<pre>${formatBBDocText(cmd.returns, formatForDocs)}</pre>
+				<pre><strong>Returns: </strong>${formatBBDocText(cmd.returns, formatForDocs)}</pre>
 			</div>`
 			
 			alts += '</div>' // Close content
@@ -393,26 +413,26 @@ export function formatForDocs( result: FormatResult ): string {
 	
 	switch (result.Type) {
 		case FormatType.Reference:
-			if (!currentModule || !currentModule.commands) return result.Words[0]
-			
 			// Is this just straight up a module?
 			const mod = BlitzMax.getModule( result.Words[0] )
-			if (mod) {
+			if (mod)
+				return `<a class="section-link" href="${generateCommandText( 'blitzmax.moduleHelp', [mod.name] )}" title="Read about ${mod.name}">${result.Words[0]}</a>`
+			
+			if (currentModule && currentModule.commands) {
 				
-			}
-			
-			// First we attempt to get a matching command from this module
-			for (let i = 0; i < currentModule.commands.length; i++) {
-				const cmd = currentModule.commands[i]
-				if (cmd.depthName == result.Words[0])
-					return `<a class="section-link" onclick="jumpTo('${cmd.depthName}');" title="Jump to ${cmd.depthName}">${result.Words[0]}</a>`
-			}
-			
-			// Attempt to get a matching command without the depth!
-			for (let i = 0; i < currentModule.commands.length; i++) {
-				const cmd = currentModule.commands[i]
-				if (cmd.searchName == result.Words[0].toLowerCase())
-					return `<a class="section-link" onclick="jumpTo('${cmd.depthName}');" title="Jump to ${cmd.depthName}">${result.Words[0]}</a>`
+				// First we attempt to get a matching command from this module
+				for (let i = 0; i < currentModule.commands.length; i++) {
+					const cmd = currentModule.commands[i]
+					if (cmd.depthName == result.Words[0])
+						return `<a class="section-link" onclick="jumpTo('${cmd.depthName}');" title="Jump to ${cmd.depthName}">${result.Words[0]}</a>`
+				}
+				
+				// Attempt to get a matching command without the depth!
+				for (let i = 0; i < currentModule.commands.length; i++) {
+					const cmd = currentModule.commands[i]
+					if (cmd.searchName == result.Words[0].toLowerCase())
+						return `<a class="section-link" onclick="jumpTo('${cmd.depthName}');" title="Jump to ${cmd.depthName}">${result.Words[0]}</a>`
+				}
 			}
 			
 			// Otherwise we do a global search
@@ -425,28 +445,29 @@ export function formatForDocs( result: FormatResult ): string {
 			return `<strong style="font-size:140%">${result.Words[0]}</strong>`
 			
 		case FormatType.Header2:
-			return `<strong style="font-size:110%">${result.Words[0]}</strong>`
+			return `<strong style="font-size:115%">${result.Words[0]}</strong>`
 			
 		case FormatType.Header3:
 			return `<strong style="font-size:100%">${result.Words[0]}</strong>`
 			
 		case FormatType.Header4:
-			return `<strong style="font-size:90%">${result.Words[0]}</strong>`
+			return `<strong style="font-size:85%">${result.Words[0]}</strong>`
 			
 		case FormatType.Header5:
-			return `<strong style="font-size:70%">${result.Words[0]}</strong>`
+			return `<strong style="font-size:60%">${result.Words[0]}</strong>`
 			
 		case FormatType.Header6:
-			return `<strong style="font-size:50%">${result.Words[0]}</strong>`
+			return `<strong style="font-size:40%">${result.Words[0]}</strong>`
 			
 		case FormatType.Italic:
 			return `<i>${result.Words[0]}</i>`
 			
+		case FormatType.CodeMultiLine:
+			return `<code><div class="example"><pre>${result.Words[0]}</pre></div></code>`
+		
 		case FormatType.Code:
-			return `<code>
-				<div class="example"><pre>${result.Words[0]}</pre></div>
-			</code>`
-			
+			return `<code>${result.Words[0]}</code>`
+		
 		case FormatType.Html:
 			return `<a class="section-link" href="${result.HtmlData}">${result.HtmlTag}</a>`
 		

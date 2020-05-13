@@ -11,7 +11,8 @@ export enum FormatType {
 	Header5,
 	Header6,
 	Italic,
-	Code
+	Code,
+	CodeMultiLine
 }
 
 export interface FormatResult {
@@ -121,7 +122,7 @@ export function formatBBDocText( text: string, formater: Function, clearNewLines
 						result += chr
 						break
 				}
-				
+			
 			case FormatType.Html:
 				if (chr == htmlTagEnd) {
 					
@@ -200,7 +201,7 @@ export function formatBBDocText( text: string, formater: Function, clearNewLines
 					
 				} else htmlTag += chr
 				break
-				
+			
 			case FormatType.Header1:
 			case FormatType.Header2:
 			case FormatType.Header3:
@@ -218,7 +219,7 @@ export function formatBBDocText( text: string, formater: Function, clearNewLines
 					state = FormatType.None
 				} else word += chr
 				break
-				
+			
 			case FormatType.Italic:
 				if (chr == '*' || chrNr >= text.length - 1) {
 					if (chrNr >= text.length - 1) word += chr
@@ -236,6 +237,7 @@ export function formatBBDocText( text: string, formater: Function, clearNewLines
 				if (codeMultiLine) {
 					if (chrNr >= text.length - 1 ||
 					(chr == '`' && nextChr[0] == '`' && nextChr[1] == '`')) {
+						state = FormatType.CodeMultiLine
 						let formatResult = {
 							Type: state,
 							Words: [word]
@@ -244,6 +246,7 @@ export function formatBBDocText( text: string, formater: Function, clearNewLines
 						word = ''
 						state = FormatType.None
 						chrNr += 2
+						if (nextChr[2] == '\n' || nextChr[2] == '\r') chrNr += 2
 					} else {
 						if (codeMultiLineLanguageDone) {
 							word += chr
