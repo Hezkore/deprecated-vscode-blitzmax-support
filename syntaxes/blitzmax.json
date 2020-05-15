@@ -126,6 +126,27 @@
 			"name" : "constant.language.bmx"
 		},
 		{
+			"begin" : "\"\"\"",
+			"beginCaptures" : {
+				"0" : {
+					"name" : "punctuation.definition.string.block.begin.bmx"
+				}
+			},
+			"end" : "\"\"\"",
+			"endCaptures" : {
+				"0" : {
+					"name" : "punctuation.definition.string.block.end.bmx"
+				}
+			},
+			"name" : "string.quoted.block.bmx",
+			"patterns" : [
+				{
+					"match" : "\"\"\"\"\"\"",
+					"name" : "constant.character.block.escape.apostrophe.bmx"
+				}
+			]
+		},
+		{
 			"begin" : "\"",
 			"beginCaptures" : {
 				"0" : {
