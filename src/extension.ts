@@ -121,11 +121,13 @@ async function registerProviders( context: vscode.ExtensionContext ) {
 			new BmxFormatProvider()
 		)
 	)
+	
 	context.subscriptions.push(
 		vscode.languages.registerDocumentRangeFormattingEditProvider({ scheme: 'file', language: 'blitzmax' },
 			new BmxRangeFormatProvider()
 		)
 	)
+	
 	context.subscriptions.push(
 		vscode.languages.registerOnTypeFormattingEditProvider({ scheme: 'file', language: 'blitzmax' },
 			new BmxOnTypeFormatProvider()

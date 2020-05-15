@@ -216,7 +216,7 @@ async function generateSidebar( module: BmxModule ): Promise<string> {
 						<img src="${webPanel?.webview.asWebviewUri(vscode.Uri.file(path.join(documentationContext.extensionPath, 'media')))}/icon.png" height="76" width="76" alt="BlitzMax Logo" title="BlitzMax Logo">
 					</td>
 				-->
-					<div class="sidebar-module">${module.name}</div>
+					<a href="${generateCommandText( 'blitzmax.openModule', [module.name] )}" class="sidebar-module">${module.name}</a>
 					<div class="sidebar-bmx">BlitzMax ${BlitzMax.version}</div>
 				</table>
 			</div>
@@ -392,8 +392,12 @@ async function generateSection( module: BmxModule, cmds: AnalyzeDoc[] ): Promise
 				</div>`
 			
 			if (cmd.returns)
-			alts += `<div class="section-returns">
-				<pre><strong>Returns: </strong>${formatBBDocText(cmd.returns, formatForDocs)}</pre>
+				alts += `<div class="section-returns">
+					<pre><strong>Returns: </strong>${formatBBDocText(cmd.returns, formatForDocs)}</pre>
+				</div>`
+			
+			alts += `<div class="section-source">
+				<pre><strong>Source: </strong>${cmd.regards.file}:${cmd.regards.line}</pre>
 			</div>`
 			
 			alts += '</div>' // Close content
