@@ -181,6 +181,15 @@
 	white-space: pre-line;
 }
 
+.section-source>pre {
+	font-size: 12px;
+	font-style: italic;
+	font: inherit;
+	color: var(--vscode-foreground);
+	padding: 6px 0px;
+	white-space: pre-line;
+}
+
 .content {
 	padding: 0 18px;
 	max-height: 0;

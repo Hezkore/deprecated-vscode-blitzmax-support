@@ -1,6 +1,7 @@
 'use strict'
 
 import * as vscode from 'vscode'
+import * as path from 'path'
 import { BlitzMax } from './blitzmax'
 import { AnalyzeDoc, BmxModule } from './bmxModules'
 import { currentWord, currentWordTrigger, generateCommandText } from './common'
@@ -53,8 +54,8 @@ async function generateHoverContent( cmd: AnalyzeDoc ): Promise<vscode.Hover> {
 		contents.appendMarkdown( '\n\n[More Info](' + exampleLink + ')')
 	
 	let moduleLink = vscode.Uri.parse(
-		`command:blitzmax.openModule?${encodeURIComponent(JSON.stringify([
-			cmd.module,
+		`command:blitzmax.openSource?${encodeURIComponent(JSON.stringify([
+			path.join( BlitzMax.path, cmd.regards.file ),
 			cmd.regards.line
 		]))}`
 	)

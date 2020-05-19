@@ -164,23 +164,38 @@ async function registerCommands( context:vscode.ExtensionContext ) {
 		vscode.commands.registerCommand( 'blitzmax.openModule', (name: string, line: number) => {
 			
 			const mod = BlitzMax.getModule( name )
-			let range: vscode.Range | undefined
-			
-			if (line) {
-				range = new vscode.Range(
-					new vscode.Position( line, 0 ),
-					new vscode.Position( line, 0 )
-				)
-			} else {
-				range = new vscode.Range(
-					new vscode.Position( 0, 0 ),
-					new vscode.Position( 0, 0 )
+			if (mod) {
+				vscode.commands.executeCommand( 'blitzmax.openSource',
+					path.join( BlitzMax.modPath, mod.file ),
+					line
 				)
 			}
+		})
+	)
+	
+	context.subscriptions.push(
+		vscode.commands.registerCommand( 'blitzmax.openSource', (file: string, line: number) => {
 			
-			if (mod) {
+			const filePath = vscode.Uri.file( file )
+			
+			if (filePath) {
+				let range: vscode.Range | undefined
+				
+				if (line) {
+					range = new vscode.Range(
+						new vscode.Position( line, 0 ),
+						new vscode.Position( line, 0 )
+					)
+				} else {
+					range = new vscode.Range(
+						new vscode.Position( 0, 0 ),
+						new vscode.Position( 0, 0 )
+					)
+				}
+				
+				
 				vscode.window.showTextDocument(
-					vscode.Uri.file( path.join( BlitzMax.modPath, mod.file ) ),
+					filePath,
 					{ selection: range, preview: true }
 				)
 			}
