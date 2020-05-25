@@ -232,8 +232,8 @@
 	font-size: 18px;
 	border: none;
 	outline: none;
-	background-color: red;
-	color: white;
+	color: var(--vscode-button-foreground);
+	background-color: var(--vscode-button-background);
 	cursor: pointer;
 	padding: 6px 8px 9px 9px;
 	border-radius: 50%;
@@ -243,7 +243,7 @@
 }
 
 #scrollToTop:hover {
-	background-color: #555;
+	background-color: var(--vscode-button-hoverBackground);
 }
 
 pre {

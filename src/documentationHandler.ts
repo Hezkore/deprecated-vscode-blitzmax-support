@@ -399,11 +399,6 @@ async function generateSection( module: BmxModule, cmds: AnalyzeDoc[] ): Promise
 			alts += `<a class="section-source" href="${generateCommandText( 'blitzmax.openSource', [path.join( BlitzMax.path, cmd.regards.file ), cmd.regards.line] )}" title="Jump to source">
 				<pre><strong>Source: </strong>${cmd.regards.file}:${cmd.regards.line}</pre>
 			</a>`
-			/*
-			alts += `<div class="section-source">
-				<pre><strong>Source: </strong>${cmd.regards.file}:${cmd.regards.line}</pre>
-			</div>`
-			*/
 			
 			alts += '</div>' // Close content
 		}

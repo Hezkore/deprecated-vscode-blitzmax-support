@@ -1,5 +1,11 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.30.0
+* New documentation handler.
+* New documentation web view.
+* Fixed an issue when hovering over words.
+* Added support for multiline strings.
+
 ## Version 1.29.0
 * Outline items are now suggested as auto-complete.
 * Methods are now suggested as auto-complete.
