@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.31.0
+* Added auto-complete format options.
+
 ## Version 1.30.0
 * New documentation handler.
 * New documentation web view.

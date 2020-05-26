@@ -71,9 +71,9 @@ function formatDocument( document: vscode.TextDocument, range: vscode.Range | un
 		'=', '-', '+', '~', '/', '*'
 	]
 	let includeWordSeparators:string[] = []
-	let spaceEfter:string[] = ['(', '{', '}', ',', ';', '=', '<', '>', '&']
-	let spaceBefore:string[] = [')', '{', '}', '=', '<', '>', '&']
-	let noSpaceBefore:string[] = ['(', '[', ':', ',', '.']
+	let spaceEfter:string[] = ['{', '}', ';', '=', '<', '>', '&']
+	let spaceBefore:string[] = ['{', '}', '=', '<', '>', '&']
+	let noSpaceBefore:string[] = ['[', ':', ',', '.']
 	let noSpacesBeforeExceptions:string[] = ['return']
 	//let noSpaceAfter:string[] = [':', '.']
 	let typeTagShortcuts:string[] = [
@@ -82,6 +82,20 @@ function formatDocument( document: vscode.TextDocument, range: vscode.Range | un
 		'!', 'Double',
 		'$', 'String'
 	]
+	
+	if (vscode.workspace.getConfiguration( 'blitzmax' ).get( 'format.comfortableFunctionNames' )){
+		spaceBefore.push( '(' )
+	} else {
+		noSpaceBefore.push( '(' )
+	}
+	
+	if (vscode.workspace.getConfiguration( 'blitzmax' ).get( 'format.comfortableFunctionBrackets' )) {
+		spaceEfter.push( '(' )
+		spaceBefore.push( ')' )
+	}
+	
+	if (vscode.workspace.getConfiguration( 'blitzmax' ).get( 'format.comfortableFunctionParameters' ))
+		spaceEfter.push( ',' )
 	
 	for (let lineNr = range ? range.start.line : 0; range ? lineNr <= range.end.line : lineNr < document.lineCount; lineNr++) {
 		const line: vscode.TextLine = document.lineAt(lineNr)

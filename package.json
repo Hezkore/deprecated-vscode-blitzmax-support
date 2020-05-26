@@ -1,6 +1,6 @@
 {
 	"name": "blitzmax",
-	"version": "1.30.0",
+	"version": "1.31.0",
 	"displayName": "BlitzMax Language Basics",
 	"description": "Provides snippets, syntax highlighting, bracket matching and folding in BlitzMax files.",
 	"repository": {
@@ -406,6 +406,21 @@
 			"type": "object",
 			"title": "BlitzMax",
 			"properties": {
+				"blitzmax.format.comfortableFunctionParameters": {
+					"type": "boolean",
+					"default": true,
+					"description": "Inserts a space after each parameter\n(reload required)"
+				},
+				"blitzmax.format.comfortableFunctionBrackets": {
+					"type": "boolean",
+					"default": true,
+					"description": "Inserts a space after the first bracket and before last bracket\n(reload required)"
+				},
+				"blitzmax.format.comfortableFunctionNames": {
+					"type": "boolean",
+					"default": false,
+					"description": "Inserts a space after function names\n(reload required)"
+				},
 				"blitzmax.multiBmxPath": {
 					"type": "array",
 					"description": "Advanced feature for users with multiple BlitzMax installations",

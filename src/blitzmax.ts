@@ -472,16 +472,27 @@ export class BlitzMaxHandler{
 				case 'method':
 					
 					let args = cmd.regards.args
+					if (vscode.workspace.getConfiguration( 'blitzmax' ).get( 'format.comfortableFunctionNames' ))
+						item.insertText.appendText( ' ' )
+					
 					if (args){
 						
-						item.insertText.appendText( '( ' )
+						item.insertText.appendText( '(' )
+						
+						if (vscode.workspace.getConfiguration( 'blitzmax' ).get( 'format.comfortableFunctionBrackets' ))
+							item.insertText.appendText( ' ' )
 						
 						for(var i=0; i<args.length; i++){
 							item.insertText.appendPlaceholder( args[i].name + ':' + args[i].returns )
-							if (i < args.length - 1) item.insertText.appendText( ', ' )
+							if (i < args.length - 1) item.insertText.appendText( ',' )
+							if (vscode.workspace.getConfiguration( 'blitzmax' ).get( 'format.comfortableFunctionParameters' ))
+								item.insertText.appendText( ' ' )
 						}
 						
-						item.insertText.appendText( ' )' )
+						if (vscode.workspace.getConfiguration( 'blitzmax' ).get( 'format.comfortableFunctionBrackets' ))
+							item.insertText.appendText( ' ' )
+						
+						item.insertText.appendText( ')' )
 					}else{
 						
 						item.insertText.appendText( '()' )
