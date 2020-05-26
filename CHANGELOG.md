@@ -1,5 +1,8 @@
 # BlitzMax Language Basics CHANGELOG
 
+## Version 1.31.1
+* Fixed an auto-complete format issue.
+
 ## Version 1.31.0
 * Added auto-complete format options.
 

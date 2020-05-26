@@ -484,9 +484,11 @@ export class BlitzMaxHandler{
 						
 						for(var i=0; i<args.length; i++){
 							item.insertText.appendPlaceholder( args[i].name + ':' + args[i].returns )
-							if (i < args.length - 1) item.insertText.appendText( ',' )
-							if (vscode.workspace.getConfiguration( 'blitzmax' ).get( 'format.comfortableFunctionParameters' ))
-								item.insertText.appendText( ' ' )
+							if (i < args.length - 1) {
+								item.insertText.appendText( ',' )
+								if (vscode.workspace.getConfiguration( 'blitzmax' ).get( 'format.comfortableFunctionParameters' ))
+									item.insertText.appendText( ' ' )
+							}
 						}
 						
 						if (vscode.workspace.getConfiguration( 'blitzmax' ).get( 'format.comfortableFunctionBrackets' ))
