@@ -15,6 +15,7 @@ verbose: false, problemMatcher: ["$blitzmax"], group: { kind: 'build', isDefault
 export interface BmxTaskDefinition extends vscode.TaskDefinition {
 	
 	source?: string, // Main source file for the project
+	conditionals?: string[] // User defined conditionals
 	make: string, // makeapp, makemods, makelib
 	app?: string, // -t console/gui (makeapp only)
 	arch?: string, // -g Architecture
@@ -310,6 +311,13 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 		if (!arch || arch.toLowerCase() == 'auto') arch = os.arch()
 		args.push( '-g' )
 		args.push( arch )
+		
+		// User defined conditionals
+		let conditionals = definition.conditionals
+		if (conditionals) {
+			args.push( '-ud' )
+			args.push( conditionals.toString().trim().replace( ' ', '' ) )
+		}
 		
 		// GDB
 		if (definition.gdb)

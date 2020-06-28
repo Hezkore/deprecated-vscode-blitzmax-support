@@ -177,6 +177,10 @@
 						"default": "${relativeFile}",
 						"description": "Main source file."
 					},
+					"conditionals" :{
+						"type": "array",
+						"markdownDescription": "Add user defined conditionals (comma separated) then usable via `?myconditional`."
+					},
 					"output": {
 						"type": "string",
 						"default": "${fileBasenameNoExtension}",
