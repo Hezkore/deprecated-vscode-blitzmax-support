@@ -1,6 +1,6 @@
 # BlitzMax Language Basics CHANGELOG
 
-## Version 1.32
+## Version 1.32.0
 * Added support for user defined conditionals in tasks.json.
 
 ## Version 1.31.1
