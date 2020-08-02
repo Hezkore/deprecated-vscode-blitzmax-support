@@ -1,6 +1,6 @@
 {
 	"name": "blitzmax",
-	"version": "1.32.0",
+	"version": "1.32.1",
 	"displayName": "BlitzMax Language Basics",
 	"description": "Provides snippets, syntax highlighting, bracket matching and folding in BlitzMax files.",
 	"repository": {
@@ -176,6 +176,10 @@
 						"type": "string",
 						"default": "${relativeFile}",
 						"description": "Main source file."
+					},
+					"args" :{
+						"type": "array",
+						"markdownDescription": "Add user defined arguments."
 					},
 					"conditionals" :{
 						"type": "array",

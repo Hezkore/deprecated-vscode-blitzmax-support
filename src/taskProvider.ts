@@ -28,6 +28,7 @@ export interface BmxTaskDefinition extends vscode.TaskDefinition {
 	execute?: boolean, // -x Execute after build
 	verbose?: boolean, // -v Verbose (noisy) build
 	appstub?: string // -b Use custom appstub
+	args?: string[]
 }
 
 export function currentDefinition(): BmxTaskDefinition {
@@ -348,6 +349,10 @@ export function makeTask( definition: BmxTaskDefinition | undefined, name: strin
 	// Build threaded
 	if (definition.threaded)
 		args.push( '-h' )
+	
+	// Custom arguments
+	if (definition.args)
+		args = args.concat(definition.args)
 	
 	// Actual file to build
 	let source:string | undefined = definition.source
