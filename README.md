@@ -1,3 +1,9 @@
+# DEPRECATED
+:warning: This extension has been deprecated as of 2020.\
+Please use the new extension instead:\
+[Marketplace](https://marketplace.visualstudio.com/items?itemName=Hezkore.blitzmax)\
+[Repository](https://github.com/Hezkore/vscode-blitzmax-support)
+
 # [BlitzMax](https://blitzmax.org/) Language Basics for [Visual Studio Code](https://code.visualstudio.com/)
 
 [![Version](https://vsmarketplacebadge.apphb.com/version/hezkore.BlitzMax.svg)](https://marketplace.visualstudio.com/items?itemName=hezkore.Blitzmax)
@@ -5,7 +11,7 @@
 
 Provides snippets, syntax highlighting, bracket matching and folding in [BlitzMax](https://blitzmax.org/) files.
 
-![Preview](https://github.com/Hezkore/vscode-blitzmax-support/raw/master/./media/demo.png)
+![Preview](https://github.com/Hezkore/deprecated-vscode-blitzmax-support/raw/master/./media/demo.png)
 
 ## Features
 * Syntax highlighting for BlitzMax [NG](https://blitzmax.org/) and [Legacy](https://nitrologic.itch.io/blitzmax/).
